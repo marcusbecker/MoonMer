@@ -1,0 +1,58 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package br.com.mvbos.mymer.xml.field;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.bind.annotation.XmlRootElement;
+
+/**
+ *
+ * @author MarcusS
+ */
+@XmlRootElement
+public class Table {
+
+    private String name;
+    private List<Field> fields;
+
+    public Table() {
+    }
+
+    public Table(String name) {
+        this.name = name;
+    }
+
+    public Table(String name, List<Field> fields) {
+        this.name = name;
+        this.fields = fields;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Field> getFields() {
+        return fields;
+    }
+
+    public void setFields(List<Field> fields) {
+        this.fields = fields;
+    }
+
+    public void addField(Field f) {
+        if (fields == null) {
+            fields = new ArrayList<>(10);
+        }
+
+        fields.add(f);
+    }
+
+}
