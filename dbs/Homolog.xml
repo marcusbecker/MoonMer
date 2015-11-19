@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dataBaseStore>
+    <bases>
+        <name>Homolog</name>
+        <tables>
+            <fields>
+                <name>id</name>
+                <size>3</size>
+                <type>integer</type>
+            </fields>
+            <fields>
+                <name>nome</name>
+                <type>character</type>
+            </fields>
+            <name>cliente</name>
+        </tables>
+    </bases>
+</dataBaseStore>

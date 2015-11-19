@@ -6,10 +6,12 @@
 package br.com.mvbos.mymer.xml;
 
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.DataConfig;
 import br.com.mvbos.mymer.xml.field.FieldPosition;
+import br.com.mvbos.mymer.xml.field.Relationship;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.awt.Color;
 import java.io.File;
@@ -43,6 +45,7 @@ public class XMLUtil {
     public static final DataBaseElement DEFAULT_DATA_BASE;
 
     public static final List<TableElement> filter;
+    public static final List<RelationshipElement> relations;
     public static final List<DataBaseElement> filterBases = new ArrayList<>(10);
 
     public static Set<DataBaseElement> dataBases = new LinkedHashSet<>(10);
@@ -54,12 +57,15 @@ public class XMLUtil {
     private static final File DIR_CONFIG = new File("config");
     private static final File FILE_CONFIG = new File(DIR_CONFIG, "config.xml");
     private static final File FILE_POSITION_STORE = new File(DIR_CONFIG, "field_config.xml");
+    private static final File FILE_RELATIONSHIP_STORE = new File(DIR_CONFIG, "relationship_config.xml");
 
     static {
         filter = importFields();
         importFieldsPosition(filter);
         importConfig();
 
+        relations = importRelations();
+        
         tableCount = filter.size();
 
         DEFAULT_DATA_BASE = new DataBaseElement("New data base", new Color(74, 189, 218));
@@ -148,6 +154,38 @@ public class XMLUtil {
             //m.marshal(fps, System.out);
 
             m.marshal(fps, FILE_POSITION_STORE);
+
+        } catch (Exception ex) {
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean exportRelations() {
+
+        RelationshipStore rStore = new RelationshipStore();
+        List<Relationship> rel = new ArrayList<>(relations.size());
+
+        for (RelationshipElement e : relations) {
+            Relationship r = new Relationship(e.getType().ordinal(), e.getParent().getName(), e.getChild().getName(), e.getParent().getDataBase().getName(), e.getChild().getDataBase().getName());
+            rel.add(r);
+        }
+
+        rStore.setRelations(rel);
+
+        try {
+            if (!DIR_CONFIG.exists()) {
+                DIR_CONFIG.mkdir();
+            }
+
+            JAXBContext context = JAXBContext.newInstance(RelationshipStore.class);
+            Marshaller m = context.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
+
+            m.marshal(rStore, FILE_RELATIONSHIP_STORE);
 
         } catch (Exception ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -278,6 +316,59 @@ public class XMLUtil {
         return allTables == null ? new ArrayList<TableElement>(10) : allTables;
     }
 
+    public static List<RelationshipElement> importRelations() {
+
+        RelationshipStore rStore = null;
+        List<RelationshipElement> lst = null;
+
+        try {
+
+            if (!DIR_CONFIG.exists()) {
+                DIR_CONFIG.mkdir();
+            }
+
+            if (FILE_RELATIONSHIP_STORE.exists()) {
+
+                JAXBContext context = JAXBContext.newInstance(RelationshipStore.class);
+                Unmarshaller um = context.createUnmarshaller();
+
+                rStore = (RelationshipStore) um.unmarshal(new FileReader(FILE_RELATIONSHIP_STORE));
+            }
+
+        } catch (JAXBException | FileNotFoundException ex) {
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (rStore != null && rStore.getRelations() != null && !rStore.getRelations().isEmpty()) {
+
+            lst = new ArrayList<>(rStore.getRelations().size());
+
+            for (Relationship r : rStore.getRelations()) {
+
+                if (r.getType() < 0 || r.getType() > RelationshipElement.Type.values().length) {
+                    continue;
+                }
+
+                TableElement parent = findByName(r.getDbParente(), r.getParent());
+                if (parent == null) {
+                    continue;
+                }
+
+                TableElement child = findByName(r.getDbChild(), r.getChild());
+                if (child == null) {
+                    continue;
+                }
+
+                RelationshipElement.Type type = RelationshipElement.Type.values()[r.getType()];
+
+                RelationshipElement re = new RelationshipElement(type, parent, child);
+                lst.add(re);
+            }
+        }
+
+        return lst == null ? new ArrayList<RelationshipElement>(10) : lst;
+    }
+
     public static DataBaseStore parseToDataBase(InputStreamReader is) {
 
         DataBaseStore dbs = null;
@@ -372,6 +463,22 @@ public class XMLUtil {
 
             if (dbe.getName().equals(name)) {
                 return dbe;
+            }
+        }
+
+        return null;
+    }
+
+    public static TableElement findByName(String dbName, String name) {
+        DataBaseElement dbe = findByName(dbName);
+
+        if (dbe == null) {
+            return null;
+        }
+
+        for (TableElement e : dbe.getTables()) {
+            if (e.getName().equals(name)) {
+                return e;
             }
         }
 

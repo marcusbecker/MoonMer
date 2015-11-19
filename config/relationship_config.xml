@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<relationshipStore>
+    <relations>
+        <child>cadastro</child>
+        <dbChild>Workspace</dbChild>
+        <dbParente>Homolog</dbParente>
+        <parent>cliente</parent>
+        <type>0</type>
+    </relations>
+</relationshipStore>

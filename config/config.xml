@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configStore>
+    <bases>
+        <color>-103</color>
+        <name>Homolog</name>
+        <tableCount>1</tableCount>
+    </bases>
+    <bases>
+        <color>-6684775</color>
+        <name>Workspace</name>
+        <tableCount>1</tableCount>
+    </bases>
+</configStore>

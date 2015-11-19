@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -32,7 +33,7 @@ public class TableElement extends ElementModel {
 
     private boolean autoWidth = true;
     private boolean autoHeight = true;
-
+    
     public TableElement(int width, int height, DataBaseElement dataBase, String name) {
         this(0, 0, width, height, dataBase, name);
     }
