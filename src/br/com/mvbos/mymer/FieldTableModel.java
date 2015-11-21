@@ -6,8 +6,11 @@
 package br.com.mvbos.mymer;
 
 import br.com.mvbos.mymer.xml.field.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -16,52 +19,70 @@ import javax.swing.table.AbstractTableModel;
  */
 public class FieldTableModel extends AbstractTableModel {
 
-    private Class[] columnTypes = {Integer.class, String.class, Integer.class, String.class, String.class, String.class};
-    private String[] columnNames = {"#", "Name", "Size", "Type", "Format", "Default"};
-
-    //private Object[][] data = {{"cod", 40, Common.comboTypes[0], "", ""}};
-    //private Object[][] data = {};
+    private final List<ColType> colTypes;
     private List<Field> data = Collections.EMPTY_LIST;
+    private final java.lang.reflect.Field[] fields = Field.class.getDeclaredFields();
+
+    private class ColType {
+
+        String name;
+        Class type;
+        boolean edit;
+
+        public ColType(String name, Class type, boolean edit) {
+            this.name = name;
+            this.type = type;
+            this.edit = edit;
+        }
+
+    }
+
+    public FieldTableModel() {
+        colTypes = new ArrayList<>(fields.length + 1);
+        colTypes.add(new ColType("#", Integer.class, false));
+
+        for (java.lang.reflect.Field f : fields) {
+            colTypes.add(new ColType(f.getName(), f.getType(), true));
+        }
+    }
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex > 0;
+        return colTypes.get(columnIndex).edit;
     }
 
     @Override
     public Class getColumnClass(int c) {
-        //return getValueAt(0, c).getClass();
-        return columnTypes[c];
+        return colTypes.get(c).type;
     }
 
     @Override
     public void setValueAt(Object value, int row, int col) {
-        Field f = data.get(row);
 
-        switch (col) {
-            case 1:
-                f.setName((String) value);
-                return;
-            case 2:
-                f.setSize((Integer) value);
-                return;
-            case 3:
-                f.setType((String) value);
-                return;
-            case 4:
-                f.setFormat((String) value);
-                return;
-            case 5:
-                f.setDefualt((String) value);
-                return;
+        int classCol = col - 1;
+
+        if (classCol < 0) {
+            return;
         }
 
-        fireTableCellUpdated(row, col);
+        Field f = data.get(row);
+
+        try {
+            java.lang.reflect.Field ff = fields[classCol];
+            ff.setAccessible(true);
+            ff.set(f, value);
+
+            fireTableCellUpdated(row, col);
+
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            Logger.getLogger(FieldTableModel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     @Override
     public String getColumnName(int column) {
-        return columnNames[column];
+        return colTypes.get(column).name;
     }
 
     @Override
@@ -71,39 +92,30 @@ public class FieldTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return columnNames.length;
+        return colTypes.size();
     }
 
     @Override
     public Object getValueAt(int row, int col) {
 
+        int classCol = col - 1;
+
+        if (classCol < 0) {
+            return row + 1;
+        }
+
         Field f = data.get(row);
 
-        switch (col) {
-            case 0:
-                return row + 1;
-            case 1:
-                return f.getName();
-            case 2:
-                return f.getSize();
-            case 3:
-                return f.getType();
-            case 4:
-                return f.getFormat();
-            case 5:
-                return f.getDefualt();
+        try {
+            java.lang.reflect.Field ff = fields[classCol];
+            ff.setAccessible(true);
+            return ff.get(f);
+
+        } catch (IllegalArgumentException | IllegalAccessException ex) {
+            Logger.getLogger(FieldTableModel.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
-        //return data[rowIndex][columnIndex];
-    }
-
-    public String[] getColumnNames() {
-        return columnNames;
-    }
-
-    public void setColumnNames(String[] columnNames) {
-        this.columnNames = columnNames;
     }
 
     public List<Field> getData() {

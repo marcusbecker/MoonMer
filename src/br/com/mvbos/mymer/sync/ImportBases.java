@@ -7,8 +7,8 @@ package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.TableElement;
-import br.com.mvbos.mymer.field.FieldTreeNode;
-import br.com.mvbos.mymer.field.TableTreeNode;
+import br.com.mvbos.mymer.tree.FieldTreeNode;
+import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
