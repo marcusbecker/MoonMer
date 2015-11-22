@@ -3,8 +3,15 @@
     <relations>
         <child>cadastro</child>
         <dbChild>Workspace</dbChild>
+        <dbParente>cadastro</dbParente>
+        <parent>Workspace</parent>
+        <type>0</type>
+    </relations>	
+    <relations>
+        <child>cadastro</child>
+        <dbChild>Workspace</dbChild>
         <dbParente>Homolog</dbParente>
         <parent>cliente</parent>
-        <type>0</type>
+        <type>1</type>
     </relations>
 </relationshipStore>

@@ -362,6 +362,7 @@ public class XMLUtil {
                 RelationshipElement.Type type = RelationshipElement.Type.values()[r.getType()];
 
                 RelationshipElement re = new RelationshipElement(type, parent, child);
+                System.out.println("re " + re);
                 lst.add(re);
             }
         }
