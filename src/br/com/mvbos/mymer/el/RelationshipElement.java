@@ -64,22 +64,27 @@ public class RelationshipElement extends ElementModel {
     @Override
     public void drawMe(Graphics2D g) {
 
-        int stpxA = (int) Camera.c().fx(parent.getAllWidth() - parent.getHalfWidth());
-        int stpxB = (int) Camera.c().fx(child.getAllWidth() - child.getHalfWidth());
+        if (parent.equals(child)) {
 
-        int stpyA = (int) Camera.c().fy(parent.getAllHeight() - parent.getHalfHeight());
-        int stpyB = (int) Camera.c().fy(child.getAllHeight() - child.getHalfHeight());
+        } else {
 
-        final int middle = (stpxA + stpxB) / 2;
+            int stpxA = (int) Camera.c().fx(parent.getAllWidth() - parent.getHalfWidth());
+            int stpxB = (int) Camera.c().fx(child.getAllWidth() - child.getHalfWidth());
 
-        g.setColor(parent.getColor());
-        g.drawLine(stpxA, stpyA, middle, stpyA);
+            int stpyA = (int) Camera.c().fy(parent.getAllHeight() - parent.getHalfHeight());
+            int stpyB = (int) Camera.c().fy(child.getAllHeight() - child.getHalfHeight());
 
-        g.setColor(child.getColor());
-        g.drawLine(stpxB, stpyB, middle, stpyB);
+            final int middle = (stpxA + stpxB) / 2;
 
-        g.setColor(defaultColor);
-        g.drawLine(middle, stpyA, middle, stpyB);
+            g.setColor(parent.getColor());
+            g.drawLine(stpxA, stpyA, middle, stpyA);
+
+            g.setColor(child.getColor());
+            g.drawLine(stpxB, stpyB, middle, stpyB);
+
+            g.setColor(defaultColor);
+            g.drawLine(middle, stpyA, middle, stpyB);
+        }
 
     }
 

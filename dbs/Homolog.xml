@@ -10,6 +10,7 @@
             </fields>
             <fields>
                 <name>nome</name>
+                <size>50</size>
                 <type>character</type>
             </fields>
             <name>cliente</name>
