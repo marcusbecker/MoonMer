@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author marcuss
  */
-class Find {
+public class Find {
 
     public static Field findByName(List<Field> fields, String name) {
         for (Field f : fields) {

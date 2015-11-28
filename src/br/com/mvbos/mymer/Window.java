@@ -9,6 +9,7 @@ import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.jeg.element.SelectorElement;
 import br.com.mvbos.jeg.engine.GraphicTool;
 import br.com.mvbos.jeg.window.Camera;
+import br.com.mvbos.mymer.combo.Option;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
@@ -16,6 +17,7 @@ import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
+import br.com.mvbos.mymer.table.RowItemSelection;
 import br.com.mvbos.mymer.xml.Undo;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
@@ -31,6 +33,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -40,7 +43,9 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -49,11 +54,14 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -85,6 +93,16 @@ public class Window extends javax.swing.JFrame {
     private void removeTable(TableElement e) {
         XMLUtil.removeField(e);
         populeTreeNodes();
+    }
+
+    private void selectLast(JComboBox cb) {
+        cb.setSelectedIndex(cb.getItemCount() - 1);
+    }
+
+    private static int cc = 0;
+
+    private void contaChamadas(String name) {
+        System.out.println("name " + name + " " + ++cc);
     }
 
     private class MyDispatcher implements KeyEventDispatcher {
@@ -323,6 +341,14 @@ public class Window extends javax.swing.JFrame {
         cbIndexAvailField = new javax.swing.JComboBox();
         btnAddFieldIndexList = new javax.swing.JButton();
         tfInfoIndexFields = new javax.swing.JTextField();
+        tabRelation = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        tbRelationshipRight = new javax.swing.JTable();
+        cbRelationship = new javax.swing.JComboBox();
+        btnRemoveRelationship = new javax.swing.JButton();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        tbRelationshipLeft = new javax.swing.JTable();
+        cbRelationshipType = new javax.swing.JComboBox();
         tabStruct = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -610,7 +636,7 @@ public class Window extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 298, Short.MAX_VALUE)
+            .addGap(0, 329, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel2Layout.createSequentialGroup()
                     .addContainerGap()
@@ -620,12 +646,12 @@ public class Window extends javax.swing.JFrame {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(btnClearFilter))
                         .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
                     .addContainerGap()))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 291, Short.MAX_VALUE)
+            .addGap(0, 297, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel2Layout.createSequentialGroup()
                     .addContainerGap()
@@ -656,7 +682,7 @@ public class Window extends javax.swing.JFrame {
         pnTop.setLayout(pnTopLayout);
         pnTopLayout.setHorizontalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 904, Short.MAX_VALUE)
+            .addComponent(jSplitPane2)
         );
         pnTopLayout.setVerticalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -864,10 +890,10 @@ public class Window extends javax.swing.JFrame {
                             .addComponent(btnAddIndexFieldTable)
                             .addComponent(btnRemIndex))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                             .addGroup(tabIndexLayout.createSequentialGroup()
                                 .addComponent(cbIndexAvailField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -903,6 +929,69 @@ public class Window extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Index", tabIndex);
 
+        tbRelationshipRight.setModel(createRelationshipTableModel(tbRelationshipRight));
+        tbRelationshipRight.setName("tbRelationshipRight"); // NOI18N
+        jScrollPane5.setViewportView(tbRelationshipRight);
+
+        cbRelationship.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbRelationshipItemStateChanged(evt);
+            }
+        });
+
+        btnRemoveRelationship.setText("-");
+        btnRemoveRelationship.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveRelationshipActionPerformed(evt);
+            }
+        });
+
+        tbRelationshipLeft.setModel(createRelationshipTableModel(tbRelationshipLeft));
+        tbRelationshipLeft.setName("tbRelationshipLeft"); // NOI18N
+        jScrollPane6.setViewportView(tbRelationshipLeft);
+
+        cbRelationshipType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1 .. 1", "1 .. *" }));
+        cbRelationshipType.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbRelationshipTypeActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout tabRelationLayout = new javax.swing.GroupLayout(tabRelation);
+        tabRelation.setLayout(tabRelationLayout);
+        tabRelationLayout.setHorizontalGroup(
+            tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(tabRelationLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(tabRelationLayout.createSequentialGroup()
+                        .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbRelationship, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnRemoveRelationship))
+                    .addGroup(tabRelationLayout.createSequentialGroup()
+                        .addComponent(jScrollPane6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane5)))
+                .addContainerGap())
+        );
+        tabRelationLayout.setVerticalGroup(
+            tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabRelationLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbRelationship, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnRemoveRelationship)
+                    .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+        );
+
+        jTabbedPane1.addTab("Relationship", tabRelation);
+
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
@@ -911,7 +1000,7 @@ public class Window extends javax.swing.JFrame {
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 899, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 930, Short.MAX_VALUE)
         );
         tabStructLayout.setVerticalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1050,11 +1139,9 @@ public class Window extends javax.swing.JFrame {
         int maxHeight = 0;
         int sumHeight = 0;
 
-        for (int i = 0; i < XMLUtil.filter.size(); i++) {
-            ElementModel e = XMLUtil.filter.get(i);
-
+        for (TableElement filter : XMLUtil.filter) {
+            ElementModel e = filter;
             maxHeight = e.getHeight() > maxHeight ? e.getHeight() : maxHeight;
-
             if (px + e.getWidth() > camSize) {
                 px = 5;
                 py += maxHeight + 15;
@@ -1065,7 +1152,6 @@ public class Window extends javax.swing.JFrame {
             } else {
                 px += lastWidth + 5;
             }
-
             e.setPxy(px, py);
             lastWidth = e.getWidth();
         }
@@ -1580,6 +1666,34 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_lstIndexFieldsKeyReleased
 
+    private void btnRemoveRelationshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveRelationshipActionPerformed
+
+        Option opt = (Option) cbRelationship.getSelectedItem();
+        XMLUtil.relations.remove((RelationshipElement) opt.getValue());
+        cbRelationship.removeItemAt(cbRelationship.getSelectedIndex());
+
+    }//GEN-LAST:event_btnRemoveRelationshipActionPerformed
+
+
+    private void cbRelationshipTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbRelationshipTypeActionPerformed
+
+        Option opt = (Option) cbRelationship.getSelectedItem();
+        RelationshipElement re = (RelationshipElement) opt.getValue();
+
+        re.setType(RelationshipElement.Type.values()[cbRelationshipType.getSelectedIndex()]);
+
+    }//GEN-LAST:event_cbRelationshipTypeActionPerformed
+
+    private void cbRelationshipItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbRelationshipItemStateChanged
+
+        if (ItemEvent.SELECTED == evt.getStateChange()) {
+            updateRelationType();
+            Option opt = (Option) cbRelationship.getSelectedItem();
+            loadRelationshipFieldTable((RelationshipElement) opt.getValue());
+        }
+
+    }//GEN-LAST:event_cbRelationshipItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -1594,6 +1708,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JToggleButton btnCrop;
     private javax.swing.JButton btnRemFieldTable;
     private javax.swing.JButton btnRemIndex;
+    private javax.swing.JButton btnRemoveRelationship;
     private javax.swing.JButton btnRemoveTable;
     private javax.swing.JButton btnSQLColNames;
     private javax.swing.JButton btnSQLFind;
@@ -1606,6 +1721,8 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JComboBox cbBases;
     private javax.swing.JComboBox cbEditDataBase;
     private javax.swing.JComboBox cbIndexAvailField;
+    private javax.swing.JComboBox cbRelationship;
+    private javax.swing.JComboBox cbRelationshipType;
     private javax.swing.JColorChooser ccDBColor;
     private javax.swing.JDialog dlgDataBase;
     private javax.swing.JDialog dlgSearchField;
@@ -1618,6 +1735,8 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
@@ -1647,10 +1766,13 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JPanel pnTree;
     private javax.swing.JScrollPane spTbFields;
     private javax.swing.JPanel tabIndex;
+    private javax.swing.JPanel tabRelation;
     private javax.swing.JPanel tabStruct;
     private javax.swing.JPanel tabTableField;
     private javax.swing.JTable tbFields;
     private javax.swing.JTable tbIndex;
+    private javax.swing.JTable tbRelationshipLeft;
+    private javax.swing.JTable tbRelationshipRight;
     private javax.swing.JTextField tfDBName;
     private javax.swing.JTextField tfDBTablesCounter;
     private javax.swing.JTextField tfFilter;
@@ -1684,15 +1806,69 @@ public class Window extends javax.swing.JFrame {
         return ind;
     }
 
+    private GenericTableModel createRelationshipTableModel(final JTable tb) {
+        final Set<String> ignore = new HashSet<>(Arrays.asList("value"));
+
+        GenericTableModel<RowItemSelection> ris = new GenericTableModel<>(RowItemSelection.class, ignore);
+
+        ris.addTableModelListener(new TableModelListener() {
+
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                changeIndexFields(tb);
+            }
+
+        });
+
+        return ris;
+    }
+
+    private void changeIndexFields(JTable tb) {
+
+        if (cbRelationship.getSelectedItem() == null) {
+            return;
+        }
+
+        Option opt = (Option) cbRelationship.getSelectedItem();
+        RelationshipElement re = (RelationshipElement) opt.getValue();
+
+        GenericTableModel<RowItemSelection> m = (GenericTableModel<RowItemSelection>) tb.getModel();
+
+        if (tb.equals(tbRelationshipLeft)) {
+            re.getParentFields().clear();
+
+            for (RowItemSelection r : m.getData()) {
+                if (r.getSelected()) {
+                    re.getParentFields().add((Field) r.getValue());
+                }
+            }
+
+        } else {
+            re.getChildFields().clear();
+
+            for (RowItemSelection r : m.getData()) {
+                if (r.getSelected()) {
+                    re.getChildFields().add((Field) r.getValue());
+                }
+            }
+        }
+
+    }
+
     private void updateIndexSelection() {
         DefaultListModel lstModel = (DefaultListModel) lstIndexFields.getModel();
         DefaultComboBoxModel combModel = (DefaultComboBoxModel) cbIndexAvailField.getModel();
         GenericTableModel<IndexElement> tableModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
 
-        IndexElement ind = tableModel.getData().get(tbIndex.getSelectedRow());
-
         lstModel.removeAllElements();
         combModel.removeAllElements();
+
+        if (tbIndex.getSelectedRow() == -1 || tableModel.getData().isEmpty()) {
+            tfInfoIndexFields.setText("No table selected.");
+            return;
+        }
+
+        IndexElement ind = tableModel.getData().get(tbIndex.getSelectedRow());
 
         if (!ind.getTable().getFields().isEmpty()) {
 
@@ -1728,8 +1904,6 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void configureTable() {
-
-        //tbFields.setDefaultRenderer(JComboBox.class, new DefaultTableCellRenderer());
         TableColumn comboColumn = tbFields.getColumnModel().getColumn(3);
         comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(Common.comboTypes)));
 
@@ -1970,23 +2144,103 @@ public class Window extends javax.swing.JFrame {
 
         selectedElements[0] = el;
 
-        if (el instanceof TableElement) {
+        FieldTableModel tbTableModel = (FieldTableModel) tbFields.getModel();
+        GenericTableModel<IndexElement> tbIndexModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
+
+        if (el == null) {
+            tfTableName.setText("");
+
+            loadRelationship(null);
+            tbIndexModel.setData(Collections.EMPTY_LIST);
+            tbTableModel.setData(Collections.EMPTY_LIST);
+
+        } else if (el instanceof TableElement) {
 
             tfTableName.setText(el.getName());
 
             TableElement e = (TableElement) el;
 
+            loadRelationship(e);
             cbBases.setSelectedItem(e.getDataBase().getName());
-
-            GenericTableModel<IndexElement> tableModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
-            tableModel.setData(XMLUtil.findIndex(e));
-
-            FieldTableModel m = (FieldTableModel) tbFields.getModel();
-            m.setData(e.getFields());
-
-            tbFields.updateUI();
-            tbIndex.updateUI();
+            tbIndexModel.setData(XMLUtil.findIndex(e));
+            tbTableModel.setData(e.getFields());
         }
+
+        updateIndexSelection();
+
+        tbFields.updateUI();
+        tbIndex.updateUI();
+    }
+
+    private void loadRelationship(TableElement e) {
+        cbRelationship.removeAllItems();
+        tbRelationshipLeft.removeAll();
+        tbRelationshipRight.removeAll();
+
+        if (e != null) {
+            for (int i = 0; i < XMLUtil.relations.size(); i++) {
+                RelationshipElement re = XMLUtil.relations.get(i);
+                if (re.getParent().equals(e) || re.getChild().equals(e)) {
+                    final String label = String.format("%s < %s > %s", re.getParent().getName(), re.getType().label, re.getChild().getName());
+                    cbRelationship.addItem(new Option((short) i, re, label));
+                }
+            }
+
+            if (cbRelationship.getItemCount() == 0) {
+                updateRelationType();
+                loadRelationshipFieldTable(null);
+            }
+
+        } else {
+            updateRelationType();
+            loadRelationshipFieldTable(null);
+        }
+    }
+
+    private void loadRelationshipFieldTable(RelationshipElement re) {
+        GenericTableModel<RowItemSelection> mLeft = (GenericTableModel<RowItemSelection>) tbRelationshipLeft.getModel();
+        GenericTableModel<RowItemSelection> mRight = (GenericTableModel<RowItemSelection>) tbRelationshipRight.getModel();
+
+        if (re != null) {
+
+            List<RowItemSelection> lstLeft = new ArrayList<>(re.getParent().getFields().size());
+            List<RowItemSelection> lstRight = new ArrayList<>(re.getChild().getFields().size());
+
+            String label;
+
+            for (Field f : re.getParent().getFields()) {
+                label = String.format("%s ( %s )", f.getName(), f.getType());
+                lstLeft.add(new RowItemSelection(re.getParentFields().contains(f), label, f));
+            }
+
+            for (Field f : re.getChild().getFields()) {
+                label = String.format("%s ( %s )", f.getName(), f.getType());
+                lstRight.add(new RowItemSelection(re.getChildFields().contains(f), label, f));
+            }
+
+            mLeft.setData(lstLeft);
+            mRight.setData(lstRight);
+
+        } else {
+            mLeft.setData(Collections.EMPTY_LIST);
+            mRight.setData(Collections.EMPTY_LIST);
+        }
+
+        tbRelationshipLeft.updateUI();
+        tbRelationshipRight.updateUI();
+    }
+
+    private void updateRelationType() {
+
+        if (cbRelationship.getSelectedIndex() > -1) {
+            Option opt = (Option) cbRelationship.getSelectedItem();
+            RelationshipElement re = (RelationshipElement) opt.getValue();
+            cbRelationshipType.setSelectedIndex(re.getType().ordinal());
+        }
+
+        cbRelationship.setEnabled(cbRelationship.getSelectedIndex() > -1);
+        cbRelationshipType.setEnabled(cbRelationship.isEnabled());
+        btnRemoveRelationship.setEnabled(cbRelationship.isEnabled());
     }
 
     private void multiSelect(ElementModel el) {
@@ -2041,6 +2295,8 @@ public class Window extends javax.swing.JFrame {
             relRight = relLeft = null;
             mode = EditTool.SELECTOR;
         }
+
+        loadRelationship((TableElement) el);
     }
 
     private void cancelRelationship() {

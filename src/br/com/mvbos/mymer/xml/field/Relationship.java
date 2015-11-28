@@ -5,7 +5,9 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -21,6 +23,9 @@ public class Relationship {
 
     private String dbParente;
     private String dbChild;
+
+    private Set<Field> parentFields = new LinkedHashSet<>(5);
+    private Set<Field> childFields = new LinkedHashSet<>(5);
 
     public Relationship() {
     }
@@ -77,6 +82,22 @@ public class Relationship {
         this.dbChild = dbChild;
     }
 
+    public Set<Field> getParentFields() {
+        return parentFields;
+    }
+
+    public void setParentFields(Set<Field> parentFields) {
+        this.parentFields = parentFields;
+    }
+
+    public Set<Field> getChildFields() {
+        return childFields;
+    }
+
+    public void setChildFields(Set<Field> childFields) {
+        this.childFields = childFields;
+    }
+
     @Override
     public int hashCode() {
         int hash = 3;
@@ -97,10 +118,8 @@ public class Relationship {
         if (!Objects.equals(this.parent, other.parent)) {
             return false;
         }
-        if (!Objects.equals(this.child, other.child)) {
-            return false;
-        }
-        return true;
+
+        return Objects.equals(this.child, other.child);
     }
 
     @Override

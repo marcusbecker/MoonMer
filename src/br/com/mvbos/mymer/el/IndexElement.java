@@ -7,6 +7,7 @@ package br.com.mvbos.mymer.el;
 
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.xml.field.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -63,7 +64,7 @@ public class IndexElement extends ElementModel {
     }
 
     public List<Field> getFields() {
-        return fields == null ? Collections.EMPTY_LIST : fields;
+        return fields == null ? new ArrayList<Field>(5) : fields;
     }
 
     public void setFields(List<Field> fields) {

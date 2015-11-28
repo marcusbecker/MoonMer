@@ -5,12 +5,14 @@
  */
 package br.com.mvbos.mymer.xml;
 
+import br.com.mvbos.mymer.Find;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.DataConfig;
+import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.FieldPosition;
 import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Relationship;
@@ -181,6 +183,10 @@ public class XMLUtil {
 
         for (RelationshipElement e : relations) {
             Relationship r = new Relationship(e.getType().ordinal(), e.getParent().getName(), e.getChild().getName(), e.getParent().getDataBase().getName(), e.getChild().getDataBase().getName());
+
+            r.setChildFields(new LinkedHashSet<>(e.getChildFields()));
+            r.setParentFields(new LinkedHashSet<>(e.getParentFields()));
+
             rel.add(r);
         }
 
@@ -405,6 +411,21 @@ public class XMLUtil {
 
                 RelationshipElement.Type type = RelationshipElement.Type.values()[r.getType()];
                 RelationshipElement re = new RelationshipElement(type, parent, child);
+
+                for (Field f : r.getParentFields()) {
+                    Field ff = Find.findByName(parent.getFields(), f.getName());
+                    if (ff != null) {
+                        re.getParentFields().add(ff);
+                    }
+                }
+
+                for (Field f : r.getChildFields()) {
+                    Field ff = Find.findByName(child.getFields(), f.getName());
+                    if (ff != null) {
+                        re.getChildFields().add(ff);
+                    }
+                }
+
                 lst.add(re);
             }
         }
