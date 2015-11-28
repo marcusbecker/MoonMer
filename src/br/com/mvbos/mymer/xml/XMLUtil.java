@@ -6,11 +6,13 @@
 package br.com.mvbos.mymer.xml;
 
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.DataConfig;
 import br.com.mvbos.mymer.xml.field.FieldPosition;
+import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Relationship;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.awt.Color;
@@ -20,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -45,6 +46,7 @@ public class XMLUtil {
     public static final DataBaseElement DEFAULT_DATA_BASE;
 
     public static final List<TableElement> filter;
+    public static final List<IndexElement> indices;
     public static final List<RelationshipElement> relations;
     public static final List<DataBaseElement> filterBases = new ArrayList<>(10);
 
@@ -52,12 +54,18 @@ public class XMLUtil {
 
     private static final int LIST_TABLE_SIZE = 60;
     private static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
-    private static final File FILE_STORE = new File("dbs");
 
+    /*Folders*/
     private static final File DIR_CONFIG = new File("config");
+    private static final File FILE_DIR_DB = new File("dbs");
+    private static final File FILE_DIR_REL = new File("relations");
+    private static final File FILE_DIR_INDEX = new File("index");
+
+    /* Files */
     private static final File FILE_CONFIG = new File(DIR_CONFIG, "config.xml");
+    private static final File FILE_INDEX_STORE = new File(FILE_DIR_INDEX, "index.xml");
     private static final File FILE_POSITION_STORE = new File(DIR_CONFIG, "field_config.xml");
-    private static final File FILE_RELATIONSHIP_STORE = new File(DIR_CONFIG, "relationship_config.xml");
+    private static final File FILE_RELATIONSHIP_STORE = new File(FILE_DIR_REL, "relationship_config.xml");
 
     static {
         filter = importFields();
@@ -65,7 +73,9 @@ public class XMLUtil {
         importConfig();
 
         relations = importRelations();
-        
+
+        indices = importIndices();
+
         tableCount = filter.size();
 
         DEFAULT_DATA_BASE = new DataBaseElement("New data base", new Color(74, 189, 218));
@@ -105,7 +115,7 @@ public class XMLUtil {
             DataBaseStore dbs = new DataBaseStore();
             dbs.addBase(db);
 
-            File dst = new File(FILE_STORE, k.concat(".xml"));
+            File dst = new File(FILE_DIR_DB, k.concat(".xml"));
 
             try {
                 JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
@@ -177,8 +187,8 @@ public class XMLUtil {
         rStore.setRelations(rel);
 
         try {
-            if (!DIR_CONFIG.exists()) {
-                DIR_CONFIG.mkdir();
+            if (!FILE_DIR_REL.exists()) {
+                FILE_DIR_REL.mkdir();
             }
 
             JAXBContext context = JAXBContext.newInstance(RelationshipStore.class);
@@ -186,6 +196,38 @@ public class XMLUtil {
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
 
             m.marshal(rStore, FILE_RELATIONSHIP_STORE);
+
+        } catch (Exception ex) {
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean exportIndices() {
+
+        IndexStore rStore = new IndexStore();
+        List<Index> ind = new ArrayList<>(indices.size());
+
+        for (IndexElement ie : indices) {
+            Index i = new Index(ie.getTable().getDataBase().getName(), ie.getTable().getName(), ie.getName(), ie.getPrimary(), ie.getUnique(), ie.getActive(), ie.getFields());
+            ind.add(i);
+        }
+
+        rStore.setIndices(ind);
+
+        try {
+            if (!FILE_DIR_INDEX.exists()) {
+                FILE_DIR_INDEX.mkdir();
+            }
+
+            JAXBContext context = JAXBContext.newInstance(IndexStore.class);
+            Marshaller m = context.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
+
+            m.marshal(rStore, FILE_INDEX_STORE);
 
         } catch (Exception ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -304,7 +346,9 @@ public class XMLUtil {
                     for (Table t : db.getTables()) {
                         TableElement e = new TableElement(0, 0, dbEl, t.getName());
 
-                        e.setFields(t.getFields() == null ? Collections.EMPTY_LIST : t.getFields());
+                        if (t.getFields() != null) {
+                            e.setFields(t.getFields());
+                        }
 
                         dbTable.add(e);
                         allTables.add(e);
@@ -323,8 +367,8 @@ public class XMLUtil {
 
         try {
 
-            if (!DIR_CONFIG.exists()) {
-                DIR_CONFIG.mkdir();
+            if (!FILE_DIR_REL.exists()) {
+                FILE_DIR_REL.mkdir();
             }
 
             if (FILE_RELATIONSHIP_STORE.exists()) {
@@ -360,14 +404,55 @@ public class XMLUtil {
                 }
 
                 RelationshipElement.Type type = RelationshipElement.Type.values()[r.getType()];
-
                 RelationshipElement re = new RelationshipElement(type, parent, child);
-                System.out.println("re " + re);
                 lst.add(re);
             }
         }
 
         return lst == null ? new ArrayList<RelationshipElement>(10) : lst;
+    }
+
+    public static List<IndexElement> importIndices() {
+
+        IndexStore iStore = null;
+        List<IndexElement> lst = null;
+
+        try {
+
+            if (!FILE_DIR_INDEX.exists()) {
+                FILE_DIR_INDEX.mkdir();
+            }
+
+            if (FILE_INDEX_STORE.exists()) {
+
+                JAXBContext context = JAXBContext.newInstance(IndexStore.class);
+                Unmarshaller um = context.createUnmarshaller();
+
+                iStore = (IndexStore) um.unmarshal(new FileReader(FILE_INDEX_STORE));
+            }
+
+        } catch (JAXBException | FileNotFoundException ex) {
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (iStore != null && iStore.getIndices() != null && !iStore.getIndices().isEmpty()) {
+
+            lst = new ArrayList<>(iStore.getIndices().size());
+
+            for (Index i : iStore.getIndices()) {
+
+                TableElement tb = findByName(i.getDataBaseName(), i.getTableName());
+                if (tb == null) {
+                    continue;
+                }
+
+                IndexElement ie = new IndexElement(i.getName(), i.getPrimary(), i.getUnique(), i.getActive(), tb);
+                ie.setFields(i.getFields());
+                lst.add(ie);
+            }
+        }
+
+        return lst == null ? new ArrayList<IndexElement>(10) : lst;
     }
 
     public static DataBaseStore parseToDataBase(InputStreamReader is) {
@@ -423,11 +508,11 @@ public class XMLUtil {
 
     private static File[] getDBFiles() {
 
-        if (!FILE_STORE.exists()) {
-            FILE_STORE.mkdir();
+        if (!FILE_DIR_DB.exists()) {
+            FILE_DIR_DB.mkdir();
         }
 
-        File[] arr = FILE_STORE.listFiles(new FileFilter() {
+        File[] arr = FILE_DIR_DB.listFiles(new FileFilter() {
 
             @Override
             public boolean accept(File pathname) {
@@ -494,6 +579,22 @@ public class XMLUtil {
         }
 
         return null;
+    }
+
+    public static void addNewRelationship(RelationshipElement.Type type, TableElement elLeft, TableElement elRight) {
+        relations.add(new RelationshipElement(type, elLeft, elRight));
+    }
+
+    public static List<IndexElement> findIndex(TableElement e) {
+        List<IndexElement> lst = new ArrayList<>(5);
+
+        for (IndexElement ie : indices) {
+            if (ie.getTable().equals(e)) {
+                lst.add(ie);
+            }
+        }
+
+        return lst;
     }
 
 }

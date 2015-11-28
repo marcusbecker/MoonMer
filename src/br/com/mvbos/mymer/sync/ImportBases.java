@@ -111,6 +111,10 @@ public class ImportBases extends javax.swing.JFrame {
                 fl.setAccessible(true);
                 fr.setAccessible(true);
 
+                if (fl.get(fa) == null || fr.get(fb) == null) {
+                    continue;
+                }
+
                 if (!fl.get(fa).equals(fr.get(fb))) {
                     sbt.append("\t");
                     sbt.append(fa.getName()).append(" change ").append(fl.getName());

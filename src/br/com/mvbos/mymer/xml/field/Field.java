@@ -19,9 +19,6 @@ public class Field {
     private String name;
     private Integer size;
     private String type;
-    private Boolean pk;
-    private Boolean nn;
-    private Boolean uq;
     private String format;
     private String defualt;
 
@@ -57,30 +54,6 @@ public class Field {
         this.type = type;
     }
 
-    public Boolean getPk() {
-        return pk;
-    }
-
-    public void setPk(Boolean pk) {
-        this.pk = pk;
-    }
-
-    public Boolean getNn() {
-        return nn;
-    }
-
-    public void setNn(Boolean nn) {
-        this.nn = nn;
-    }
-
-    public Boolean getUq() {
-        return uq;
-    }
-
-    public void setUq(Boolean uq) {
-        this.uq = uq;
-    }
-
     public String getFormat() {
         return format;
     }
@@ -107,7 +80,7 @@ public class Field {
 
     @Override
     public String toString() {
-        return "Field{" + "name=" + name + ", size=" + size + ", type=" + type + ", pk=" + pk + ", nn=" + nn + ", uq=" + uq + ", format=" + format + ", defualt=" + defualt + '}';
+        return "Field{" + "name=" + name + ", size=" + size + ", type=" + type + ", format=" + format + ", defualt=" + defualt + '}';
     }
 
     @Override
@@ -126,10 +99,7 @@ public class Field {
             return false;
         }
         final Field other = (Field) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.name, other.name);
     }
 
 }

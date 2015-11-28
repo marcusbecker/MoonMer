@@ -13,7 +13,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -33,7 +32,7 @@ public class TableElement extends ElementModel {
 
     private boolean autoWidth = true;
     private boolean autoHeight = true;
-    
+
     public TableElement(int width, int height, DataBaseElement dataBase, String name) {
         this(0, 0, width, height, dataBase, name);
     }
@@ -100,7 +99,7 @@ public class TableElement extends ElementModel {
                     }
                 }
 
-                int w = g.getFontMetrics(headerFont).stringWidth(maxWidth) + 10;
+                int w = g.getFontMetrics(headerFont).stringWidth(maxWidth) + 5;
 
                 //w += g.getFontMetrics(typeFont).stringWidth(" char");
                 char data[] = new char[Common.typeCharLength + 1];
