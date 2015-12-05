@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Table {
 
     private String name;
+    private List<Index> indices;
     private List<Field> fields;
 
     public Table() {
@@ -45,6 +46,14 @@ public class Table {
 
     public void setFields(List<Field> fields) {
         this.fields = fields;
+    }
+
+    public List<Index> getIndices() {
+        return indices;
+    }
+
+    public void setIndices(List<Index> indices) {
+        this.indices = indices;
     }
 
     public void addField(Field f) {

@@ -4,16 +4,44 @@
         <name>Homolog</name>
         <tables>
             <fields>
+                <description></description>
+                <format></format>
                 <name>id</name>
                 <size>3</size>
                 <type>integer</type>
             </fields>
             <fields>
+                <description></description>
+                <format></format>
                 <name>nome</name>
                 <size>50</size>
                 <type>character</type>
             </fields>
             <name>cliente</name>
+        </tables>
+        <tables>
+            <fields>
+                <description></description>
+                <format></format>
+                <name>id</name>
+                <size>0</size>
+                <type>integer</type>
+            </fields>
+            <fields>
+                <description></description>
+                <format></format>
+                <name>valor</name>
+                <size>0</size>
+                <type>decimal</type>
+            </fields>
+            <fields>
+                <description></description>
+                <format></format>
+                <name>fk</name>
+                <size>0</size>
+                <type>integer</type>
+            </fields>
+            <name>valores</name>
         </tables>
     </bases>
 </dataBaseStore>

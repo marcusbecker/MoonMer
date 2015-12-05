@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <fieldPositionStore>
     <fields>
-        <colorName>-11878950</colorName>
+        <colorName>-103</colorName>
         <fullName>Homolog.cliente</fullName>
-        <px>48</px>
-        <py>39</py>
+        <px>74</px>
+        <py>38</py>
+    </fields>
+    <fields>
+        <colorName>-103</colorName>
+        <fullName>Homolog.valores</fullName>
+        <px>124</px>
+        <py>201</py>
+    </fields>
+    <fields>
+        <colorName>-11878950</colorName>
+        <fullName>Nada.New Table 4</fullName>
+        <px>318</px>
+        <py>16</py>
     </fields>
     <fields>
         <colorName>-6684775</colorName>

@@ -8,7 +8,6 @@ package br.com.mvbos.mymer.el;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,7 +39,7 @@ public class IndexElement extends ElementModel {
     }
 
     public Boolean getPrimary() {
-        return primary;
+        return primary == null ? false : primary;
     }
 
     public void setPrimary(Boolean primary) {
@@ -48,7 +47,7 @@ public class IndexElement extends ElementModel {
     }
 
     public Boolean getUnique() {
-        return unique;
+        return unique == null ? false : unique;
     }
 
     public void setUnique(Boolean unique) {
@@ -64,7 +63,11 @@ public class IndexElement extends ElementModel {
     }
 
     public List<Field> getFields() {
-        return fields == null ? new ArrayList<Field>(5) : fields;
+        if (fields == null) {
+            fields = new ArrayList<>(5);
+        }
+
+        return fields;
     }
 
     public void setFields(List<Field> fields) {
@@ -75,10 +78,12 @@ public class IndexElement extends ElementModel {
         return table;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }

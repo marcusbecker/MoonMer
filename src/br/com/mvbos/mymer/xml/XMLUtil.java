@@ -56,12 +56,14 @@ public class XMLUtil {
 
     private static final int LIST_TABLE_SIZE = 60;
     private static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
+    
 
     /*Folders*/
-    private static final File DIR_CONFIG = new File("config");
-    private static final File FILE_DIR_DB = new File("dbs");
-    private static final File FILE_DIR_REL = new File("relations");
-    private static final File FILE_DIR_INDEX = new File("index");
+    private static final File CURRENT_PATH = new File(".");
+    private static final File DIR_CONFIG = new File(CURRENT_PATH, "config");
+    private static final File FILE_DIR_DB = new File(CURRENT_PATH,"dbs");
+    private static final File FILE_DIR_REL = new File(CURRENT_PATH,"relations");
+    private static final File FILE_DIR_INDEX = new File(CURRENT_PATH,"index");
 
     /* Files */
     private static final File FILE_CONFIG = new File(DIR_CONFIG, "config.xml");
@@ -70,6 +72,8 @@ public class XMLUtil {
     private static final File FILE_RELATIONSHIP_STORE = new File(FILE_DIR_REL, "relationship_config.xml");
 
     static {
+        DEFAULT_DATA_BASE = new DataBaseElement("New data base", new Color(74, 189, 218));
+
         filter = importFields();
         importFieldsPosition(filter);
         importConfig();
@@ -80,7 +84,6 @@ public class XMLUtil {
 
         tableCount = filter.size();
 
-        DEFAULT_DATA_BASE = new DataBaseElement("New data base", new Color(74, 189, 218));
     }
 
     public static boolean exportFields() {
@@ -339,12 +342,16 @@ public class XMLUtil {
                 }
 
                 for (DataBase db : dbs.getBases()) {
+                    if (DEFAULT_DATA_BASE.getName().equals(db.getName()) && db.getTables().isEmpty()) {
+                        continue;
+                    }
+
                     DataBaseElement dbEl = new DataBaseElement();
 
-                    List<TableElement> dbTable = new ArrayList<>(30);
+                    List<TableElement> elTables = new ArrayList<>(db.getTables().size());
 
                     dbEl.setName(db.getName());
-                    dbEl.setTables(dbTable);
+                    dbEl.setTables(elTables);
 
                     dataBases.add(dbEl);
                     filterBases.add(dbEl);
@@ -356,7 +363,7 @@ public class XMLUtil {
                             e.setFields(t.getFields());
                         }
 
-                        dbTable.add(e);
+                        elTables.add(e);
                         allTables.add(e);
                     }
                 }
@@ -468,7 +475,20 @@ public class XMLUtil {
                 }
 
                 IndexElement ie = new IndexElement(i.getName(), i.getPrimary(), i.getUnique(), i.getActive(), tb);
-                ie.setFields(i.getFields());
+
+                if (i.getFields() != null) {
+                    List<Field> lstField = new ArrayList<>(i.getFields().size());
+                    for (Field f : i.getFields()) {
+                        int index = tb.getFields().indexOf(f);
+
+                        if (index != -1) {
+                            lstField.add(tb.getFields().get(index));
+                        }
+                    }
+
+                    ie.setFields(lstField);
+                }
+                
                 lst.add(ie);
             }
         }

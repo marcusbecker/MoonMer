@@ -3,6 +3,11 @@
     <bases>
         <color>-103</color>
         <name>Homolog</name>
+        <tableCount>2</tableCount>
+    </bases>
+    <bases>
+        <color>-11878950</color>
+        <name>Nada</name>
         <tableCount>1</tableCount>
     </bases>
     <bases>

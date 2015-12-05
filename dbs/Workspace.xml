@@ -4,16 +4,21 @@
         <name>Workspace</name>
         <tables>
             <fields>
+                <description></description>
+                <format></format>
                 <name>id</name>
                 <size>3</size>
                 <type>integer</type>
             </fields>
             <fields>
+                <description></description>
+                <format></format>
                 <name>nome</name>
                 <size>50</size>
                 <type>character</type>
             </fields>
             <fields>
+                <description></description>
                 <format>99/99/9999</format>
                 <name>aniver</name>
                 <size>10</size>

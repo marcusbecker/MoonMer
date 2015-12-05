@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,6 +67,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
@@ -105,6 +107,71 @@ public class Window extends javax.swing.JFrame {
         System.out.println("name " + name + " " + ++cc);
     }
 
+    private TableElement getTableSeletected() {
+        if (selectedElements[0] instanceof TableElement) {
+            return (TableElement) selectedElements[0];
+        }
+
+        return null;
+    }
+
+    private void addNewTableOnTree(TableElement te) {
+
+        for (int i = 0; i < root.getChildCount(); i++) {
+            DataTreeNode dtn = (DataTreeNode) root.getChildAt(i);
+
+            if (dtn.get().equals(te.getDataBase())) {
+                dtn.add(new TableTreeNode(te));
+                break;
+            }
+
+        }
+
+        treeBases.updateUI();
+    }
+
+    private void expandTableOnTree3() {
+        TreePath rootPath = new TreePath(root);
+        Enumeration<TreePath> expandedPaths = treeBases.getExpandedDescendants(rootPath);
+
+        TreePath selectedPath = treeBases.getSelectionPath();
+
+        populeTreeNodes();
+
+        while (expandedPaths != null && expandedPaths.hasMoreElements()) {
+            TreePath path = expandedPaths.nextElement();
+            System.out.println("expand " + path);
+            treeBases.expandPath(path);
+        }
+
+        //if (isPathValid(selectedPath)) {
+        treeBases.setSelectionPath(selectedPath);
+        //}
+    }
+
+    private void expandTableOnTree2() {
+        //TreePath[] selectionPaths = treeBases.getSelectionPaths();
+        boolean[] sel = new boolean[root.getChildCount()];
+        for (int i = 0; i < root.getChildCount(); i++) {
+            treeBases.isExpanded(new TreePath(root.getChildAt(i)));
+            sel[i] = treeBases.isExpanded(i);
+            root.getChildAt(i);
+            System.out.println("expandRow " + sel[i] + " " + root.getChildAt(i));
+
+            //System.out.println("expandRow " + sel[i]);
+        }
+
+        populeTreeNodes();
+
+        for (int i = 0; i < sel.length; i++) {
+            if (sel[i]) {
+
+                treeBases.expandRow(i);
+            }
+        }
+
+    }
+
     private class MyDispatcher implements KeyEventDispatcher {
 
         @Override
@@ -127,6 +194,9 @@ public class Window extends javax.swing.JFrame {
                 }
 
             } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                if (tbFields.isEditing()) {
+                    return false;
+                }
                 //System.out.println("e.getKeyCode() " + e.getKeyCode());
                 if (107 == e.getKeyCode()) {
                     //scale += 0.1f;
@@ -178,6 +248,9 @@ public class Window extends javax.swing.JFrame {
         Camera.c().config(camSize, camSize, canvas.getWidth(), canvas.getHeight());
         //Camera.c().offSet(100, 100);
         Camera.c().setAllowOffset(true);
+
+        WindowSerializable ws = WindowSerializable.load();
+        Camera.c().move(ws.cam.x, ws.cam.y);
 
         timer = new Timer(60, new ActionListener() {
 
@@ -264,6 +337,10 @@ public class Window extends javax.swing.JFrame {
             XMLUtil.exportIndices();
             lblInfo.setText("Save sucess at " + Calendar.getInstance().getTime());
         }
+
+        WindowSerializable ws = new WindowSerializable();
+        ws.cam = new Point(Camera.c().getPx(), Camera.c().getPy());
+        WindowSerializable.save(ws);
     }
 
     private void copyToClip() {
@@ -351,7 +428,8 @@ public class Window extends javax.swing.JFrame {
         cbRelationshipType = new javax.swing.JComboBox();
         tabStruct = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        tfStruct = new javax.swing.JTextArea();
+        btnBuildSctruct = new javax.swing.JButton();
         lblInfo = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
@@ -359,6 +437,7 @@ public class Window extends javax.swing.JFrame {
         miExit = new javax.swing.JMenuItem();
         menuEditDataBase = new javax.swing.JMenu();
         miUndo = new javax.swing.JMenuItem();
+        miCloneTable = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         miNewTable = new javax.swing.JMenuItem();
         miBases = new javax.swing.JMenuItem();
@@ -452,6 +531,7 @@ public class Window extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("MoonMer - Simple for many, many tables.");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -487,8 +567,10 @@ public class Window extends javax.swing.JFrame {
 
         btnCanvasColor.setBackground(new java.awt.Color(255, 255, 255));
         btnCanvasColor.setText(" ");
+        btnCanvasColor.setToolTipText("Change background color");
 
         btnRemoveTable.setText("x");
+        btnRemoveTable.setToolTipText("Remove selected Table");
         btnRemoveTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveTableActionPerformed(evt);
@@ -496,6 +578,7 @@ public class Window extends javax.swing.JFrame {
         });
 
         btnAddTable.setText("T");
+        btnAddTable.setToolTipText("Add new Table");
         btnAddTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddTableActionPerformed(evt);
@@ -503,6 +586,7 @@ public class Window extends javax.swing.JFrame {
         });
 
         btnAddRelOneOne.setText("..");
+        btnAddRelOneOne.setToolTipText("Add One to One relationship");
         btnAddRelOneOne.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddRelOneOneActionPerformed(evt);
@@ -510,6 +594,7 @@ public class Window extends javax.swing.JFrame {
         });
 
         btnAddRelOneMany.setText(".*");
+        btnAddRelOneMany.setToolTipText("Add One to Many relationship");
         btnAddRelOneMany.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddRelOneManyActionPerformed(evt);
@@ -521,6 +606,7 @@ public class Window extends javax.swing.JFrame {
 
         btnCrop.setSelected(true);
         btnCrop.setText("Crop");
+        btnCrop.setToolTipText("Limit Table height");
         btnCrop.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCropActionPerformed(evt);
@@ -787,9 +873,9 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSearchField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 386, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 386, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSave))
@@ -802,7 +888,7 @@ public class Window extends javax.swing.JFrame {
                                 .addComponent(btnSQLColNames))
                             .addComponent(btnSQLTempTable))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spTbFields)))
+                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 865, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -832,7 +918,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSQLColNames)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSQLTempTable)
-                        .addGap(0, 39, Short.MAX_VALUE))
+                        .addGap(0, 27, Short.MAX_VALUE))
                     .addComponent(spTbFields, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -992,19 +1078,33 @@ public class Window extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Relationship", tabRelation);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        tfStruct.setColumns(20);
+        tfStruct.setRows(5);
+        jScrollPane1.setViewportView(tfStruct);
+
+        btnBuildSctruct.setText("Build");
+        btnBuildSctruct.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuildSctructActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout tabStructLayout = new javax.swing.GroupLayout(tabStruct);
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 930, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnBuildSctruct)
+                .addContainerGap())
         );
         tabStructLayout.setVerticalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
+                .addComponent(btnBuildSctruct)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
@@ -1064,14 +1164,28 @@ public class Window extends javax.swing.JFrame {
             }
         });
         menuEditDataBase.add(miUndo);
+
+        miCloneTable.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
+        miCloneTable.setText("Clone Table");
+        miCloneTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCloneTableActionPerformed(evt);
+            }
+        });
+        menuEditDataBase.add(miCloneTable);
         menuEditDataBase.add(jSeparator3);
 
         miNewTable.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         miNewTable.setText("New Table");
+        miNewTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miNewTableActionPerformed(evt);
+            }
+        });
         menuEditDataBase.add(miNewTable);
 
         miBases.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
-        miBases.setText("Database");
+        miBases.setText("New Database");
         miBases.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miBasesActionPerformed(evt);
@@ -1176,12 +1290,28 @@ public class Window extends javax.swing.JFrame {
 
     private void btnAddTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTableActionPerformed
 
-        TableElement te = new TableElement(50, 50, XMLUtil.DEFAULT_DATA_BASE, "New Table " + ++XMLUtil.tableCount);
-        te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
-        te.update();
-        XMLUtil.filter.add(te);
+        addNewTable();
 
     }//GEN-LAST:event_btnAddTableActionPerformed
+
+    private void addNewTable() {
+
+        DataBaseElement db = XMLUtil.DEFAULT_DATA_BASE;
+
+        if (getTableSeletected() != null) {
+            db = getTableSeletected().getDataBase();
+        }
+
+        TableElement te = new TableElement(50, 50, db, "New Table " + ++XMLUtil.tableCount);
+
+        db.getTables().add(te);
+
+        te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+        te.update();
+
+        XMLUtil.filter.add(te);
+        addNewTableOnTree(te);
+    }
 
     private void btnCropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCropActionPerformed
 
@@ -1231,6 +1361,8 @@ public class Window extends javax.swing.JFrame {
 
         if (selectedElements[0] != null) {
             TableElement e = (TableElement) selectedElements[0];
+            e.update();
+
             DataBaseElement db = XMLUtil.filterBases.get(cbBases.getSelectedIndex());
 
             if (!e.getDataBase().equals(db)) {
@@ -1250,18 +1382,26 @@ public class Window extends javax.swing.JFrame {
 
     private void miBasesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miBasesActionPerformed
 
-        dataBaseSelected = null;
+        if (getTableSeletected() == null) {
+            dataBaseSelected = null;
 
-        cbEditDataBase.setSelectedIndex(0);
-        tfDBName.setText(null);
-        tfDBTablesCounter.setText("0");
-        ccDBColor.setColor(XMLUtil.DEFAULT_DATA_BASE.getColor());
+            tfDBName.setText(null);
+            tfDBTablesCounter.setText("0");
+            cbEditDataBase.setSelectedIndex(0);
+            ccDBColor.setColor(XMLUtil.DEFAULT_DATA_BASE.getColor());
+
+        } else {
+            dataBaseSelected = getTableSeletected().getDataBase();
+
+            tfDBName.setText(dataBaseSelected.getName());
+            tfDBTablesCounter.setText(String.valueOf(dataBaseSelected.getTables().size()));
+            ccDBColor.setColor(dataBaseSelected.getColor());
+            cbEditDataBase.setSelectedItem(dataBaseSelected.getName());
+        }
 
         dlgDataBase.pack();
         dlgDataBase.setLocationRelativeTo(this);
-
         dlgDataBase.setVisible(true);
-
 
     }//GEN-LAST:event_miBasesActionPerformed
 
@@ -1314,6 +1454,7 @@ public class Window extends javax.swing.JFrame {
         for (TableElement el : db.getTables()) {
             el.setDataBase(db);
             el.setColor(db.getColor());
+            el.update();
         }
 
         dlgDataBase.setVisible(false);
@@ -1694,6 +1835,89 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_cbRelationshipItemStateChanged
 
+    private void miNewTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miNewTableActionPerformed
+
+        addNewTable();
+
+    }//GEN-LAST:event_miNewTableActionPerformed
+
+    private void btnBuildSctructActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuildSctructActionPerformed
+
+        StringBuilder sb = new StringBuilder(600);
+        for (ElementModel e : selectedElements) {
+            if (!(e instanceof TableElement)) {
+                continue;
+            }
+
+            TableElement te = (TableElement) e;
+
+            sb.append("ADD TABLE \"").append(te.getName()).append("\"\n");
+            sb.append("  AREA \"Dados\"\n");
+            sb.append("  DESCRIPTION \"\"\n");
+            sb.append("  DUMP-NAME \"").append(te.getName()).append("\"\n");
+            sb.append("\n");
+
+            int ct = 1;
+            for (Field f : te.getFields()) {
+                sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(te.getName()).append("\" AS ").append(f.getType()).append("\n");
+                sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
+                sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
+                sb.append("  INITIAL \"\"\n");
+                sb.append("  LABEL \"").append(f.getName()).append("\"\n");
+                //sb.append("  POSITION ").append(ct).append("\n");
+                //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
+                sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
+                sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
+                sb.append("  ORDER ").append(ct * 10).append("\n");
+
+                sb.append("\n");
+                ct++;
+            }
+
+            for (IndexElement ie : XMLUtil.indices) {
+                if (!te.equals(ie.getTable())) {
+                    continue;
+                }
+
+                sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(te.getName()).append("\"\n");
+                sb.append("  AREA \"Indices\"\n");
+                if (ie.getPrimary()) {
+                    sb.append("  UNIQUE\n");
+                }
+                if (ie.getUnique()) {
+                    sb.append("  PRIMARY\n");
+                }
+
+                for (Field f : ie.getFields()) {
+                    sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
+                }
+
+                sb.append("\n");
+            }
+
+        }
+
+        tfStruct.setText(sb.toString());
+
+
+    }//GEN-LAST:event_btnBuildSctructActionPerformed
+
+    private void miCloneTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCloneTableActionPerformed
+        TableElement te = getTableSeletected();
+        if (te != null) {
+            TableElement nte = new TableElement(te.getPx() + 5, te.getPy() + 5, te.getWidth(), te.getHeight(), te.getDataBase(), "copy_" + te.getName());
+            for (Field f : te.getFields()) {
+                Field ff = new Field(f.getName(), f.getType());
+                nte.addFields(ff);
+            }
+
+            nte.update();
+            te.getDataBase().getTables().add(nte);
+            XMLUtil.filter.add(nte);
+        }
+
+    }//GEN-LAST:event_miCloneTableActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -1702,6 +1926,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JButton btnAddRelOneMany;
     private javax.swing.JButton btnAddRelOneOne;
     private javax.swing.JButton btnAddTable;
+    private javax.swing.JButton btnBuildSctruct;
     private javax.swing.JButton btnCanvasColor;
     private javax.swing.JButton btnCanvasColor5;
     private javax.swing.JButton btnClearFilter;
@@ -1744,7 +1969,6 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JSlider jsZoom;
     private javax.swing.JLabel lblInfo;
     private javax.swing.JList lstIndexFields;
@@ -1752,6 +1976,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenuItem miAutoPos;
     private javax.swing.JMenuItem miBases;
+    private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miImport;
@@ -1778,6 +2003,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JTextField tfFilter;
     private javax.swing.JTextField tfInfoIndexFields;
     private javax.swing.JTextField tfSearchField;
+    private javax.swing.JTextArea tfStruct;
     private javax.swing.JTextField tfTableName;
     private javax.swing.JTree treeBases;
     // End of variables declaration//GEN-END:variables
@@ -2020,6 +2246,7 @@ public class Window extends javax.swing.JFrame {
 
                 } else {
                     selector.setEnabled(false);
+                    singleSelection(null);
                 }
             }
 
@@ -2143,6 +2370,10 @@ public class Window extends javax.swing.JFrame {
         }
 
         selectedElements[0] = el;
+
+        if (tbFields.isEditing()) {
+            tbFields.getCellEditor().stopCellEditing();
+        }
 
         FieldTableModel tbTableModel = (FieldTableModel) tbFields.getModel();
         GenericTableModel<IndexElement> tbIndexModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
@@ -2305,17 +2536,20 @@ public class Window extends javax.swing.JFrame {
     }
 
     private ElementModel hasColision(ElementModel element) {
+        ElementModel e = selectedElements[0];
+
         for (ElementModel el : XMLUtil.filter) {
             if (EditTool.SELECTOR == mode && selectedElements[0] == el) {
                 continue;
             }
 
             if (GraphicTool.g().bcollide(el, element)) {
-                return el;
+                e = el;
+                break;
             }
         }
 
-        return null;
+        return e;
     }
 
     private void positionCam(ElementModel el) {
@@ -2332,7 +2566,7 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void exit() {
-        int r = JOptionPane.showConfirmDialog(this, "Save and exti?");
+        int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
         if (r == JOptionPane.CANCEL_OPTION) {
             return;
         }

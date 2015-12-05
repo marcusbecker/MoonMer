@@ -6,13 +6,16 @@
 package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.tree.FieldTreeNode;
+import br.com.mvbos.mymer.tree.IndexTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +25,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +36,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
@@ -143,7 +144,7 @@ public class ImportBases extends javax.swing.JFrame {
 
         fc = new javax.swing.JFileChooser();
         tab = new javax.swing.JTabbedPane();
-        jPanel1 = new javax.swing.JPanel();
+        pnStepOne = new javax.swing.JPanel();
         tfOrigin = new javax.swing.JTextField();
         btnFile = new javax.swing.JButton();
         btnURL = new javax.swing.JButton();
@@ -155,17 +156,24 @@ public class ImportBases extends javax.swing.JFrame {
         btnAddAll = new javax.swing.JButton();
         btnRem = new javax.swing.JButton();
         btnRemAll = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
+        pnStepTwo = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         lstTablesConflict = new javax.swing.JList();
-        jPanel3 = new javax.swing.JPanel();
+        pnStepThree = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         treeImport = new javax.swing.JTree();
         jScrollPane5 = new javax.swing.JScrollPane();
         tfLog = new javax.swing.JTextArea();
         btnUpdateAll = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
+        pnStepFour = new javax.swing.JPanel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        indexImport = new javax.swing.JTree();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        tfLog1 = new javax.swing.JTextArea();
+        btnUpdateAll1 = new javax.swing.JButton();
+        btnUpdate1 = new javax.swing.JButton();
         btnNext = new javax.swing.JButton();
         lblDBInfo = new javax.swing.JLabel();
 
@@ -220,23 +228,23 @@ public class ImportBases extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout pnStepOneLayout = new javax.swing.GroupLayout(pnStepOne);
+        pnStepOne.setLayout(pnStepOneLayout);
+        pnStepOneLayout.setHorizontalGroup(
+            pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnStepOneLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnStepOneLayout.createSequentialGroup()
                         .addComponent(tfOrigin)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnURL)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnFile))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGroup(pnStepOneLayout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(btnAdd)
                             .addComponent(btnAddAll)
                             .addComponent(btnRem)
@@ -246,20 +254,20 @@ public class ImportBases extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jPanel1Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAdd, btnRem, btnRemAll});
+        pnStepOneLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAdd, btnRem, btnRemAll});
 
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        pnStepOneLayout.setVerticalGroup(
+            pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnStepOneLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tfOrigin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnFile)
                     .addComponent(btnURL))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGroup(pnStepOneLayout.createSequentialGroup()
                         .addComponent(btnAdd)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAddAll)
@@ -272,27 +280,27 @@ public class ImportBases extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        tab.addTab("Remote Tables", jPanel1);
+        tab.addTab("Remote Tables", pnStepOne);
 
         jLabel1.setText("New local tables");
 
         lstTablesConflict.setModel(new DefaultListModel());
         jScrollPane3.setViewportView(lstTablesConflict);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout pnStepTwoLayout = new javax.swing.GroupLayout(pnStepTwo);
+        pnStepTwo.setLayout(pnStepTwoLayout);
+        pnStepTwoLayout.setHorizontalGroup(
+            pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnStepTwoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        pnStepTwoLayout.setVerticalGroup(
+            pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnStepTwoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -300,7 +308,7 @@ public class ImportBases extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        tab.addTab("Local Tables", jPanel2);
+        tab.addTab("Local Tables", pnStepTwo);
 
         jScrollPane4.setViewportView(treeImport);
 
@@ -317,25 +325,25 @@ public class ImportBases extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout pnStepThreeLayout = new javax.swing.GroupLayout(pnStepThree);
+        pnStepThree.setLayout(pnStepThreeLayout);
+        pnStepThreeLayout.setHorizontalGroup(
+            pnStepThreeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
             .addComponent(jScrollPane5)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepThreeLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnUpdate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnUpdateAll)
                 .addContainerGap())
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        pnStepThreeLayout.setVerticalGroup(
+            pnStepThreeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnStepThreeLayout.createSequentialGroup()
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(pnStepThreeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnUpdateAll)
                     .addComponent(btnUpdate))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -343,7 +351,50 @@ public class ImportBases extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        tab.addTab("Fields Conflict", jPanel3);
+        tab.addTab("Fields Conflict", pnStepThree);
+
+        jScrollPane6.setViewportView(indexImport);
+
+        tfLog1.setColumns(20);
+        tfLog1.setRows(5);
+        jScrollPane7.setViewportView(tfLog1);
+
+        btnUpdateAll1.setText("Update all");
+
+        btnUpdate1.setText("Update");
+        btnUpdate1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdate1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnStepFourLayout = new javax.swing.GroupLayout(pnStepFour);
+        pnStepFour.setLayout(pnStepFourLayout);
+        pnStepFourLayout.setHorizontalGroup(
+            pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+            .addComponent(jScrollPane7)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepFourLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnUpdate1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnUpdateAll1)
+                .addContainerGap())
+        );
+        pnStepFourLayout.setVerticalGroup(
+            pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnStepFourLayout.createSequentialGroup()
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnUpdateAll1)
+                    .addComponent(btnUpdate1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        tab.addTab("Index Conflict", pnStepFour);
 
         btnNext.setText("Next");
         btnNext.setEnabled(false);
@@ -485,7 +536,8 @@ public class ImportBases extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnRemActionPerformed
 
-    private DefaultMutableTreeNode root;
+    private DefaultMutableTreeNode tableRoot;
+    private DefaultMutableTreeNode indexRoot;
 
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
@@ -507,7 +559,7 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
 
-        updateFields = new HashMap<>(root.getChildCount());
+        updateFields = new HashMap<>(tableRoot.getChildCount());
 
         TreePath[] selection = treeImport.getSelectionPaths();
 
@@ -531,7 +583,7 @@ public class ImportBases extends javax.swing.JFrame {
                     addToUpdate(t.get(), f.get(), updateFields);
                 }
 
-                root.remove(t);
+                tableRoot.remove(t);
                 treeImport.updateUI();
 
             } else {
@@ -541,7 +593,7 @@ public class ImportBases extends javax.swing.JFrame {
 
                 t.remove(f);
                 if (t.isLeaf()) {
-                    root.remove(t);
+                    tableRoot.remove(t);
                 }
 
                 treeImport.updateUI();
@@ -549,16 +601,12 @@ public class ImportBases extends javax.swing.JFrame {
 
         }
 
-        for (String s : updateFields.keySet()) {
-            Set<Field> f = updateFields.get(s);
-            //System.out.println(s);
-            for (Field ff : f) {
-                //System.out.println("ff " + ff.getName());
-            }
-        }
-
 
     }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnUpdate1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdate1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnUpdate1ActionPerformed
 
     private void runStepOne() {
         DefaultListModel model = (DefaultListModel) lstTablesConflict.getModel();
@@ -576,10 +624,10 @@ public class ImportBases extends javax.swing.JFrame {
     private void runStepTwo() {
         sb.delete(0, sb.length());
 
-        if (root == null) {
-            root = new DefaultMutableTreeNode("Tables");
+        if (tableRoot == null) {
+            tableRoot = new DefaultMutableTreeNode("Tables");
         } else {
-            root.removeAllChildren();
+            tableRoot.removeAllChildren();
         }
 
         DefaultListModel dst = (DefaultListModel) lstDst.getModel();
@@ -632,11 +680,11 @@ public class ImportBases extends javax.swing.JFrame {
             }
 
             if (!ttn.isLeaf()) {
-                root.add(ttn);
+                tableRoot.add(ttn);
             }
         }
 
-        treeImport.setModel(new DefaultTreeModel(root));
+        treeImport.setModel(new DefaultTreeModel(tableRoot));
         tab.setSelectedIndex(2);
 
         tfLog.setText(sb.toString());
@@ -644,6 +692,45 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void runStepThree() {
 
+        if (updateFields == null) {
+            //tab.setSelectedIndex(4);
+            return;
+        }
+
+        if (indexRoot == null) {
+            indexRoot = new DefaultMutableTreeNode("Indices");
+        } else {
+            indexRoot.removeAllChildren();
+        }
+
+        for (String tbName : updateFields.keySet()) {
+            Table rt = remoteTables.get(tbName);
+            TableElement te = localTalbles.get(tbName);
+            if (te == null) {
+                te = new TableElement(0, 0, null, tbName);
+            }
+
+            DefaultMutableTreeNode ttn = new TableTreeNode(te);
+
+            if (rt.getIndices() != null) {
+                for (Index idx : rt.getIndices()) {
+                    IndexTreeNode itn = new IndexTreeNode(new IndexElement(idx.getName(), te));
+                    ttn.add(itn);
+                }
+            }
+
+            indexRoot.add(ttn);
+
+            /*Set<Field> f = updateFields.get(tbName);
+             System.out.println(tbName);
+             for (Field ff : f) {
+             System.out.println("ff " + ff.getName());
+             }*/
+        }
+
+        indexImport.setModel(new DefaultTreeModel(indexRoot));
+
+        tab.setSelectedIndex(3);
     }
 
     /**
@@ -690,23 +777,30 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JButton btnRemAll;
     private javax.swing.JButton btnURL;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JButton btnUpdate1;
     private javax.swing.JButton btnUpdateAll;
+    private javax.swing.JButton btnUpdateAll1;
     private javax.swing.JFileChooser fc;
+    private javax.swing.JTree indexImport;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JLabel lblDBInfo;
     private javax.swing.JList lstDst;
     private javax.swing.JList lstOrg;
     private javax.swing.JList lstTablesConflict;
+    private javax.swing.JPanel pnStepFour;
+    private javax.swing.JPanel pnStepOne;
+    private javax.swing.JPanel pnStepThree;
+    private javax.swing.JPanel pnStepTwo;
     private javax.swing.JTabbedPane tab;
     private javax.swing.JTextArea tfLog;
+    private javax.swing.JTextArea tfLog1;
     private javax.swing.JTextField tfOrigin;
     private javax.swing.JTree treeImport;
     // End of variables declaration//GEN-END:variables

@@ -5,9 +5,7 @@
  */
 package br.com.mvbos.mymer.xml;
 
-import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.DataConfig;
-import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 

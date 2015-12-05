@@ -16,11 +16,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Field {
 
+    //public static Map<Short, Field> internalIndex = new HashMap<>(500);
     private String name;
     private Integer size;
     private String type;
     private String format;
-    private String defualt;
+    private String initial;
+    private String description;
 
     public Field() {
     }
@@ -39,7 +41,7 @@ public class Field {
     }
 
     public Integer getSize() {
-        return size;
+        return size == null ? 0 : size;
     }
 
     public void setSize(Integer size) {
@@ -47,7 +49,7 @@ public class Field {
     }
 
     public String getType() {
-        return type;
+        return type == null ? "" : type;
     }
 
     public void setType(String type) {
@@ -55,19 +57,27 @@ public class Field {
     }
 
     public String getFormat() {
-        return format;
+        return format == null ? "" : format;
     }
 
     public void setFormat(String format) {
         this.format = format;
     }
 
-    public String getDefualt() {
-        return defualt;
+    public String getInitial() {
+        return initial;
     }
 
-    public void setDefualt(String defualt) {
-        this.defualt = defualt;
+    public void setInitial(String initial) {
+        this.initial = initial;
+    }
+
+    public String getDescription() {
+        return description == null ? "" : description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getShortType() {
@@ -78,9 +88,17 @@ public class Field {
         return getType().length() <= Common.typeCharLength ? getType() : getType().substring(0, Common.typeCharLength);
     }
 
+    public String getLabel() {
+        return getName().replaceAll("-", "!");
+    }
+
+    public String getHelp() {
+        return getName().replaceAll("-", " ");
+    }
+
     @Override
     public String toString() {
-        return "Field{" + "name=" + name + ", size=" + size + ", type=" + type + ", format=" + format + ", defualt=" + defualt + '}';
+        return "Field{" + "name=" + name + ", size=" + size + ", type=" + type + ", format=" + format + ", initial=" + initial + '}';
     }
 
     @Override

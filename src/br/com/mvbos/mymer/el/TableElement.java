@@ -32,6 +32,7 @@ public class TableElement extends ElementModel {
 
     private boolean autoWidth = true;
     private boolean autoHeight = true;
+    private Color headerColor = Color.DARK_GRAY;
 
     public TableElement(int width, int height, DataBaseElement dataBase, String name) {
         this(0, 0, width, height, dataBase, name);
@@ -40,7 +41,16 @@ public class TableElement extends ElementModel {
     public TableElement(float px, float py, int width, int height, DataBaseElement dataBase, String name) {
         super(px, py, width, height, name);
         this.dataBase = dataBase;
-        setColor(new Color(74, 189, 218));
+
+        if (dataBase == null) {
+            setColor(new Color(74, 189, 218));
+        } else {
+            if (dataBase.getColor() == null) {
+                dataBase.setColor(new Color(74, 189, 218));
+            }
+
+            setColor(dataBase.getColor());
+        }
     }
 
     public void addFields(Field field) {
@@ -68,6 +78,9 @@ public class TableElement extends ElementModel {
         if (Common.graphics != null) {
 
             Graphics2D g = Common.graphics;
+
+            int c = (getColor().getRed() + getColor().getGreen() + getColor().getBlue()) / 3;
+            headerColor = c < 128 ? Color.LIGHT_GRAY : Color.DARK_GRAY;
 
             if (autoHeight) {
 
@@ -120,7 +133,7 @@ public class TableElement extends ElementModel {
         g.fillRect(getPx(), getPy(), getWidth(), getHeight());
 
         g.setFont(headerFont);
-        g.setColor(Color.GRAY);
+        g.setColor(headerColor);
         g.drawString(getName(), getPx() + 5, getPy() + headerSize);
 
         g.setColor(Color.WHITE);
