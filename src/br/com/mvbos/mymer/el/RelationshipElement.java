@@ -108,7 +108,6 @@ public class RelationshipElement extends ElementModel {
         if (parent.equals(child)) {
             g.setColor(parent.getColor());
             g.drawRect(getPx() - 10, getAllHeight() - 10, 20, 20);
-            System.out.println("0000");
 
         } else {
 
@@ -165,14 +164,18 @@ public class RelationshipElement extends ElementModel {
         if (getClass() != obj.getClass()) {
             return false;
         }
+
         final RelationshipElement other = (RelationshipElement) obj;
+
+        if (this.type != other.type) {
+            return false;
+        }
+
         if (!Objects.equals(this.parent, other.parent)) {
             return false;
         }
-        if (!Objects.equals(this.child, other.child)) {
-            return false;
-        }
-        return true;
+
+        return Objects.equals(this.child, other.child);
     }
 
 }

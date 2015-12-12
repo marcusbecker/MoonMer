@@ -5,7 +5,6 @@
  */
 package br.com.mvbos.mymer.tree;
 
-import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import javax.swing.tree.DefaultMutableTreeNode;
 

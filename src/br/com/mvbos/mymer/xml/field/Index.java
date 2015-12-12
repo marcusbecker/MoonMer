@@ -101,7 +101,7 @@ public class Index {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 29 * hash + Objects.hashCode(this.name);
+        hash = 37 * hash + Objects.hashCode(this.name);
         return hash;
     }
 
@@ -114,8 +114,16 @@ public class Index {
             return false;
         }
         final Index other = (Index) obj;
+        if (!Objects.equals(this.tableName, other.tableName)) {
+            return false;
+        }
+        if (!Objects.equals(this.dataBaseName, other.dataBaseName)) {
+            return false;
+        }
         return Objects.equals(this.name, other.name);
     }
+
+    
 
     @Override
     public String toString() {

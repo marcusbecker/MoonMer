@@ -106,11 +106,8 @@ public class IndexElement extends ElementModel {
 
         final IndexElement other = (IndexElement) obj;
 
-        if (this.getTable().equals(other.getTable())) {
-            return Objects.equals(this.name, other.getName());
-        }
+        return Objects.equals(this.getName(), other.getName()) && Objects.equals(this.getTable(), other.getTable());
 
-        return false;
     }
 
     @Override

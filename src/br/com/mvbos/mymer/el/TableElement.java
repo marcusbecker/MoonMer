@@ -189,17 +189,15 @@ public class TableElement extends ElementModel {
         if (obj == null) {
             return false;
         }
-        
+
         if (getClass() != obj.getClass()) {
             return false;
         }
 
         final TableElement other = (TableElement) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
 
-        return this.getDataBase().equals(other.getDataBase());
+        return Objects.equals(this.name, other.name) && Objects.equals(this.getDataBase(), other.getDataBase());
+
     }
 
 }

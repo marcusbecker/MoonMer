@@ -100,9 +100,9 @@ public class Relationship {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + Objects.hashCode(this.parent);
-        hash = 89 * hash + Objects.hashCode(this.child);
+        int hash = 7;
+        hash = 19 * hash + Objects.hashCode(this.parent);
+        hash = 19 * hash + Objects.hashCode(this.child);
         return hash;
     }
 
@@ -118,8 +118,13 @@ public class Relationship {
         if (!Objects.equals(this.parent, other.parent)) {
             return false;
         }
-
-        return Objects.equals(this.child, other.child);
+        if (!Objects.equals(this.child, other.child)) {
+            return false;
+        }
+        if (!Objects.equals(this.dbParente, other.dbParente)) {
+            return false;
+        }
+        return Objects.equals(this.dbChild, other.dbChild);
     }
 
     @Override

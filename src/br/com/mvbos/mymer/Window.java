@@ -41,6 +41,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -268,6 +269,8 @@ public class Window extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 canvas.repaint();
+
+                miniMap.repaint();
             }
         });
 
@@ -402,6 +405,7 @@ public class Window extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         treeBases = new javax.swing.JTree();
         populeTreeNodes();
+        pnMiniMap = createMiniMap();
         pnBottom = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         tabTableField = new javax.swing.JPanel();
@@ -729,37 +733,53 @@ public class Window extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(treeBases);
 
+        javax.swing.GroupLayout pnMiniMapLayout = new javax.swing.GroupLayout(pnMiniMap);
+        pnMiniMap.setLayout(pnMiniMapLayout);
+        pnMiniMapLayout.setHorizontalGroup(
+            pnMiniMapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        pnMiniMapLayout.setVerticalGroup(
+            pnMiniMapLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 91, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 337, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnMiniMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2))
+                .addContainerGap())
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel2Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addComponent(tfFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btnClearFilter))
-                        .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                    .addComponent(tfFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnClearFilter)
                     .addContainerGap()))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 297, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(44, 44, 44)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pnMiniMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jsZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel2Layout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(tfFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnClearFilter))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jsZoom, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap()))
+                    .addContainerGap(263, Short.MAX_VALUE)))
         );
 
         javax.swing.GroupLayout pnTreeLayout = new javax.swing.GroupLayout(pnTree);
@@ -783,7 +803,7 @@ public class Window extends javax.swing.JFrame {
         );
         pnTopLayout.setVerticalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+            .addComponent(jSplitPane2)
         );
 
         jSplitPane1.setTopComponent(pnTop);
@@ -929,7 +949,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSQLColNames)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSQLTempTable)
-                        .addGap(0, 27, Short.MAX_VALUE))
+                        .addGap(0, 151, Short.MAX_VALUE))
                     .addComponent(spTbFields, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1012,7 +1032,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnRemIndex)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(tabIndexLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cbIndexAvailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1083,7 +1103,7 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
 
@@ -1115,7 +1135,7 @@ public class Window extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addComponent(btnBuildSctruct)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
@@ -2016,6 +2036,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JPanel pnCanvas;
     private javax.swing.JPanel pnLeft;
     private javax.swing.JPanel pnMenu;
+    private javax.swing.JPanel pnMiniMap;
     private javax.swing.JPanel pnTop;
     private javax.swing.JPanel pnTree;
     private javax.swing.JScrollPane spTbFields;
@@ -2187,14 +2208,46 @@ public class Window extends javax.swing.JFrame {
     private TableElement relRight;
     private RelationshipElement.Type relType;
 
+    private JPanel miniMap;
+    private BufferedImage buff;
+
+    private JPanel createMiniMap() {
+        miniMap = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics gg) {
+                super.paintComponent(gg);
+                Graphics2D g = (Graphics2D) gg;
+
+                g.setColor(Color.WHITE);
+                g.fillRect(0, 0, miniMap.getWidth(), miniMap.getHeight());
+
+
+                float w = ((float) camSize / miniMap.getWidth()) / 100f;
+                float h = ((float) camSize / miniMap.getHeight()) / 100f;
+
+                g.scale(w, h);
+                for (ElementModel el : XMLUtil.filter) {
+                    g.setColor(el.getColor());
+                    g.fillRect(el.getPx(), el.getPy(), el.getWidth(), el.getHeight());
+                }
+
+            }
+        };
+
+        return miniMap;
+    }
+
     private JPanel createCanvas() {
+        buff = new BufferedImage(camSize, camSize, BufferedImage.TYPE_INT_RGB);
+
         canvas = new JPanel() {
 
             @Override
             protected void paintComponent(Graphics gg) {
                 super.paintComponent(gg);
 
-                Graphics2D g = (Graphics2D) gg;
+                //Common.graphics = (Graphics2D) gg;
+                Graphics2D g = buff.createGraphics();
                 Common.graphics = g;
 
                 g.scale(scale, scale);
@@ -2245,6 +2298,8 @@ public class Window extends javax.swing.JFrame {
                     selector.drawMe(g);
                     drawRelationPointer(g);
                 }
+
+                gg.drawImage(buff, 0, 0, null);
             }
 
             private void drawRelationPointer(Graphics2D g) {
@@ -2417,7 +2472,7 @@ public class Window extends javax.swing.JFrame {
             tbTableModel.setData(Collections.EMPTY_LIST);
 
         } else if (el instanceof TableElement) {
-
+            System.out.println("el " + el);
             tfTableName.setText(el.getName());
 
             TableElement e = (TableElement) el;
