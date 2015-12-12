@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.HeadlessException;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -67,7 +68,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 /**
@@ -172,6 +172,14 @@ public class Window extends javax.swing.JFrame {
 
     }
 
+    private void cancelTablesEditions(JTable... tables) {
+        for (JTable tb : tables) {
+            if (tb.isEditing()) {
+                tb.getCellEditor().stopCellEditing();
+            }
+        }
+    }
+
     private class MyDispatcher implements KeyEventDispatcher {
 
         @Override
@@ -209,6 +217,9 @@ public class Window extends javax.swing.JFrame {
                 } else if (KeyEvent.VK_EQUALS == e.getKeyCode()) {
                     //scale = 1;
                     applyZoom(0);
+
+                } else if (KeyEvent.VK_DELETE == e.getKeyCode()) {
+                    removeSelectedTables();
 
                 } else {
                     //System.out.println(e.getKeyCode());
@@ -315,7 +326,7 @@ public class Window extends javax.swing.JFrame {
             DefaultMutableTreeNode db = new DataTreeNode(d);
 
             for (TableElement t : d.getTables()) {
-                if (t.getName().contains(filter)) {
+                if (t.getName().toLowerCase().contains(filter.toLowerCase())) {
                     db.add(new TableTreeNode(t));
                 }
             }
@@ -569,7 +580,7 @@ public class Window extends javax.swing.JFrame {
         btnCanvasColor.setText(" ");
         btnCanvasColor.setToolTipText("Change background color");
 
-        btnRemoveTable.setText("x");
+        btnRemoveTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/del_table.png"))); // NOI18N
         btnRemoveTable.setToolTipText("Remove selected Table");
         btnRemoveTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -577,7 +588,7 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        btnAddTable.setText("T");
+        btnAddTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/table.png"))); // NOI18N
         btnAddTable.setToolTipText("Add new Table");
         btnAddTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -585,7 +596,7 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        btnAddRelOneOne.setText("..");
+        btnAddRelOneOne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/one_to_one.png"))); // NOI18N
         btnAddRelOneOne.setToolTipText("Add One to One relationship");
         btnAddRelOneOne.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -593,7 +604,7 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        btnAddRelOneMany.setText(".*");
+        btnAddRelOneMany.setIcon(new javax.swing.ImageIcon(getClass().getResource("/one_to_many.png"))); // NOI18N
         btnAddRelOneMany.setToolTipText("Add One to Many relationship");
         btnAddRelOneMany.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -653,7 +664,7 @@ public class Window extends javax.swing.JFrame {
                 .addComponent(btnCanvasColor5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCrop)
-                .addContainerGap(67, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
@@ -722,7 +733,7 @@ public class Window extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 329, Short.MAX_VALUE)
+            .addGap(0, 337, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel2Layout.createSequentialGroup()
                     .addContainerGap()
@@ -888,7 +899,7 @@ public class Window extends javax.swing.JFrame {
                                 .addComponent(btnSQLColNames))
                             .addComponent(btnSQLTempTable))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 865, Short.MAX_VALUE)))
+                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -976,10 +987,10 @@ public class Window extends javax.swing.JFrame {
                             .addComponent(btnAddIndexFieldTable)
                             .addComponent(btnRemIndex))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                             .addGroup(tabIndexLayout.createSequentialGroup()
                                 .addComponent(cbIndexAvailField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1093,7 +1104,7 @@ public class Window extends javax.swing.JFrame {
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 930, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 938, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnBuildSctruct)
@@ -1217,6 +1228,12 @@ public class Window extends javax.swing.JFrame {
         jMenu1.add(miAutoPos);
 
         miCopyXml.setText("Copy xml");
+        miCopyXml.setToolTipText("Copy xml to clipboard");
+        miCopyXml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCopyXmlActionPerformed(evt);
+            }
+        });
         jMenu1.add(miCopyXml);
 
         jMenuBar1.add(jMenu1);
@@ -1278,15 +1295,18 @@ public class Window extends javax.swing.JFrame {
 
     private void btnRemoveTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveTableActionPerformed
 
+        removeSelectedTables();
+
+    }//GEN-LAST:event_btnRemoveTableActionPerformed
+
+    private void removeSelectedTables() throws HeadlessException {
         if (selectedElements[0] != null) {
-            if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
                 removeTable((TableElement) selectedElements[0]);
                 singleSelection(null);
             }
         }
-
-
-    }//GEN-LAST:event_btnRemoveTableActionPerformed
+    }
 
     private void btnAddTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTableActionPerformed
 
@@ -1918,6 +1938,15 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_miCloneTableActionPerformed
 
+    private void miCopyXmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCopyXmlActionPerformed
+
+        clip.delete(0, clip.length());
+        clip.append(XMLUtil.tablesToString(Arrays.asList(selectedElements)));
+
+        copyToClip();
+
+    }//GEN-LAST:event_miCopyXmlActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2154,6 +2183,10 @@ public class Window extends javax.swing.JFrame {
 
     private final ElementModel mouseElement = new ElementModel(10, 10, "mouseElement");
 
+    private TableElement relLeft;
+    private TableElement relRight;
+    private RelationshipElement.Type relType;
+
     private JPanel createCanvas() {
         canvas = new JPanel() {
 
@@ -2371,9 +2404,7 @@ public class Window extends javax.swing.JFrame {
 
         selectedElements[0] = el;
 
-        if (tbFields.isEditing()) {
-            tbFields.getCellEditor().stopCellEditing();
-        }
+        cancelTablesEditions(tbFields, tbIndex, tbRelationshipLeft, tbRelationshipRight);
 
         FieldTableModel tbTableModel = (FieldTableModel) tbFields.getModel();
         GenericTableModel<IndexElement> tbIndexModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
@@ -2504,10 +2535,6 @@ public class Window extends javax.swing.JFrame {
     private void selectElementOnStage(ElementModel elementModel) {
         singleSelection(elementModel);
     }
-
-    private RelationshipElement.Type relType;
-    private TableElement relLeft;
-    private TableElement relRight;
 
     private void addRelationship(ElementModel el) {
         if (el == null) {

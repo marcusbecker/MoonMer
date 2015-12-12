@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import br.com.mvbos.mymer.el.DataBaseElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +31,10 @@ public class DataBase {
     public DataBase(String name, List<Table> tables) {
         this.name = name;
         this.tables = tables;
+    }
+
+    public DataBase(DataBaseElement db) {
+        this.name = db.getName();
     }
 
     public String getName() {

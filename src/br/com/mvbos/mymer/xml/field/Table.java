@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import br.com.mvbos.mymer.el.TableElement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,6 +31,11 @@ public class Table {
     public Table(String name, List<Field> fields) {
         this.name = name;
         this.fields = fields;
+    }
+
+    public Table(TableElement tb) {
+        this.name = tb.getName();
+        this.fields = tb.getFields();
     }
 
     public String getName() {

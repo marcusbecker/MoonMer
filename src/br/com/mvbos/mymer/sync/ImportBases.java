@@ -17,6 +17,7 @@ import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Table;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,15 +29,19 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JTree;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.xml.bind.JAXBException;
 
 /**
  *
@@ -44,22 +49,89 @@ import javax.swing.tree.TreePath;
  */
 public class ImportBases extends javax.swing.JFrame {
 
-    private DataBase remoteBases;
+    private DataBase remoteBase;
+
+    private final Charset charset = Charset.forName("ISO-8859-1");
+
+    private Map<String, Set<FieldChange>> updateFields;
+    private Map<String, Set<IndexChange>> updateIndices;
+
+    private final StringBuilder sb = new StringBuilder();
+    private final Map<FieldTreeNode, String> logFields = new HashMap<>(20);
+    private final Map<IndexTreeNode, String> logIndices = new HashMap<>(20);
+
+    private final Map<String, Table> remoteTables = new HashMap<>(30);
+    private final Map<String, TableElement> localTalbles = new HashMap<>(30);
+    private boolean filterBySelected = true;
+
+    class FieldChange {
+
+        Field field;
+        FieldTreeNode.Diff diff;
+
+        public FieldChange(Field field, FieldTreeNode.Diff diff) {
+            this.field = field;
+            this.diff = diff;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = field.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Field && field.equals(obj);
+        }
+
+        @Override
+        public String toString() {
+            return "FieldChange{" + "field=" + field + ", diff=" + diff + '}';
+        }
+
+    }
+
+    class IndexChange {
+
+        IndexElement index;
+        FieldTreeNode.Diff diff;
+
+        public IndexChange(IndexElement index, FieldTreeNode.Diff diff) {
+            this.index = index;
+            this.diff = diff;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = index.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Index && index.equals(obj);
+        }
+
+        @Override
+        public String toString() {
+            return "IndexChange{" + "index=" + index + ", diff=" + diff + '}';
+        }
+
+    }
 
     /**
      * Creates new form ImportBases
      */
     public ImportBases() {
         initComponents();
+        changeTab(0);
         fc.setFileFilter(new FileNameExtensionFilter("XML File", "xml"));
     }
 
-    private final Map<String, TableElement> localTalbles = new HashMap<>(30);
-    private final Map<String, Table> remoteTables = new HashMap<>(30);
-
     private void populeListOrg(DataBaseStore db) {
         if (db != null && db.hasBases()) {
-            remoteBases = db.getBases().get(0);
+            remoteBase = db.getBases().get(0);
 
             localTalbles.clear();
             remoteTables.clear();
@@ -67,13 +139,13 @@ public class ImportBases extends javax.swing.JFrame {
             DefaultListModel model = (DefaultListModel) lstOrg.getModel();
             model.removeAllElements();
 
-            DataBaseElement dbe = XMLUtil.findByName(remoteBases.getName());
+            DataBaseElement dbe = XMLUtil.findByName(remoteBase.getName());
 
             for (TableElement te : dbe.getTables()) {
                 localTalbles.put(te.getName(), te);
             }
 
-            for (Table tb : remoteBases.getTables()) {
+            for (Table tb : remoteBase.getTables()) {
                 remoteTables.put(tb.getName(), tb);
 
                 String name = tb.getName();
@@ -85,7 +157,7 @@ public class ImportBases extends javax.swing.JFrame {
             }
 
             btnNext.setEnabled(true);
-            lblDBInfo.setText("Database: " + remoteBases.getName());
+            lblDBInfo.setText("Database: " + remoteBase.getName());
 
         } else {
             btnNext.setEnabled(false);
@@ -93,12 +165,8 @@ public class ImportBases extends javax.swing.JFrame {
         }
     }
 
-    private final StringBuilder sb = new StringBuilder();
-    private final StringBuilder sbt = new StringBuilder();
-
-    private FieldTreeNode.Diff compareFields(Field fa, Field fb) {
+    private FieldTreeNode.Diff compareFields(Field fa, Field fb, StringBuilder log) {
         boolean change = false;
-        sbt.delete(0, sbt.length());
 
         if (!fa.equals(fb)) {
             return FieldTreeNode.Diff.NONE;
@@ -117,10 +185,10 @@ public class ImportBases extends javax.swing.JFrame {
                 }
 
                 if (!fl.get(fa).equals(fr.get(fb))) {
-                    sbt.append("\t");
-                    sbt.append(fa.getName()).append(" change ").append(fl.getName());
-                    sbt.append(" from ").append(fl.get(fa)).append(" to ").append(fr.get(fb));
-                    sbt.append("\n");
+                    log.append("<b>");
+                    log.append(fa.getName()).append("</b> change <b>").append(fl.getName());
+                    log.append("</b> from <i>").append(fl.get(fa)).append("</i> to <i>").append(fr.get(fb));
+                    log.append("</i><br />");
 
                     change = true;
                 }
@@ -162,20 +230,21 @@ public class ImportBases extends javax.swing.JFrame {
         lstTablesConflict = new javax.swing.JList();
         pnStepThree = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        treeImport = new javax.swing.JTree();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        tfLog = new javax.swing.JTextArea();
+        treeFieldImport = new javax.swing.JTree();
         btnUpdateAll = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        tfLog = new javax.swing.JEditorPane();
         pnStepFour = new javax.swing.JPanel();
         jScrollPane6 = new javax.swing.JScrollPane();
-        indexImport = new javax.swing.JTree();
-        jScrollPane7 = new javax.swing.JScrollPane();
-        tfLog1 = new javax.swing.JTextArea();
-        btnUpdateAll1 = new javax.swing.JButton();
-        btnUpdate1 = new javax.swing.JButton();
+        treeIndexImport = new javax.swing.JTree();
+        btnUpdateAllIndices = new javax.swing.JButton();
+        btnUpdateIndex = new javax.swing.JButton();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        tfLogIndex = new javax.swing.JEditorPane();
         btnNext = new javax.swing.JButton();
         lblDBInfo = new javax.swing.JLabel();
+        lblInfo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Import Bases");
@@ -310,33 +379,42 @@ public class ImportBases extends javax.swing.JFrame {
 
         tab.addTab("Local Tables", pnStepTwo);
 
-        jScrollPane4.setViewportView(treeImport);
+        treeFieldImport.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                treeFieldImportValueChanged(evt);
+            }
+        });
+        jScrollPane4.setViewportView(treeFieldImport);
 
-        tfLog.setColumns(20);
-        tfLog.setRows(5);
-        jScrollPane5.setViewportView(tfLog);
+        btnUpdateAll.setText("Update al fields");
+        btnUpdateAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateAllActionPerformed(evt);
+            }
+        });
 
-        btnUpdateAll.setText("Update all");
-
-        btnUpdate.setText("Update");
+        btnUpdate.setText("Update field");
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
 
+        tfLog.setContentType("text/html"); // NOI18N
+        jScrollPane7.setViewportView(tfLog);
+
         javax.swing.GroupLayout pnStepThreeLayout = new javax.swing.GroupLayout(pnStepThree);
         pnStepThree.setLayout(pnStepThreeLayout);
         pnStepThreeLayout.setHorizontalGroup(
             pnStepThreeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
-            .addComponent(jScrollPane5)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepThreeLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnUpdate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnUpdateAll)
                 .addContainerGap())
+            .addComponent(jScrollPane7)
         );
         pnStepThreeLayout.setVerticalGroup(
             pnStepThreeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -347,39 +425,47 @@ public class ImportBases extends javax.swing.JFrame {
                     .addComponent(btnUpdateAll)
                     .addComponent(btnUpdate))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
         );
 
         tab.addTab("Fields Conflict", pnStepThree);
 
-        jScrollPane6.setViewportView(indexImport);
-
-        tfLog1.setColumns(20);
-        tfLog1.setRows(5);
-        jScrollPane7.setViewportView(tfLog1);
-
-        btnUpdateAll1.setText("Update all");
-
-        btnUpdate1.setText("Update");
-        btnUpdate1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdate1ActionPerformed(evt);
+        treeIndexImport.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                treeIndexImportValueChanged(evt);
             }
         });
+        jScrollPane6.setViewportView(treeIndexImport);
+
+        btnUpdateAllIndices.setText("Update all indices");
+        btnUpdateAllIndices.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateAllIndicesActionPerformed(evt);
+            }
+        });
+
+        btnUpdateIndex.setText("Update index");
+        btnUpdateIndex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateIndexActionPerformed(evt);
+            }
+        });
+
+        tfLogIndex.setContentType("text/html"); // NOI18N
+        jScrollPane8.setViewportView(tfLogIndex);
 
         javax.swing.GroupLayout pnStepFourLayout = new javax.swing.GroupLayout(pnStepFour);
         pnStepFour.setLayout(pnStepFourLayout);
         pnStepFourLayout.setHorizontalGroup(
             pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
-            .addComponent(jScrollPane7)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepFourLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnUpdate1)
+                .addComponent(btnUpdateIndex)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnUpdateAll1)
+                .addComponent(btnUpdateAllIndices)
                 .addContainerGap())
+            .addComponent(jScrollPane8)
         );
         pnStepFourLayout.setVerticalGroup(
             pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -387,11 +473,10 @@ public class ImportBases extends javax.swing.JFrame {
                 .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnUpdateAll1)
-                    .addComponent(btnUpdate1))
+                    .addComponent(btnUpdateAllIndices)
+                    .addComponent(btnUpdateIndex))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
         );
 
         tab.addTab("Index Conflict", pnStepFour);
@@ -407,18 +492,21 @@ public class ImportBases extends javax.swing.JFrame {
         lblDBInfo.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         lblDBInfo.setText("No data base selected.");
 
+        lblInfo.setText("Use URL or select a File");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(tab)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnNext))
-                    .addComponent(lblDBInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(lblDBInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnNext)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -429,7 +517,9 @@ public class ImportBases extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tab)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnNext)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnNext)
+                    .addComponent(lblInfo))
                 .addContainerGap())
         );
 
@@ -438,27 +528,47 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void btnURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnURLActionPerformed
 
+        if (tfOrigin.getText().trim().isEmpty()) {
+            lblInfo.setText("No URL defined.");
+            return;
+        }
+
         tfOrigin.setEnabled(false);
         btnURL.setEnabled(false);
 
         try {
             URL url = new URL(tfOrigin.getText());
 
-            Charset charset = Charset.forName("ISO-8859-1");
             InputStreamReader stream = new InputStreamReader(url.openStream(), charset);
 
             DataBaseStore db = XMLUtil.parseToDataBase(stream);
 
             populeListOrg(db);
 
+            lblInfo.setText("Import successful.");
+            lblInfo.setForeground(Color.BLACK);
+
+        } catch (JAXBException ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+
+            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
+
         } catch (MalformedURLException ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+
             Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+
             Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
 
         } finally {
             tfOrigin.setEnabled(true);
             btnURL.setEnabled(true);
+
         }
 
     }//GEN-LAST:event_btnURLActionPerformed
@@ -472,14 +582,18 @@ public class ImportBases extends javax.swing.JFrame {
         if (f != null) {
 
             try {
-                InputStreamReader stream = new InputStreamReader(new FileInputStream(f));
+                InputStreamReader stream = new InputStreamReader(new FileInputStream(f), charset);
                 DataBaseStore db = XMLUtil.parseToDataBase(stream);
                 populeListOrg(db);
 
                 tfOrigin.setText(f.getAbsolutePath());
 
-            } catch (FileNotFoundException ex) {
+            } catch (JAXBException | FileNotFoundException ex) {
+                lblInfo.setText(ex.getMessage());
+                lblInfo.setForeground(Color.RED);
+
                 Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
+
             }
 
         }
@@ -542,26 +656,32 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
 
+        if (tab.getSelectedIndex() == tab.getTabCount()) {
+            btnNext.setText("Finish");
+        } else {
+            btnNext.setText("Next");
+        }
+
         if (tab.getSelectedIndex() == 0) {
             runStepOne();
 
         } else if (tab.getSelectedIndex() == 1) {
             runStepTwo();
 
-        } else {
+        } else if (tab.getSelectedIndex() == 2) {
             runStepThree();
+
+        } else {
+            finish();
         }
 
 
     }//GEN-LAST:event_btnNextActionPerformed
 
-    private Map<String, Set<Field>> updateFields;
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
 
-        updateFields = new HashMap<>(tableRoot.getChildCount());
-
-        TreePath[] selection = treeImport.getSelectionPaths();
+        TreePath[] selection = treeFieldImport.getSelectionPaths();
 
         if (selection == null) {
             return;
@@ -580,33 +700,139 @@ public class ImportBases extends javax.swing.JFrame {
                 Enumeration children = path.children();
                 while (children.hasMoreElements()) {
                     FieldTreeNode f = (FieldTreeNode) children.nextElement();
-                    addToUpdate(t.get(), f.get(), updateFields);
+                    addToUpdate(t.get(), f);
                 }
 
                 tableRoot.remove(t);
-                treeImport.updateUI();
+                treeFieldImport.updateUI();
 
             } else {
                 TableTreeNode t = (TableTreeNode) p.getParentPath().getLastPathComponent();
                 FieldTreeNode f = (FieldTreeNode) path;
-                addToUpdate(t.get(), f.get(), updateFields);
+                addToUpdate(t.get(), f);
 
                 t.remove(f);
-                if (t.isLeaf()) {
+
+                if (t.isLeaf() && t.isNodeChild(tableRoot)) {
                     tableRoot.remove(t);
                 }
 
-                treeImport.updateUI();
+                treeFieldImport.updateUI();
+            }
+        }
+
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnUpdateIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateIndexActionPerformed
+
+        TreePath[] selection = treeIndexImport.getSelectionPaths();
+
+        if (selection == null) {
+            return;
+        }
+
+        for (TreePath p : selection) {
+            DefaultMutableTreeNode path = (DefaultMutableTreeNode) p.getLastPathComponent();
+
+            if (path.isRoot()) {
+                continue;
+            }
+
+            if (path instanceof IndexTreeNode) {
+                IndexTreeNode ind = (IndexTreeNode) path;
+                TableTreeNode ttn = (TableTreeNode) ind.getParent();
+
+                addToUpdate(ttn.get(), ind);
+
+                ttn.remove(ind);
+
+                if (ttn.isLeaf() && ttn.isNodeChild(indexRoot)) {
+                    indexRoot.remove(ttn);
+                }
+
+            } else {
+                TableTreeNode ttn = (TableTreeNode) path;
+                Enumeration children = path.children();
+
+                while (children.hasMoreElements()) {
+                    IndexTreeNode i = (IndexTreeNode) children.nextElement();
+
+                    addToUpdate(ttn.get(), i);
+                }
+
+                indexRoot.remove(ttn);
+            }
+
+            treeIndexImport.updateUI();
+        }
+
+
+    }//GEN-LAST:event_btnUpdateIndexActionPerformed
+
+    private void treeIndexImportValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeIndexImportValueChanged
+
+        JTree tree = (JTree) evt.getSource();
+        DefaultMutableTreeNode path = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+
+        if (path instanceof IndexTreeNode) {
+            tfLogIndex.setText(logIndices.get((IndexTreeNode) path));
+        }
+
+    }//GEN-LAST:event_treeIndexImportValueChanged
+
+    private void treeFieldImportValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeFieldImportValueChanged
+
+        JTree tree = (JTree) evt.getSource();
+        DefaultMutableTreeNode path = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+
+        if (path instanceof FieldTreeNode) {
+            tfLog.setText(logFields.get((FieldTreeNode) path));
+        }
+
+    }//GEN-LAST:event_treeFieldImportValueChanged
+
+    private void btnUpdateAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateAllActionPerformed
+
+        Enumeration rootChildren = tableRoot.children();
+
+        while (rootChildren.hasMoreElements()) {
+            TableTreeNode t = (TableTreeNode) rootChildren.nextElement();
+
+            Enumeration children = t.children();
+
+            while (children.hasMoreElements()) {
+                FieldTreeNode f = (FieldTreeNode) children.nextElement();
+
+                addToUpdate(t.get(), f);
+            }
+        }
+
+        tableRoot.removeAllChildren();
+        treeFieldImport.updateUI();
+
+
+    }//GEN-LAST:event_btnUpdateAllActionPerformed
+
+    private void btnUpdateAllIndicesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateAllIndicesActionPerformed
+
+        Enumeration rootChildren = indexRoot.children();
+
+        while (rootChildren.hasMoreElements()) {
+            TableTreeNode ttn = (TableTreeNode) rootChildren.nextElement();
+            Enumeration children = ttn.children();
+
+            while (children.hasMoreElements()) {
+                IndexTreeNode i = (IndexTreeNode) children.nextElement();
+
+                addToUpdate(ttn.get(), i);
             }
 
         }
 
+        indexRoot.removeAllChildren();
+        treeIndexImport.updateUI();
 
-    }//GEN-LAST:event_btnUpdateActionPerformed
-
-    private void btnUpdate1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdate1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnUpdate1ActionPerformed
+    }//GEN-LAST:event_btnUpdateAllIndicesActionPerformed
 
     private void runStepOne() {
         DefaultListModel model = (DefaultListModel) lstTablesConflict.getModel();
@@ -618,11 +844,19 @@ public class ImportBases extends javax.swing.JFrame {
             }
         }
 
-        tab.setSelectedIndex(1);
+        changeTab(1);
+    }
+
+    private void changeTab(int index) {
+        tab.setSelectedIndex(index);
+
+        for (int i = 0; i < tab.getTabCount(); i++) {
+            tab.setEnabledAt(i, i == index);
+        }
+
     }
 
     private void runStepTwo() {
-        sb.delete(0, sb.length());
 
         if (tableRoot == null) {
             tableRoot = new DefaultMutableTreeNode("Tables");
@@ -641,41 +875,48 @@ public class ImportBases extends javax.swing.JFrame {
 
             Table rt = remoteTables.get(tbName.toString());
 
-            DefaultMutableTreeNode ttn = new TableTreeNode(lt);
+            TableTreeNode ttn = new TableTreeNode(lt);
 
             //Compare local / remote
             for (Field locField : lt.getFields()) {
-                FieldTreeNode ftn = new FieldTreeNode(locField);
+                sb.delete(0, sb.length());
+
                 int idx = rt.getFields().indexOf(locField);
 
                 if (idx > -1) {
                     Field remField = rt.getFields().get(idx);
-                    FieldTreeNode.Diff diff = compareFields(locField, remField);
-                    ftn.setDiff(diff);
+                    FieldTreeNode.Diff diff = compareFields(locField, remField, sb);
 
-                    if (FieldTreeNode.Diff.FIELD == diff) {
-                        sb.append(tbName.toString()).append("\n");
-                        sb.append(sbt);
+                    if (diff != FieldTreeNode.Diff.NONE) {
+                        FieldTreeNode ftn = new FieldTreeNode(remField);
+                        ftn.setDiff(diff);
+                        ttn.add(ftn);
+
+                        logFields.put(ftn, sb.toString());
                     }
 
                 } else {
+                    FieldTreeNode ftn = new FieldTreeNode(locField);
                     ftn.setDiff(FieldTreeNode.Diff.DELETED);
-                }
-
-                if (ftn.getDiff() != FieldTreeNode.Diff.NONE) {
                     ttn.add(ftn);
+
+                    sb.append("Field <b>").append(locField.getName()).append("</b> removed.");
+                    logFields.put(ftn, sb.toString());
                 }
             }
 
             //Compare remote / local
             for (Field remField : rt.getFields()) {
 
-                int idx = lt.getFields().indexOf(remField);
+                if (!lt.getFields().contains(remField)) {
+                    sb.delete(0, sb.length());
 
-                if (idx == -1) {
                     FieldTreeNode ftn = new FieldTreeNode(remField);
                     ftn.setDiff(FieldTreeNode.Diff.NEW);
                     ttn.add(ftn);
+
+                    sb.append("Field <b>").append(remField.getName()).append("</b> added.");
+                    logFields.put(ftn, sb.toString());
                 }
             }
 
@@ -684,18 +925,16 @@ public class ImportBases extends javax.swing.JFrame {
             }
         }
 
-        treeImport.setModel(new DefaultTreeModel(tableRoot));
-        tab.setSelectedIndex(2);
+        treeFieldImport.setModel(new DefaultTreeModel(tableRoot));
+        updateFields = new LinkedHashMap<>(tableRoot.getChildCount());
 
-        tfLog.setText(sb.toString());
+        changeTab(2);
     }
 
     private void runStepThree() {
 
-        if (updateFields == null) {
-            //tab.setSelectedIndex(4);
-            return;
-        }
+        logIndices.clear();
+        tfLogIndex.setText(null);
 
         if (indexRoot == null) {
             indexRoot = new DefaultMutableTreeNode("Indices");
@@ -703,70 +942,118 @@ public class ImportBases extends javax.swing.JFrame {
             indexRoot.removeAllChildren();
         }
 
-        for (String tbName : updateFields.keySet()) {
+        for (String tbName : remoteTables.keySet()) {
+            TableElement lte = localTalbles.get(tbName);
+
+            if (lte == null) {
+                continue;
+            }
+
+            DefaultListModel model = (DefaultListModel) lstDst.getModel();
+
+            if (filterBySelected && !model.contains(tbName)) {
+                continue;
+            }
+
             Table rt = remoteTables.get(tbName);
-            TableElement te = localTalbles.get(tbName);
-            if (te == null) {
-                te = new TableElement(0, 0, null, tbName);
+
+            if (rt.getIndices() == null || rt.getIndices().isEmpty()) {
+                continue;
             }
 
-            DefaultMutableTreeNode ttn = new TableTreeNode(te);
+            DefaultMutableTreeNode ttn = new TableTreeNode(lte);
 
-            if (rt.getIndices() != null) {
-                for (Index idx : rt.getIndices()) {
-                    IndexTreeNode itn = new IndexTreeNode(new IndexElement(idx.getName(), te));
+            for (Index ridx : rt.getIndices()) {
+
+                if (ridx.getName().trim().isEmpty() || "default".equalsIgnoreCase(ridx.getName().trim())) {
+                    continue;
+                }
+
+                sb.delete(0, sb.length());
+
+                IndexElement locIndex = XMLUtil.findIndexByName(ridx.getName(), lte);
+                IndexTreeNode itn = null;
+
+                if (locIndex == null) {
+                    if (ridx.getFields() == null || ridx.getFields().isEmpty()) {
+                        continue;
+                    }
+
+                    itn = new IndexTreeNode(createIndexElement(ridx, lte));
+                    itn.setDiff(FieldTreeNode.Diff.NEW);
+
+                    sb.append("New index.");
+
+                } else {
+                    //Compare add or remove fields of index
+                    for (Field locField : locIndex.getFields()) {
+
+                        if (locField.getName().trim().isEmpty()) {
+                            continue;
+                        }
+
+                        if (updateFields.containsKey(tbName) && updateFields.get(tbName).contains(locField)) {
+                            itn = new IndexTreeNode(createIndexElement(ridx, lte));
+                            itn.setDiff(FieldTreeNode.Diff.NEW);
+
+                            sb.append("New field <b>").append(locField.getName()).append("</b> addeded to update.");
+                            sb.append("<br />");
+
+                        } else if (!ridx.getFields().contains(locField)) {
+                            itn = new IndexTreeNode(createIndexElement(ridx, lte));
+                            itn.setDiff(FieldTreeNode.Diff.DELETED);
+
+                            sb.append("Field <b>").append(locField.getName()).append("</b> removed from index.");
+                            sb.append("<br />");
+
+                        } else {
+                            //itn.setDiff(FieldTreeNode.Diff.NONE);
+                        }
+                    }
+
+                    for (Field remField : ridx.getFields()) {
+
+                        if (!locIndex.getFields().contains(remField)) {
+                            itn = new IndexTreeNode(createIndexElement(ridx, lte));
+                            itn.setDiff(FieldTreeNode.Diff.FIELD);
+
+                            sb.append("New field <b>").append(remField.getName()).append("</b> addeded.");
+                            sb.append("<br />");
+
+                        } else {
+                            //itn.setDiff(FieldTreeNode.Diff.NONE);
+                        }
+                    }
+                }
+
+                if (itn != null) {
                     ttn.add(itn);
+                    logIndices.put(itn, sb.toString());
                 }
             }
 
-            indexRoot.add(ttn);
-
-            /*Set<Field> f = updateFields.get(tbName);
-             System.out.println(tbName);
-             for (Field ff : f) {
-             System.out.println("ff " + ff.getName());
-             }*/
+            if (!ttn.isLeaf()) {
+                indexRoot.add(ttn);
+            }
         }
 
-        indexImport.setModel(new DefaultTreeModel(indexRoot));
+        tfLog.setText(sb.toString());
+        treeIndexImport.setModel(new DefaultTreeModel(indexRoot));
+        updateIndices = new LinkedHashMap<>(indexRoot.getChildCount());
 
-        tab.setSelectedIndex(3);
+        changeTab(3);
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ImportBases.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ImportBases.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ImportBases.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ImportBases.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+    private IndexElement createIndexElement(Index ridx, TableElement lte) {
+        IndexElement ie = new IndexElement(ridx.getName(), lte);
+        ie.setActive(ridx.getActive());
+        ie.setPrimary(ridx.getPrimary());
+        ie.setUnique(ridx.getUnique());
+        ie.setFields(ridx.getFields());
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ImportBases().setVisible(true);
-            }
-        });
+        return ie;
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
@@ -777,20 +1064,20 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JButton btnRemAll;
     private javax.swing.JButton btnURL;
     private javax.swing.JButton btnUpdate;
-    private javax.swing.JButton btnUpdate1;
     private javax.swing.JButton btnUpdateAll;
-    private javax.swing.JButton btnUpdateAll1;
+    private javax.swing.JButton btnUpdateAllIndices;
+    private javax.swing.JButton btnUpdateIndex;
     private javax.swing.JFileChooser fc;
-    private javax.swing.JTree indexImport;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JLabel lblDBInfo;
+    private javax.swing.JLabel lblInfo;
     private javax.swing.JList lstDst;
     private javax.swing.JList lstOrg;
     private javax.swing.JList lstTablesConflict;
@@ -799,18 +1086,75 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JPanel pnStepThree;
     private javax.swing.JPanel pnStepTwo;
     private javax.swing.JTabbedPane tab;
-    private javax.swing.JTextArea tfLog;
-    private javax.swing.JTextArea tfLog1;
+    private javax.swing.JEditorPane tfLog;
+    private javax.swing.JEditorPane tfLogIndex;
     private javax.swing.JTextField tfOrigin;
-    private javax.swing.JTree treeImport;
+    private javax.swing.JTree treeFieldImport;
+    private javax.swing.JTree treeIndexImport;
     // End of variables declaration//GEN-END:variables
 
-    private void addToUpdate(TableElement table, Field field, Map<String, Set<Field>> mapFields) {
-        if (!mapFields.containsKey(table.getName())) {
-            mapFields.put(table.getName(), new HashSet<Field>(20));
+    private void addToUpdate(TableElement table, FieldTreeNode field) {
+        if (!updateFields.containsKey(table.getName())) {
+            updateFields.put(table.getName(), new HashSet<FieldChange>(20));
         }
 
-        mapFields.get(table.getName()).add(field);
+        updateFields.get(table.getName()).add(new FieldChange(field.get(), field.getDiff()));
+    }
+
+    private void addToUpdate(TableElement table, IndexTreeNode index) {
+        if (!updateIndices.containsKey(table.getName())) {
+            updateIndices.put(table.getName(), new HashSet<IndexChange>(20));
+        }
+
+        updateIndices.get(table.getName()).add(new IndexChange(index.get(), index.getDiff()));
+    }
+
+    private void finish() {
+        for (String tbName : updateFields.keySet()) {
+
+            Set<FieldChange> fchg = updateFields.get(tbName);
+
+            TableElement tb = XMLUtil.findByName(remoteBase.getName(), tbName);
+
+            for (FieldChange f : fchg) {
+
+                int idx = tb.getFields().indexOf(f.field);
+
+                if (idx == -1) {
+                    if (FieldTreeNode.Diff.NEW == f.diff) {
+                        tb.getFields().add(f.field);
+                    }
+                } else if (FieldTreeNode.Diff.DELETED == f.diff) {
+                    tb.getFields().remove(idx);
+
+                } else if (FieldTreeNode.Diff.FIELD == f.diff) {
+                    tb.getFields().set(idx, f.field);
+                }
+            }
+        }
+
+        for (String tbName : updateIndices.keySet()) {
+            Set<IndexChange> ichg = updateIndices.get(tbName);
+
+            for (IndexChange k : ichg) {
+
+                int idx = XMLUtil.indices.indexOf(k.index);
+
+                if (idx == -1) {
+                    if (FieldTreeNode.Diff.NEW == k.diff) {
+                        XMLUtil.indices.add(k.index);
+                    }
+                } else if (FieldTreeNode.Diff.DELETED == k.diff) {
+                    XMLUtil.indices.remove(idx);
+
+                } else if (FieldTreeNode.Diff.FIELD == k.diff) {
+                    XMLUtil.indices.set(idx, k.index);
+                }
+            }
+
+        }
+
+        this.dispose();
     }
 
 }

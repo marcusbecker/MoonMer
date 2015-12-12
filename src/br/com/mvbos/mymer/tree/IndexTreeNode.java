@@ -15,6 +15,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class IndexTreeNode extends DefaultMutableTreeNode {
 
+    private FieldTreeNode.Diff diff;
+
     public IndexTreeNode(IndexElement userObject) {
         super(userObject);
     }
@@ -29,17 +31,44 @@ public class IndexTreeNode extends DefaultMutableTreeNode {
         IndexElement ie = (IndexElement) userObject;
 
         StringBuilder sb = new StringBuilder(ie.getName());
-        sb.append("[");
+
+        if (ie.getPrimary()) {
+            sb.append(" PK ");
+        }
+
+        if (ie.getUnique()) {
+            sb.append(" UQ ");
+        }
+
+        if (ie.getActive()) {
+            sb.append(" A ");
+        }
+
+        sb.append(" [");
 
         if (ie.getFields() != null && !ie.getFields().isEmpty()) {
             for (Field f : ie.getFields()) {
                 sb.append(f.getName()).append(", ");
             }
-            
+
             sb.delete(sb.length() - ", ".length(), sb.length());
         }
 
         sb.append("]");
+
+        if (diff != null) {
+            switch (diff) {
+                case DELETED:
+                    sb.append(" ( - )");
+                    break;
+                case NEW:
+                    sb.append(" ( + )");
+                    break;
+                case FIELD:
+                    sb.append(" ( ~ )");
+                    break;
+            }
+        }
 
         return sb.toString();
     }
@@ -47,4 +76,13 @@ public class IndexTreeNode extends DefaultMutableTreeNode {
     public IndexElement get() {
         return (IndexElement) userObject;
     }
+
+    public FieldTreeNode.Diff getDiff() {
+        return diff;
+    }
+
+    public void setDiff(FieldTreeNode.Diff diff) {
+        this.diff = diff;
+    }
+
 }

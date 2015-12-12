@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.xml;
 
+import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.Find;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
@@ -23,6 +24,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,14 +58,14 @@ public class XMLUtil {
 
     private static final int LIST_TABLE_SIZE = 60;
     private static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
-    
+
 
     /*Folders*/
     private static final File CURRENT_PATH = new File(".");
     private static final File DIR_CONFIG = new File(CURRENT_PATH, "config");
-    private static final File FILE_DIR_DB = new File(CURRENT_PATH,"dbs");
-    private static final File FILE_DIR_REL = new File(CURRENT_PATH,"relations");
-    private static final File FILE_DIR_INDEX = new File(CURRENT_PATH,"index");
+    private static final File FILE_DIR_DB = new File(CURRENT_PATH, "dbs");
+    private static final File FILE_DIR_REL = new File(CURRENT_PATH, "relations");
+    private static final File FILE_DIR_INDEX = new File(CURRENT_PATH, "index");
 
     /* Files */
     private static final File FILE_CONFIG = new File(DIR_CONFIG, "config.xml");
@@ -138,6 +140,52 @@ public class XMLUtil {
         }
 
         return true;
+    }
+
+    public static String tablesToString(List<ElementModel> lst) {
+
+        StringWriter sw = new StringWriter(500);
+        Map<DataBaseElement, List<TableElement>> map = new HashMap<>(10);
+
+        for (ElementModel el : lst) {
+
+            if (!(el instanceof TableElement)) {
+                continue;
+            }
+
+            TableElement tb = (TableElement) el;
+
+            if (!map.containsKey(tb.getDataBase())) {
+                map.put(tb.getDataBase(), new ArrayList<TableElement>(lst.size()));
+            }
+
+            map.get(tb.getDataBase()).add(tb);
+        }
+
+        for (DataBaseElement dbe : map.keySet()) {
+
+            DataBase db = new DataBase(dbe);
+
+            for (TableElement tb : map.get(dbe)) {
+                db.addTable(new Table(tb));
+            }
+
+            DataBaseStore dbs = new DataBaseStore();
+            dbs.addBase(db);
+
+            try {
+                JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
+                Marshaller m = context.createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
+
+                m.marshal(dbs, sw);
+
+            } catch (Exception ex) {
+                Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return sw.toString();
     }
 
     public static boolean exportFieldsPosition() {
@@ -488,7 +536,7 @@ public class XMLUtil {
 
                     ie.setFields(lstField);
                 }
-                
+
                 lst.add(ie);
             }
         }
@@ -496,21 +544,14 @@ public class XMLUtil {
         return lst == null ? new ArrayList<IndexElement>(10) : lst;
     }
 
-    public static DataBaseStore parseToDataBase(InputStreamReader is) {
+    public static DataBaseStore parseToDataBase(InputStreamReader is) throws JAXBException {
 
         DataBaseStore dbs = null;
 
-        try {
-            JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
-            Unmarshaller um = context.createUnmarshaller();
+        JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
+        Unmarshaller um = context.createUnmarshaller();
 
-            dbs = (DataBaseStore) um.unmarshal(is);
-
-        } catch (JAXBException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return dbs;
+        return (DataBaseStore) um.unmarshal(is);
     }
 
     public static void importFieldsPosition(List<TableElement> lst) {
@@ -636,6 +677,39 @@ public class XMLUtil {
         }
 
         return lst;
+    }
+
+    public static IndexElement findIndexByName(String name, TableElement e) {
+
+        for (IndexElement ie : indices) {
+            if (ie.getTable().equals(e)) {
+                if (ie.getName().equals(name)) {
+                    return ie;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static IndexElement findIndex(String dbName, String tbName, String indName) {
+        for (IndexElement ie : indices) {
+
+            if (!tbName.equalsIgnoreCase(ie.getTable().getName())) {
+                continue;
+            }
+
+            if (!dbName.equalsIgnoreCase(ie.getTable().getDataBase().getName())) {
+                continue;
+            }
+
+            if (ie.getName().equals(indName)) {
+                return ie;
+            }
+
+        }
+
+        return null;
     }
 
 }

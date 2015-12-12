@@ -55,7 +55,7 @@ public class IndexElement extends ElementModel {
     }
 
     public Boolean getActive() {
-        return active;
+        return active == null ? false : active;
     }
 
     public void setActive(Boolean active) {
@@ -103,8 +103,14 @@ public class IndexElement extends ElementModel {
         if (getClass() != obj.getClass()) {
             return false;
         }
+
         final IndexElement other = (IndexElement) obj;
-        return Objects.equals(this.name, other.getName());
+
+        if (this.getTable().equals(other.getTable())) {
+            return Objects.equals(this.name, other.getName());
+        }
+
+        return false;
     }
 
     @Override

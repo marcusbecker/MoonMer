@@ -236,7 +236,11 @@
             <MenuItem class="javax.swing.JMenuItem" name="miCopyXml">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Copy xml"/>
+                <Property name="toolTipText" type="java.lang.String" value="Copy xml to clipboard"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miCopyXmlActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>
@@ -398,7 +402,7 @@
                                   <Component id="btnCanvasColor5" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnCrop" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="67" max="32767" attributes="0"/>
+                                  <EmptySpace pref="49" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -415,7 +419,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="btnRemoveTable">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="x"/>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/del_table.png"/>
+                            </Property>
                             <Property name="toolTipText" type="java.lang.String" value="Remove selected Table"/>
                           </Properties>
                           <Events>
@@ -424,7 +430,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="btnAddTable">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="T"/>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/table.png"/>
+                            </Property>
                             <Property name="toolTipText" type="java.lang.String" value="Add new Table"/>
                           </Properties>
                           <Events>
@@ -433,7 +441,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="btnAddRelOneOne">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value=".."/>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/one_to_one.png"/>
+                            </Property>
                             <Property name="toolTipText" type="java.lang.String" value="Add One to One relationship"/>
                           </Properties>
                           <Events>
@@ -442,7 +452,9 @@
                         </Component>
                         <Component class="javax.swing.JButton" name="btnAddRelOneMany">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value=".*"/>
+                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                              <Image iconType="3" name="/one_to_many.png"/>
+                            </Property>
                             <Property name="toolTipText" type="java.lang.String" value="Add One to Many relationship"/>
                           </Properties>
                           <Events>
@@ -514,7 +526,7 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="329" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="337" max="32767" attributes="0"/>
                               <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -682,7 +694,7 @@
                                           <Component id="btnSQLTempTable" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="spTbFields" pref="865" max="32767" attributes="0"/>
+                                      <Component id="spTbFields" pref="873" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -858,10 +870,10 @@
                                           <Component id="btnRemIndex" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="jScrollPane3" pref="518" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane3" pref="522" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="jScrollPane4" pref="339" max="32767" attributes="0"/>
+                                          <Component id="jScrollPane4" pref="343" max="32767" attributes="0"/>
                                           <Group type="102" attributes="0">
                                               <Component id="cbIndexAvailField" max="32767" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
@@ -1105,7 +1117,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" pref="930" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" pref="938" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="btnBuildSctruct" min="-2" max="-2" attributes="0"/>
