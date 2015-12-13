@@ -2221,10 +2221,21 @@ public class Window extends javax.swing.JFrame {
                 g.setColor(Color.WHITE);
                 g.fillRect(0, 0, miniMap.getWidth(), miniMap.getHeight());
 
+                float w;
+                float h;
 
-                float w = ((float) camSize / miniMap.getWidth()) / 100f;
-                float h = ((float) camSize / miniMap.getHeight()) / 100f;
+                if (camSize > miniMap.getWidth()) {
+                    w = (100f / (camSize / miniMap.getWidth())) / 100f;
+                } else {
+                    w = miniMap.getWidth();
+                }
 
+                if (camSize > miniMap.getHeight()) {
+                    h = (100f / (camSize / miniMap.getHeight())) / 100f;
+                } else {
+                    h = miniMap.getHeight();
+                }
+                
                 g.scale(w, h);
                 for (ElementModel el : XMLUtil.filter) {
                     g.setColor(el.getColor());
