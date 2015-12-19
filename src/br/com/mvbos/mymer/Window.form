@@ -180,6 +180,29 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miCloneTableActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="miCopyXml">
+              <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Shift+Ctrl+C"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Copy xml"/>
+                <Property name="toolTipText" type="java.lang.String" value="Copy xml to clipboard"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miCopyXmlActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="miPasteXML">
+              <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Shift+Ctrl+V"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Paste xml"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miPasteXMLActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="miNewTable">
@@ -220,26 +243,27 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
+        <Menu class="javax.swing.JMenu" name="menuTools">
           <Properties>
             <Property name="text" type="java.lang.String" value="Tools"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="miAutoPos">
+            <MenuItem class="javax.swing.JMenuItem" name="miOrderByRow">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Order"/>
+                <Property name="text" type="java.lang.String" value="Order by row"/>
+                <Property name="toolTipText" type="java.lang.String" value="Order by row"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miAutoPosActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miOrderByRowActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="miCopyXml">
+            <MenuItem class="javax.swing.JMenuItem" name="miOrderByCol">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Copy xml"/>
-                <Property name="toolTipText" type="java.lang.String" value="Copy xml to clipboard"/>
+                <Property name="text" type="java.lang.String" value="Order by col"/>
+                <Property name="toolTipText" type="java.lang.String" value="Order by column"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miCopyXmlActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miOrderByColActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -378,7 +402,7 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="btnAddRelOneOne" linkSize="1" alignment="0" max="32767" attributes="0"/>
                                       <Component id="btnAddRelOneMany" linkSize="1" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="btnCanvasColor5" linkSize="1" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="btnView" linkSize="1" alignment="0" max="32767" attributes="0"/>
                                       <Component id="btnCrop" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -399,7 +423,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnAddRelOneMany" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnCanvasColor5" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnView" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnCrop" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace pref="49" max="32767" attributes="0"/>
@@ -461,13 +485,16 @@
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddRelOneManyActionPerformed"/>
                           </Events>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnCanvasColor5">
+                        <Component class="javax.swing.JButton" name="btnView">
                           <Properties>
                             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                               <Color blue="ff" green="ff" red="ff" type="rgb"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value=" "/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnViewActionPerformed"/>
+                          </Events>
                         </Component>
                         <Component class="javax.swing.JToggleButton" name="btnCrop">
                           <Properties>
@@ -955,6 +982,9 @@
                               <JTableSelectionModel selectionMode="0"/>
                             </Property>
                           </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="preConfig(tbIndex);"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -1081,6 +1111,9 @@
                             </Property>
                             <Property name="name" type="java.lang.String" value="tbRelationshipRight" noResource="true"/>
                           </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="preConfig(tbRelationshipRight);"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -1111,6 +1144,9 @@
                             </Property>
                             <Property name="name" type="java.lang.String" value="tbRelationshipLeft" noResource="true"/>
                           </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="preConfig(tbRelationshipLeft);"/>
+                          </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.mvbos.mymer;
+package br.com.mvbos.mymer.table;
 
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.ArrayList;

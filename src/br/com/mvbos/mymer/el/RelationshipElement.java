@@ -34,6 +34,8 @@ public class RelationshipElement extends ElementModel {
 
     private static Color defaultColor = Color.LIGHT_GRAY;
 
+    private Camera cam;
+
     private Type type;// = Type.ONE_TO_ONE;
     private TableElement parent;
     private TableElement child;
@@ -98,6 +100,14 @@ public class RelationshipElement extends ElementModel {
         this.childFields = childField;
     }
 
+    public Camera getCam() {
+        return cam == null ? Camera.c() : cam;
+    }
+
+    public void setCam(Camera cam) {
+        this.cam = cam;
+    }
+
     @Override
     public void drawMe(Graphics2D g) {
 
@@ -111,11 +121,11 @@ public class RelationshipElement extends ElementModel {
 
         } else {
 
-            int stpxA = (int) Camera.c().fx(parent.getAllWidth() - parent.getHalfWidth());
-            int stpxB = (int) Camera.c().fx(child.getAllWidth() - child.getHalfWidth());
+            int stpxA = (int) getCam().fx(parent.getAllWidth() - parent.getHalfWidth());
+            int stpxB = (int) getCam().fx(child.getAllWidth() - child.getHalfWidth());
 
-            int stpyA = (int) Camera.c().fy(parent.getAllHeight() - parent.getHalfHeight());
-            int stpyB = (int) Camera.c().fy(child.getAllHeight() - child.getHalfHeight());
+            int stpyA = (int) getCam().fy(parent.getAllHeight() - parent.getHalfHeight());
+            int stpyB = (int) getCam().fy(child.getAllHeight() - child.getHalfHeight());
 
             final int middle = (stpxA + stpxB) / 2;
 
@@ -128,18 +138,19 @@ public class RelationshipElement extends ElementModel {
             g.setColor(defaultColor);
             g.drawLine(middle, stpyA, middle, stpyB);
 
-            final int fSize = g.getFontMetrics(g.getFont()).stringWidth(getDesc(type));
-            g.drawString(getDesc(type), middle - fSize / 2, (stpyA + stpyB) / 2);
+            final int fSize = g.getFontMetrics(g.getFont()).stringWidth(getDesc(type, false));
+
+            g.drawString(getDesc(type, parent.getPx() > child.getPx()), middle - fSize / 2, (stpyA + stpyB) / 2);
         }
 
     }
 
-    private String getDesc(Type type) {
+    private String getDesc(Type type, boolean invert) {
         switch (type) {
             case ONE_TO_ONE:
                 return "1. .1";
             case ONE_TO_MORE:
-                return "1. .*";
+                return invert ? "*. .1" : "1. .*";
             default:
                 return "";
         }

@@ -18,15 +18,18 @@ import br.com.mvbos.mymer.xml.field.FieldPosition;
 import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Relationship;
 import br.com.mvbos.mymer.xml.field.Table;
+import br.com.mvbos.mymer.xml.field.View;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +41,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
 
 /**
  *
@@ -66,10 +70,12 @@ public class XMLUtil {
     private static final File FILE_DIR_DB = new File(CURRENT_PATH, "dbs");
     private static final File FILE_DIR_REL = new File(CURRENT_PATH, "relations");
     private static final File FILE_DIR_INDEX = new File(CURRENT_PATH, "index");
+    private static final File FILE_DIR_VIEWS = new File(CURRENT_PATH, "views");
 
     /* Files */
     private static final File FILE_CONFIG = new File(DIR_CONFIG, "config.xml");
     private static final File FILE_INDEX_STORE = new File(FILE_DIR_INDEX, "index.xml");
+    private static final File FILE_VIEW_STORE = new File(FILE_DIR_VIEWS, "view.xml");
     private static final File FILE_POSITION_STORE = new File(DIR_CONFIG, "field_config.xml");
     private static final File FILE_RELATIONSHIP_STORE = new File(FILE_DIR_REL, "relationship_config.xml");
 
@@ -140,6 +146,59 @@ public class XMLUtil {
         }
 
         return true;
+    }
+
+    public static List<TableElement> stringToTables(String s) {
+        DataBaseStore dbs = null;
+        List<TableElement> tables = null;
+
+        try {
+            JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
+            Unmarshaller um = context.createUnmarshaller();
+            dbs = (DataBaseStore) um.unmarshal(new StreamSource(new StringReader(s)));
+
+        } catch (JAXBException ex) {
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (dbs != null) {
+
+            if (tables == null) {
+                tables = new ArrayList<>(30);
+            }
+
+            for (DataBase db : dbs.getBases()) {
+                DataBaseElement dbEl = XMLUtil.findByName(db.getName());
+                List<TableElement> elTables;
+
+                if (dbEl == null) {
+                    dbEl = new DataBaseElement(db);
+
+                    elTables = new ArrayList<>(db.getTables().size());
+                    dbEl.setTables(elTables);
+
+                } else {
+                    elTables = dbEl.getTables();
+                }
+
+                for (Table t : db.getTables()) {
+                    TableElement e = new TableElement(0, 0, dbEl, t.getName());
+
+                    if (t.getFields() != null) {
+                        e.setFields(t.getFields());
+                    }
+
+                    if (elTables.contains(e)) {
+                        e.setName(e.getName() + " " + ++XMLUtil.tableCount);
+                    }
+
+                    elTables.add(e);
+                    tables.add(e);
+                }
+            }
+        }
+
+        return tables;
     }
 
     public static String tablesToString(List<ElementModel> lst) {
@@ -710,6 +769,90 @@ public class XMLUtil {
         }
 
         return null;
+    }
+
+    public static Set<RelationshipElement> findRelationship(List<TableElement> lst) {
+        Set<RelationshipElement> set = new HashSet<>(10);
+
+        for (RelationshipElement re : XMLUtil.relations) {
+            if (lst.contains(re.getParent()) && lst.contains(re.getChild())) {
+                set.add(re);
+            }
+        }
+
+        return set;
+    }
+
+    public static Set<RelationshipElement> findRelationship(TableElement e) {
+        Set<RelationshipElement> set = new HashSet<>(10);
+
+        for (RelationshipElement re : XMLUtil.relations) {
+            if (re.getParent().equals(e) || re.getChild().equals(e)) {
+                set.add(re);
+            }
+        }
+
+        return set;
+    }
+
+    public static List<View> loadViews() {
+
+        List<View> lst = new ArrayList<>(20);
+
+        if (!FILE_DIR_VIEWS.exists()) {
+            return null;
+        }
+
+        File[] files = FILE_DIR_VIEWS.listFiles(new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isFile() && pathname.getName().toLowerCase().endsWith(".xml");
+            }
+        });
+
+        for (File f : files) {
+            try {
+                JAXBContext context = JAXBContext.newInstance(ViewStore.class);
+                Unmarshaller um = context.createUnmarshaller();
+
+                ViewStore vs = (ViewStore) um.unmarshal(new FileReader(f));
+
+                if (vs.getViews() != null) {
+                    lst.addAll(vs.getViews());
+                }
+
+            } catch (JAXBException | FileNotFoundException ex) {
+                Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return lst;
+    }
+
+    public static boolean saveViews(List<View> lst) {
+
+        try {
+            if (!FILE_DIR_VIEWS.exists()) {
+                FILE_DIR_VIEWS.mkdir();
+            }
+
+            ViewStore vs = new ViewStore();
+            vs.setViews(lst);
+
+            JAXBContext context = JAXBContext.newInstance(ViewStore.class);
+            Marshaller m = context.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
+
+            m.marshal(vs, FILE_VIEW_STORE);
+
+        } catch (Exception ex) {
+            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+
+            return false;
+        }
+
+        return true;
     }
 
 }

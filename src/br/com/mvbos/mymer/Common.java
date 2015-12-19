@@ -21,6 +21,6 @@ public class Common {
     public static boolean updateAll = true;
     public static Graphics2D graphics;
 
-    public static String[] comboTypes = {"character", "date", "decimal", "integer", "logical"};
+    public static String[] comboTypes = {"character", "date", "decimal", "integer", "logical", "rowid", "handle"};
 
 }

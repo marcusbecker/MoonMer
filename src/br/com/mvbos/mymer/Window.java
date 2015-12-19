@@ -5,19 +5,25 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.table.GenericTableModel;
+import br.com.mvbos.mymer.table.FieldTableModel;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.jeg.element.SelectorElement;
 import br.com.mvbos.jeg.engine.GraphicTool;
 import br.com.mvbos.jeg.window.Camera;
+import br.com.mvbos.jeg.window.IMemory;
+import br.com.mvbos.jeg.window.impl.MemoryImpl;
 import br.com.mvbos.mymer.combo.Option;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
+import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
 import br.com.mvbos.mymer.table.RowItemSelection;
+import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.Undo;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
@@ -31,7 +37,9 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -41,7 +49,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -50,6 +58,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -87,6 +97,8 @@ public class Window extends javax.swing.JFrame {
 
     private boolean isAltDown;
     private boolean isControlDown;
+
+    private final ElementModel stageEl = new StageElement();
 
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode filterRoot;
@@ -264,18 +276,27 @@ public class Window extends javax.swing.JFrame {
         WindowSerializable ws = WindowSerializable.load();
         Camera.c().move(ws.cam.x, ws.cam.y);
 
+        stageEl.setSize(camSize, camSize);
+
         timer = new Timer(60, new ActionListener() {
+            long miniMapUpdate = System.currentTimeMillis();
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                canvas.repaint();
 
-                miniMap.repaint();
+                if (System.currentTimeMillis() >= miniMapUpdate) {
+                    miniMap.repaint();
+                    miniMapUpdate = System.currentTimeMillis() + MINI_MAP_UPDATE;
+
+                } else {
+                    canvas.repaint();
+                }
             }
         });
 
         timer.start();
     }
+    private static final int MINI_MAP_UPDATE = 4 * 1000;
 
     private void applyZoom(int val) {
         jsZoom.setValue(val != 0 ? jsZoom.getValue() + val : val);
@@ -364,6 +385,19 @@ public class Window extends javax.swing.JFrame {
         clipboard.setContents(selection, selection);
     }
 
+    private String copyFromClip() {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+        try {
+            return clipboard.getData(DataFlavor.stringFlavor).toString();
+
+        } catch (UnsupportedFlavorException | IOException ex) {
+            Logger.getLogger(Window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -394,7 +428,7 @@ public class Window extends javax.swing.JFrame {
         btnAddTable = new javax.swing.JButton();
         btnAddRelOneOne = new javax.swing.JButton();
         btnAddRelOneMany = new javax.swing.JButton();
-        btnCanvasColor5 = new javax.swing.JButton();
+        btnView = new javax.swing.JButton();
         btnCrop = new javax.swing.JToggleButton();
         pnCanvas = createCanvas();
         pnTree = new javax.swing.JPanel();
@@ -453,14 +487,16 @@ public class Window extends javax.swing.JFrame {
         menuEditDataBase = new javax.swing.JMenu();
         miUndo = new javax.swing.JMenuItem();
         miCloneTable = new javax.swing.JMenuItem();
+        miCopyXml = new javax.swing.JMenuItem();
+        miPasteXML = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         miNewTable = new javax.swing.JMenuItem();
         miBases = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         miImport = new javax.swing.JMenuItem();
-        jMenu1 = new javax.swing.JMenu();
-        miAutoPos = new javax.swing.JMenuItem();
-        miCopyXml = new javax.swing.JMenuItem();
+        menuTools = new javax.swing.JMenu();
+        miOrderByRow = new javax.swing.JMenuItem();
+        miOrderByCol = new javax.swing.JMenuItem();
 
         jLabel1.setText("Name:");
 
@@ -616,8 +652,13 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        btnCanvasColor5.setBackground(new java.awt.Color(255, 255, 255));
-        btnCanvasColor5.setText(" ");
+        btnView.setBackground(new java.awt.Color(255, 255, 255));
+        btnView.setText(" ");
+        btnView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnViewActionPerformed(evt);
+            }
+        });
 
         btnCrop.setSelected(true);
         btnCrop.setText("Crop");
@@ -644,12 +685,12 @@ public class Window extends javax.swing.JFrame {
                 .addGroup(pnMenuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnCanvasColor5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnCrop))
                 .addContainerGap())
         );
 
-        pnMenuLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAddRelOneMany, btnAddRelOneOne, btnAddTable, btnCanvasColor, btnCanvasColor5, btnCrop, btnRemoveTable});
+        pnMenuLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAddRelOneMany, btnAddRelOneOne, btnAddTable, btnCanvasColor, btnCrop, btnRemoveTable, btnView});
 
         pnMenuLayout.setVerticalGroup(
             pnMenuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -665,7 +706,7 @@ public class Window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddRelOneMany)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnCanvasColor5)
+                .addComponent(btnView)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCrop)
                 .addContainerGap(49, Short.MAX_VALUE))
@@ -959,6 +1000,7 @@ public class Window extends javax.swing.JFrame {
         tbIndex.setModel(createIndexTableModel());
         tbIndex.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane3.setViewportView(tbIndex);
+        preConfig(tbIndex);
 
         lstIndexFields.setModel(new DefaultListModel<String>());
         lstIndexFields.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -1049,6 +1091,7 @@ public class Window extends javax.swing.JFrame {
         tbRelationshipRight.setModel(createRelationshipTableModel(tbRelationshipRight));
         tbRelationshipRight.setName("tbRelationshipRight"); // NOI18N
         jScrollPane5.setViewportView(tbRelationshipRight);
+        preConfig(tbRelationshipRight);
 
         cbRelationship.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -1066,6 +1109,7 @@ public class Window extends javax.swing.JFrame {
         tbRelationshipLeft.setModel(createRelationshipTableModel(tbRelationshipLeft));
         tbRelationshipLeft.setName("tbRelationshipLeft"); // NOI18N
         jScrollPane6.setViewportView(tbRelationshipLeft);
+        preConfig(tbRelationshipLeft);
 
         cbRelationshipType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1 .. 1", "1 .. *" }));
         cbRelationshipType.addActionListener(new java.awt.event.ActionListener() {
@@ -1204,6 +1248,25 @@ public class Window extends javax.swing.JFrame {
             }
         });
         menuEditDataBase.add(miCloneTable);
+
+        miCopyXml.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        miCopyXml.setText("Copy xml");
+        miCopyXml.setToolTipText("Copy xml to clipboard");
+        miCopyXml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCopyXmlActionPerformed(evt);
+            }
+        });
+        menuEditDataBase.add(miCopyXml);
+
+        miPasteXML.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        miPasteXML.setText("Paste xml");
+        miPasteXML.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miPasteXMLActionPerformed(evt);
+            }
+        });
+        menuEditDataBase.add(miPasteXML);
         menuEditDataBase.add(jSeparator3);
 
         miNewTable.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
@@ -1237,26 +1300,27 @@ public class Window extends javax.swing.JFrame {
 
         jMenuBar1.add(menuEditDataBase);
 
-        jMenu1.setText("Tools");
+        menuTools.setText("Tools");
 
-        miAutoPos.setText("Order");
-        miAutoPos.addActionListener(new java.awt.event.ActionListener() {
+        miOrderByRow.setText("Order by row");
+        miOrderByRow.setToolTipText("Order by row");
+        miOrderByRow.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miAutoPosActionPerformed(evt);
+                miOrderByRowActionPerformed(evt);
             }
         });
-        jMenu1.add(miAutoPos);
+        menuTools.add(miOrderByRow);
 
-        miCopyXml.setText("Copy xml");
-        miCopyXml.setToolTipText("Copy xml to clipboard");
-        miCopyXml.addActionListener(new java.awt.event.ActionListener() {
+        miOrderByCol.setText("Order by col");
+        miOrderByCol.setToolTipText("Order by column");
+        miOrderByCol.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miCopyXmlActionPerformed(evt);
+                miOrderByColActionPerformed(evt);
             }
         });
-        jMenu1.add(miCopyXml);
+        menuTools.add(miOrderByCol);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(menuTools);
 
         setJMenuBar(jMenuBar1);
 
@@ -1281,8 +1345,89 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_miSaveActionPerformed
 
-    private void miAutoPosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miAutoPosActionPerformed
+    private void miOrderByRowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miOrderByRowActionPerformed
 
+        orderByRow();
+
+    }//GEN-LAST:event_miOrderByRowActionPerformed
+
+    private void smarterOrder() {
+
+        final ElementModel temp = new ElementModel();
+        temp.setSize(10, 10);
+
+        //List<ElementModel> inStage = new ArrayList<>(XMLUtil.filter.size());
+        final IMemory mem = new MemoryImpl(XMLUtil.filter.size());
+
+        for (TableElement e : XMLUtil.filter) {
+
+            ElementModel elCol = GraphicTool.g().collide(temp, mem);
+
+            if (elCol == null) {
+                e.setPxy(temp.getPx(), temp.getPy());
+                mem.registerElement(e);
+
+                temp.setPx(e.getAllWidth() + 10);
+
+            } else {
+                //temp.incPx(10);
+
+                ElementModel last = elCol;
+
+                while (last != null) {
+
+                    temp.incPx(last.getAllWidth() + 10);
+
+                    if (temp.getPx() + e.getWidth() > camSize) {
+                        temp.setPx(0);
+                        temp.incPy(10);
+                    }
+
+                    last = GraphicTool.g().collide(temp, mem);
+                }
+            }
+
+            if (temp.getPx() + 100 > camSize) {
+                temp.setPx(0);
+                temp.incPy(10);
+            }
+        }
+    }
+
+    private void orderByCol() {
+        int px = 5;
+        int py = 5;
+
+        int lastHeight = 0;
+        int maxWidth = 0;
+        int sumWidth = 0;
+
+        for (TableElement filter : XMLUtil.filter) {
+            ElementModel e = filter;
+
+            maxWidth = e.getWidth() > maxWidth ? e.getWidth() : maxWidth;
+
+            if (py + 15 + lastHeight > camSize) {
+                px += maxWidth + 15;
+                py = 5;
+
+                sumWidth += maxWidth;
+                maxWidth = 0;
+
+            } else {
+                py += lastHeight + 5;
+            }
+
+            e.setPxy(px, py);
+            lastHeight = e.getHeight();
+        }
+
+        if (sumWidth > canvas.getWidth()) {
+            //Camera.c().config(camSize, sumWidth + 60, canvas.getWidth(), canvas.getHeight());
+        }
+    }
+
+    private void orderByRow() {
         int px = 5;
         int py = 5;
 
@@ -1308,10 +1453,9 @@ public class Window extends javax.swing.JFrame {
         }
 
         if (sumHeight > canvas.getHeight()) {
-            Camera.c().config(camSize, sumHeight + 60, canvas.getWidth(), canvas.getHeight());
+            //Camera.c().config(camSize, sumHeight + 60, canvas.getWidth(), canvas.getHeight());
         }
-
-    }//GEN-LAST:event_miAutoPosActionPerformed
+    }
 
     private void btnRemoveTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveTableActionPerformed
 
@@ -1335,18 +1479,28 @@ public class Window extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAddTableActionPerformed
 
     private void addNewTable() {
+        addNewTable(null);
+    }
+
+    private void addNewTable(TableElement te) {
 
         DataBaseElement db = XMLUtil.DEFAULT_DATA_BASE;
 
-        if (getTableSeletected() != null) {
+        if (te != null && te.getDataBase() != null) {
+            db = te.getDataBase();
+
+        } else if (getTableSeletected() != null) {
             db = getTableSeletected().getDataBase();
         }
 
-        TableElement te = new TableElement(50, 50, db, "New Table " + ++XMLUtil.tableCount);
+        if (te == null) {
+            te = new TableElement(50, 50, db, "New Table " + ++XMLUtil.tableCount);
 
-        db.getTables().add(te);
+            db.getTables().add(te);
 
-        te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+            te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+        }
+
         te.update();
 
         XMLUtil.filter.add(te);
@@ -1967,6 +2121,50 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_miCopyXmlActionPerformed
 
+    private void miOrderByColActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miOrderByColActionPerformed
+
+        orderByCol();
+
+    }//GEN-LAST:event_miOrderByColActionPerformed
+
+    private void miPasteXMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miPasteXMLActionPerformed
+
+        String s = copyFromClip();
+
+        if (s == null) {
+            return;
+        }
+
+        if (s.toLowerCase().contains(DataBaseStore.class.getSimpleName().toLowerCase())) {
+            List<TableElement> lst = XMLUtil.stringToTables(s);
+
+            int px = Camera.c().getPx();
+
+            for (TableElement t : lst) {
+                t.setPxy(px, Camera.c().getCpy());
+                addNewTable(t);
+
+                px += t.getWidth() + 10;
+            }
+
+        } else {
+            final String msg = String.format("No %s element found.", DataBaseStore.class.getSimpleName());
+            JOptionPane.showMessageDialog(this, msg, "Erro to import.", JOptionPane.ERROR_MESSAGE);
+        }
+
+
+    }//GEN-LAST:event_miPasteXMLActionPerformed
+
+    private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
+        NewViewWindow nvw = new NewViewWindow();
+        nvw.setSelectedTables(selectedElements);
+
+        nvw.setLocationRelativeTo(this);
+
+        nvw.setVisible(true);
+
+    }//GEN-LAST:event_btnViewActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -1977,7 +2175,6 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JButton btnAddTable;
     private javax.swing.JButton btnBuildSctruct;
     private javax.swing.JButton btnCanvasColor;
-    private javax.swing.JButton btnCanvasColor5;
     private javax.swing.JButton btnClearFilter;
     private javax.swing.JToggleButton btnCrop;
     private javax.swing.JButton btnRemFieldTable;
@@ -1992,6 +2189,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JButton btnSave;
     private javax.swing.JButton btnSaveDataBase;
     private javax.swing.JButton btnSearchField;
+    private javax.swing.JButton btnView;
     private javax.swing.JComboBox cbBases;
     private javax.swing.JComboBox cbEditDataBase;
     private javax.swing.JComboBox cbIndexAvailField;
@@ -2002,7 +2200,6 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JDialog dlgSearchField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -2023,13 +2220,16 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JList lstIndexFields;
     private javax.swing.JMenu menuEditDataBase;
     private javax.swing.JMenu menuFile;
-    private javax.swing.JMenuItem miAutoPos;
+    private javax.swing.JMenu menuTools;
     private javax.swing.JMenuItem miBases;
     private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miImport;
     private javax.swing.JMenuItem miNewTable;
+    private javax.swing.JMenuItem miOrderByCol;
+    private javax.swing.JMenuItem miOrderByRow;
+    private javax.swing.JMenuItem miPasteXML;
     private javax.swing.JMenuItem miSave;
     private javax.swing.JMenuItem miUndo;
     private javax.swing.JPanel pnBottom;
@@ -2188,6 +2388,10 @@ public class Window extends javax.swing.JFrame {
         tbFields.setFillsViewportHeight(true);
     }
 
+    private void preConfig(JTable tb) {
+        tb.getColumnModel().getColumn(0).setMaxWidth(35);
+    }
+
     private enum EditTool {
 
         SELECTOR, HAND, RELATION;
@@ -2209,13 +2413,13 @@ public class Window extends javax.swing.JFrame {
     private RelationshipElement.Type relType;
 
     private JPanel miniMap;
-    private BufferedImage buff;
 
     private JPanel createMiniMap() {
         miniMap = new JPanel() {
             @Override
             protected void paintComponent(Graphics gg) {
                 super.paintComponent(gg);
+
                 Graphics2D g = (Graphics2D) gg;
 
                 g.setColor(Color.WHITE);
@@ -2225,46 +2429,95 @@ public class Window extends javax.swing.JFrame {
                 float h;
 
                 if (camSize > miniMap.getWidth()) {
-                    w = (100f / (camSize / miniMap.getWidth())) / 100f;
+                    w = (100f / (camSize / (float) miniMap.getWidth())) / 100f;
                 } else {
                     w = miniMap.getWidth();
                 }
 
                 if (camSize > miniMap.getHeight()) {
-                    h = (100f / (camSize / miniMap.getHeight())) / 100f;
+                    h = (100f / (camSize / (float) miniMap.getHeight())) / 100f;
                 } else {
                     h = miniMap.getHeight();
                 }
-                
+
                 g.scale(w, h);
                 for (ElementModel el : XMLUtil.filter) {
                     g.setColor(el.getColor());
                     g.fillRect(el.getPx(), el.getPy(), el.getWidth(), el.getHeight());
                 }
 
+                g.setColor(Color.MAGENTA);
+                int px = Camera.c().getPx();
+                int py = Camera.c().getPy();
+
+                int ww = canvas.getWidth();
+                int hh = canvas.getHeight();
+
+                if (canvas.getWidth() > miniMap.getWidth()) {
+                    px -= canvas.getWidth() / miniMap.getWidth();
+                    ww -= canvas.getWidth() / miniMap.getWidth();
+                }
+
+                if (canvas.getHeight() > miniMap.getHeight()) {
+                    py -= canvas.getHeight() / miniMap.getHeight();
+                    hh -= canvas.getHeight() / miniMap.getHeight();
+                }
+
+                g.drawRect(px, py, ww, hh);
             }
         };
+
+        miniMap.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                float w = camSize > miniMap.getWidth() ? camSize / miniMap.getWidth() : miniMap.getWidth();
+                float h = camSize > miniMap.getHeight() ? camSize / miniMap.getHeight() : miniMap.getHeight();
+
+                Camera.c().move(e.getX() * w, e.getY() * h);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+
+        miniMap.setToolTipText(String.format("Cam size: %dx%d", camSize, camSize));
 
         return miniMap;
     }
 
     private JPanel createCanvas() {
-        buff = new BufferedImage(camSize, camSize, BufferedImage.TYPE_INT_RGB);
-
         canvas = new JPanel() {
+            private final Color BACKGROUND_COLOR = new Color(235, 235, 235);
 
             @Override
             protected void paintComponent(Graphics gg) {
                 super.paintComponent(gg);
 
-                //Common.graphics = (Graphics2D) gg;
-                Graphics2D g = buff.createGraphics();
+                Graphics2D g = (Graphics2D) gg;
                 Common.graphics = g;
 
+                g.setColor(BACKGROUND_COLOR);
+                g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
                 g.scale(scale, scale);
-                //g.setColor(BACKGROUND_COLOR);
-                g.setColor(btnCanvasColor.getBackground());
-                g.fillRect(0, 0, camSize, camSize);
+                stageEl.setColor(btnCanvasColor.getBackground());
+                Camera.c().draw(g, stageEl);
 
                 int sp = 5;
                 g.setColor(Color.BLACK);
@@ -2310,7 +2563,6 @@ public class Window extends javax.swing.JFrame {
                     drawRelationPointer(g);
                 }
 
-                gg.drawImage(buff, 0, 0, null);
             }
 
             private void drawRelationPointer(Graphics2D g) {
@@ -2483,7 +2735,7 @@ public class Window extends javax.swing.JFrame {
             tbTableModel.setData(Collections.EMPTY_LIST);
 
         } else if (el instanceof TableElement) {
-            System.out.println("el " + el);
+            //System.out.println("el " + el);
             tfTableName.setText(el.getName());
 
             TableElement e = (TableElement) el;
@@ -2506,12 +2758,14 @@ public class Window extends javax.swing.JFrame {
         tbRelationshipRight.removeAll();
 
         if (e != null) {
-            for (int i = 0; i < XMLUtil.relations.size(); i++) {
-                RelationshipElement re = XMLUtil.relations.get(i);
-                if (re.getParent().equals(e) || re.getChild().equals(e)) {
-                    final String label = String.format("%s < %s > %s", re.getParent().getName(), re.getType().label, re.getChild().getName());
-                    cbRelationship.addItem(new Option((short) i, re, label));
-                }
+            Set<RelationshipElement> lst = XMLUtil.findRelationship(e);
+
+            short i = 0;
+
+            for (RelationshipElement re : lst) {
+                final String label = String.format("%s < %s > %s", re.getParent().getName(), re.getType().label, re.getChild().getName());
+                cbRelationship.addItem(new Option(i++, re, label));
+
             }
 
             if (cbRelationship.getItemCount() == 0) {
