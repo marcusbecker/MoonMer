@@ -197,6 +197,11 @@ public class Window extends javax.swing.JFrame {
 
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
+
+            if (getFocusOwner() == null) {
+                return false;
+            }
+
             if (e.getID() == KeyEvent.KEY_PRESSED) {
 
                 if (KeyEvent.VK_PAGE_DOWN == e.getKeyCode() || KeyEvent.VK_PAGE_UP == e.getKeyCode()) {
@@ -286,7 +291,7 @@ public class Window extends javax.swing.JFrame {
 
                 if (System.currentTimeMillis() >= miniMapUpdate) {
                     miniMap.repaint();
-                    miniMapUpdate = System.currentTimeMillis() + MINI_MAP_UPDATE;
+                    miniMapUpdate = System.currentTimeMillis() + Common.MINI_MAP_UPDATE;
 
                 } else {
                     canvas.repaint();
@@ -296,7 +301,6 @@ public class Window extends javax.swing.JFrame {
 
         timer.start();
     }
-    private static final int MINI_MAP_UPDATE = 4 * 1000;
 
     private void applyZoom(int val) {
         jsZoom.setValue(val != 0 ? jsZoom.getValue() + val : val);
@@ -494,6 +498,8 @@ public class Window extends javax.swing.JFrame {
         miBases = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         miImport = new javax.swing.JMenuItem();
+        menuView = new javax.swing.JMenu();
+        miEditView = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         miOrderByRow = new javax.swing.JMenuItem();
         miOrderByCol = new javax.swing.JMenuItem();
@@ -652,8 +658,8 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        btnView.setBackground(new java.awt.Color(255, 255, 255));
-        btnView.setText(" ");
+        btnView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view.png"))); // NOI18N
+        btnView.setToolTipText("View");
         btnView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewActionPerformed(evt);
@@ -709,7 +715,7 @@ public class Window extends javax.swing.JFrame {
                 .addComponent(btnView)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCrop)
-                .addContainerGap(49, Short.MAX_VALUE))
+                .addContainerGap(43, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
@@ -1300,6 +1306,18 @@ public class Window extends javax.swing.JFrame {
 
         jMenuBar1.add(menuEditDataBase);
 
+        menuView.setText("View");
+
+        miEditView.setText("Edit Views");
+        miEditView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miEditViewActionPerformed(evt);
+            }
+        });
+        menuView.add(miEditView);
+
+        jMenuBar1.add(menuView);
+
         menuTools.setText("Tools");
 
         miOrderByRow.setText("Order by row");
@@ -1392,6 +1410,17 @@ public class Window extends javax.swing.JFrame {
                 temp.incPy(10);
             }
         }
+    }
+
+    private void editViews(ElementModel[] selectedElements) {
+        NewViewWindow nvw = new NewViewWindow();
+
+        if (selectedElements != null) {
+            nvw.setSelectedTables(selectedElements);
+        }
+
+        nvw.setLocationRelativeTo(this);
+        nvw.setVisible(true);
     }
 
     private void orderByCol() {
@@ -1576,7 +1605,7 @@ public class Window extends javax.swing.JFrame {
 
     private void miBasesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miBasesActionPerformed
 
-        if (getTableSeletected() == null) {
+        if (getTableSeletected() == null || getTableSeletected().getDataBase() == XMLUtil.DEFAULT_DATA_BASE) {
             dataBaseSelected = null;
 
             tfDBName.setText(null);
@@ -2156,14 +2185,16 @@ public class Window extends javax.swing.JFrame {
     }//GEN-LAST:event_miPasteXMLActionPerformed
 
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
-        NewViewWindow nvw = new NewViewWindow();
-        nvw.setSelectedTables(selectedElements);
-
-        nvw.setLocationRelativeTo(this);
-
-        nvw.setVisible(true);
+        editViews(selectedElements);
 
     }//GEN-LAST:event_btnViewActionPerformed
+
+
+    private void miEditViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditViewActionPerformed
+
+        editViews(null);
+
+    }//GEN-LAST:event_miEditViewActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2221,9 +2252,11 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JMenu menuEditDataBase;
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenu menuTools;
+    private javax.swing.JMenu menuView;
     private javax.swing.JMenuItem miBases;
     private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
+    private javax.swing.JMenuItem miEditView;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miImport;
     private javax.swing.JMenuItem miNewTable;
@@ -2827,9 +2860,15 @@ public class Window extends javax.swing.JFrame {
 
     private void multiSelect(ElementModel el) {
         for (int i = 0; i < selectedElements.length; i++) {
+
+            if (selectedElements[i] == el) {
+                break;
+            }
+
             if (selectedElements[i] != null) {
                 continue;
             }
+
             selectedElements[i] = el;
             break;
         }
@@ -2853,7 +2892,11 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void selectElementOnStage(ElementModel elementModel) {
-        singleSelection(elementModel);
+        if (isControlDown) {
+            multiSelect(elementModel);
+        } else {
+            singleSelection(elementModel);
+        }
     }
 
     private void addRelationship(ElementModel el) {
