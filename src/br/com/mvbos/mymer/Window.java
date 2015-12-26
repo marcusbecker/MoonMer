@@ -13,6 +13,7 @@ import br.com.mvbos.jeg.engine.GraphicTool;
 import br.com.mvbos.jeg.window.Camera;
 import br.com.mvbos.jeg.window.IMemory;
 import br.com.mvbos.jeg.window.impl.MemoryImpl;
+import br.com.mvbos.mm.MMProperties;
 import br.com.mvbos.mymer.combo.Option;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
@@ -89,8 +90,6 @@ public class Window extends javax.swing.JFrame {
 
     private JPanel canvas;
     private final Timer timer;
-
-    private final int camSize = 9000;
 
     private float scale = 1;
     private DataBaseElement dataBaseSelected;
@@ -259,6 +258,8 @@ public class Window extends javax.swing.JFrame {
         }
     }
 
+    private long miniMapUpdate = System.currentTimeMillis();
+
     /**
      * Creates new form Window
      */
@@ -269,22 +270,27 @@ public class Window extends javax.swing.JFrame {
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.addKeyEventDispatcher(new MyDispatcher());
 
+        btnCanvasColor.setBackground(new Color(Common.backgroundColor));
+
         //KeyStroke plus = KeyStroke.getKeyStroke("+");
         //this.getInputMap().put(KeyStroke.getKeyStroke("F2"), "doSomething");
         //this.getActionMap().put("doSomething", anAction);
         //createTest();
         populeComboBoxes();
-        Camera.c().config(camSize, camSize, canvas.getWidth(), canvas.getHeight());
+
+        if (Common.camSize < canvas.getWidth() || Common.camSize < canvas.getHeight()) {
+            Common.camSize = canvas.getWidth() + canvas.getHeight();
+            Camera.c().config(Common.camSize, Common.camSize, canvas.getWidth(), canvas.getHeight());
+        }
         //Camera.c().offSet(100, 100);
         Camera.c().setAllowOffset(true);
 
         WindowSerializable ws = WindowSerializable.load();
         Camera.c().move(ws.cam.x, ws.cam.y);
 
-        stageEl.setSize(camSize, camSize);
+        stageEl.setSize(Common.camSize, Common.camSize);
 
         timer = new Timer(60, new ActionListener() {
-            long miniMapUpdate = System.currentTimeMillis();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -422,6 +428,12 @@ public class Window extends javax.swing.JFrame {
         btnSaveDataBase = new javax.swing.JButton();
         dlgSearchField = new javax.swing.JDialog();
         tfSearchField = new javax.swing.JTextField();
+        dlgCanvas = new javax.swing.JDialog();
+        jSeparator5 = new javax.swing.JSeparator();
+        jLabel3 = new javax.swing.JLabel();
+        ccCanvas = new javax.swing.JColorChooser();
+        tfCanvasSize = new javax.swing.JTextField();
+        btnSaveCanvas = new javax.swing.JButton();
         jSplitPane1 = new javax.swing.JSplitPane();
         pnTop = new javax.swing.JPanel();
         jSplitPane2 = new javax.swing.JSplitPane();
@@ -587,6 +599,48 @@ public class Window extends javax.swing.JFrame {
             .addComponent(tfSearchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
+        jLabel3.setText("Canvas size:");
+
+        btnSaveCanvas.setText("Save");
+        btnSaveCanvas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveCanvasActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout dlgCanvasLayout = new javax.swing.GroupLayout(dlgCanvas.getContentPane());
+        dlgCanvas.getContentPane().setLayout(dlgCanvasLayout);
+        dlgCanvasLayout.setHorizontalGroup(
+            dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSeparator5)
+            .addGroup(dlgCanvasLayout.createSequentialGroup()
+                .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ccCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+                    .addGroup(dlgCanvasLayout.createSequentialGroup()
+                        .addContainerGap(562, Short.MAX_VALUE)
+                        .addComponent(btnSaveCanvas))
+                    .addGroup(dlgCanvasLayout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfCanvasSize, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        dlgCanvasLayout.setVerticalGroup(
+            dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tfCanvasSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ccCanvas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnSaveCanvas)
+                .addContainerGap())
+        );
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("MoonMer - Simple for many, many tables.");
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -625,6 +679,11 @@ public class Window extends javax.swing.JFrame {
         btnCanvasColor.setBackground(new java.awt.Color(255, 255, 255));
         btnCanvasColor.setText(" ");
         btnCanvasColor.setToolTipText("Change background color");
+        btnCanvasColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCanvasColorActionPerformed(evt);
+            }
+        });
 
         btnRemoveTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/del_table.png"))); // NOI18N
         btnRemoveTable.setToolTipText("Remove selected Table");
@@ -1396,7 +1455,7 @@ public class Window extends javax.swing.JFrame {
 
                     temp.incPx(last.getAllWidth() + 10);
 
-                    if (temp.getPx() + e.getWidth() > camSize) {
+                    if (temp.getPx() + e.getWidth() > Common.camSize) {
                         temp.setPx(0);
                         temp.incPy(10);
                     }
@@ -1405,7 +1464,7 @@ public class Window extends javax.swing.JFrame {
                 }
             }
 
-            if (temp.getPx() + 100 > camSize) {
+            if (temp.getPx() + 100 > Common.camSize) {
                 temp.setPx(0);
                 temp.incPy(10);
             }
@@ -1436,7 +1495,7 @@ public class Window extends javax.swing.JFrame {
 
             maxWidth = e.getWidth() > maxWidth ? e.getWidth() : maxWidth;
 
-            if (py + 15 + lastHeight > camSize) {
+            if (py + 15 + lastHeight > Common.camSize) {
                 px += maxWidth + 15;
                 py = 5;
 
@@ -1467,7 +1526,7 @@ public class Window extends javax.swing.JFrame {
         for (TableElement filter : XMLUtil.filter) {
             ElementModel e = filter;
             maxHeight = e.getHeight() > maxHeight ? e.getHeight() : maxHeight;
-            if (px + e.getWidth() > camSize) {
+            if (px + e.getWidth() > Common.camSize) {
                 px = 5;
                 py += maxHeight + 15;
 
@@ -2196,6 +2255,35 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_miEditViewActionPerformed
 
+    private void btnSaveCanvasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveCanvasActionPerformed
+
+        try {
+            Common.camSize = Integer.parseInt(tfCanvasSize.getText());
+            Common.backgroundColor = ccCanvas.getColor().getRGB();
+
+            btnCanvasColor.setBackground(ccCanvas.getColor());
+            dlgCanvas.setVisible(false);
+
+            MMProperties.save();
+
+        } catch (Exception e) {
+
+        }
+
+
+    }//GEN-LAST:event_btnSaveCanvasActionPerformed
+
+    private void btnCanvasColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCanvasColorActionPerformed
+
+        tfCanvasSize.setText(String.valueOf(Common.camSize));
+        ccCanvas.setBackground(btnCanvasColor.getBackground());
+
+        dlgCanvas.pack();
+        dlgCanvas.setLocationRelativeTo(this);
+        dlgCanvas.setVisible(true);
+
+    }//GEN-LAST:event_btnCanvasColorActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2218,6 +2306,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JButton btnSQLSel;
     private javax.swing.JButton btnSQLTempTable;
     private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnSaveCanvas;
     private javax.swing.JButton btnSaveDataBase;
     private javax.swing.JButton btnSearchField;
     private javax.swing.JButton btnView;
@@ -2226,11 +2315,14 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JComboBox cbIndexAvailField;
     private javax.swing.JComboBox cbRelationship;
     private javax.swing.JComboBox cbRelationshipType;
+    private javax.swing.JColorChooser ccCanvas;
     private javax.swing.JColorChooser ccDBColor;
+    private javax.swing.JDialog dlgCanvas;
     private javax.swing.JDialog dlgDataBase;
     private javax.swing.JDialog dlgSearchField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -2243,6 +2335,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
@@ -2281,6 +2374,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JTable tbIndex;
     private javax.swing.JTable tbRelationshipLeft;
     private javax.swing.JTable tbRelationshipRight;
+    private javax.swing.JTextField tfCanvasSize;
     private javax.swing.JTextField tfDBName;
     private javax.swing.JTextField tfDBTablesCounter;
     private javax.swing.JTextField tfFilter;
@@ -2461,14 +2555,14 @@ public class Window extends javax.swing.JFrame {
                 float w;
                 float h;
 
-                if (camSize > miniMap.getWidth()) {
-                    w = (100f / (camSize / (float) miniMap.getWidth())) / 100f;
+                if (Common.camSize > miniMap.getWidth()) {
+                    w = (100f / (Common.camSize / (float) miniMap.getWidth())) / 100f;
                 } else {
                     w = miniMap.getWidth();
                 }
 
-                if (camSize > miniMap.getHeight()) {
-                    h = (100f / (camSize / (float) miniMap.getHeight())) / 100f;
+                if (Common.camSize > miniMap.getHeight()) {
+                    h = (100f / (Common.camSize / (float) miniMap.getHeight())) / 100f;
                 } else {
                     h = miniMap.getHeight();
                 }
@@ -2505,10 +2599,12 @@ public class Window extends javax.swing.JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                float w = camSize > miniMap.getWidth() ? camSize / miniMap.getWidth() : miniMap.getWidth();
-                float h = camSize > miniMap.getHeight() ? camSize / miniMap.getHeight() : miniMap.getHeight();
+                float w = Common.camSize > miniMap.getWidth() ? Common.camSize / miniMap.getWidth() : miniMap.getWidth();
+                float h = Common.camSize > miniMap.getHeight() ? Common.camSize / miniMap.getHeight() : miniMap.getHeight();
 
                 Camera.c().move(e.getX() * w, e.getY() * h);
+
+                miniMapUpdate = 0;
             }
 
             @Override
@@ -2529,7 +2625,7 @@ public class Window extends javax.swing.JFrame {
 
         });
 
-        miniMap.setToolTipText(String.format("Cam size: %dx%d", camSize, camSize));
+        miniMap.setToolTipText(String.format("Cam size: %dx%d", Common.camSize, Common.camSize));
 
         return miniMap;
     }

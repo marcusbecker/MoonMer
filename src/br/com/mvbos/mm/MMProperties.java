@@ -5,8 +5,11 @@
  */
 package br.com.mvbos.mm;
 
+import br.com.mvbos.mymer.Common;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,15 +21,14 @@ import java.util.logging.Logger;
 public class MMProperties {
 
     public static final Properties prop = new Properties();
+    private static final File dir = new File("./config");
+    private static final File f = new File(dir, "config.properties");
 
     static {
         try {
-            File dir = new File("./config");
             if (!dir.exists()) {
                 dir.mkdir();
             }
-
-            File f = new File(dir, "config.properties");
 
             if (!f.exists()) {
                 f.createNewFile();
@@ -41,6 +43,17 @@ public class MMProperties {
 
     public static String get(String key, Object def) {
         return prop.getProperty(key, String.valueOf(def));
+    }
+
+    public static void save() {
+        prop.setProperty("camSize", String.valueOf(Common.camSize));
+        prop.setProperty("backgroundColor", String.valueOf(Common.backgroundColor));
+
+        try {
+            prop.store(new FileOutputStream(f), null);
+        } catch (IOException ex) {
+            Logger.getLogger(MMProperties.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }
