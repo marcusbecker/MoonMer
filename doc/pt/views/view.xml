@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<viewStore>
+    <views>
+        <name>Pagamento</name>
+        <tables>
+            <dataBaseName>cadastro</dataBaseName>
+            <px>51</px>
+            <py>22</py>
+            <tableName>cliente</tableName>
+        </tables>
+        <tables>
+            <dataBaseName>cobranca</dataBaseName>
+            <px>263</px>
+            <py>100</py>
+            <tableName>cobranca</tableName>
+        </tables>
+    </views>
+</viewStore>

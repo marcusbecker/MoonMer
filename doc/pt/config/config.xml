@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configStore>
+    <bases>
+        <color>-11878950</color>
+        <name>cadastro</name>
+        <tableCount>4</tableCount>
+    </bases>
+    <bases>
+        <color>-3355648</color>
+        <name>cobranca</name>
+        <tableCount>2</tableCount>
+    </bases>
+</configStore>

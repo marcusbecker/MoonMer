@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<indexStore>
+    <indices>
+        <active>true</active>
+        <dataBaseName>cadastro</dataBaseName>
+        <fields>
+            <description></description>
+            <format></format>
+            <name>id</name>
+            <size>0</size>
+            <type>integer</type>
+        </fields>
+        <name>cliente01</name>
+        <primary>true</primary>
+        <tableName>cliente</tableName>
+        <unique>true</unique>
+    </indices>
+</indexStore>

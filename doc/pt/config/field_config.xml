@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<fieldPositionStore>
+    <fields>
+        <colorName>-11878950</colorName>
+        <fullName>cadastro.cliente</fullName>
+        <px>86</px>
+        <py>49</py>
+    </fields>
+    <fields>
+        <colorName>-11878950</colorName>
+        <fullName>cadastro.endereco</fullName>
+        <px>306</px>
+        <py>113</py>
+    </fields>
+    <fields>
+        <colorName>-11878950</colorName>
+        <fullName>cadastro.cidade</fullName>
+        <px>537</px>
+        <py>82</py>
+    </fields>
+    <fields>
+        <colorName>-11878950</colorName>
+        <fullName>cadastro.estado</fullName>
+        <px>557</px>
+        <py>235</py>
+    </fields>
+    <fields>
+        <colorName>-3355648</colorName>
+        <fullName>cobranca.cobranca</fullName>
+        <px>85</px>
+        <py>322</py>
+    </fields>
+    <fields>
+        <colorName>-3355648</colorName>
+        <fullName>cobranca.forma_pgto</fullName>
+        <px>333</px>
+        <py>420</py>
+    </fields>
+</fieldPositionStore>
