@@ -3062,7 +3062,6 @@ public class Window extends javax.swing.JFrame {
         }
 
         timer.stop();
-        dlgDataBase.dispose();
         this.dispose();
 
         System.exit(0);
