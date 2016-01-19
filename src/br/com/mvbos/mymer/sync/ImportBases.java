@@ -5,6 +5,8 @@
  */
 package br.com.mvbos.mymer.sync;
 
+import br.com.mvbos.mymer.Common;
+import br.com.mvbos.mymer.combo.Option;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
@@ -25,11 +27,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -39,7 +42,6 @@ import javax.swing.JTree;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.xml.bind.JAXBException;
 
@@ -51,8 +53,6 @@ public class ImportBases extends javax.swing.JFrame {
 
     private DataBase remoteBase;
 
-    private final Charset charset = Charset.forName("ISO-8859-1");
-
     private Map<String, Set<FieldChange>> updateFields;
     private Map<String, Set<IndexChange>> updateIndices;
 
@@ -60,9 +60,14 @@ public class ImportBases extends javax.swing.JFrame {
     private final Map<FieldTreeNode, String> logFields = new HashMap<>(20);
     private final Map<IndexTreeNode, String> logIndices = new HashMap<>(20);
 
+    private final List<Table> newRemoteTables = new ArrayList<>(30);
     private final Map<String, Table> remoteTables = new HashMap<>(30);
     private final Map<String, TableElement> localTalbles = new HashMap<>(30);
-    private boolean filterBySelected = true;
+    private final boolean filterBySelected = true;
+
+    private int dbStart;
+    private int dbCount;
+    private DataBaseStore dbStore;
 
     class FieldChange {
 
@@ -129,40 +134,70 @@ public class ImportBases extends javax.swing.JFrame {
         fc.setFileFilter(new FileNameExtensionFilter("XML File", "xml"));
     }
 
-    private void populeListOrg(DataBaseStore db) {
+    private void startImport(DataBaseStore db) {
+        this.dbStore = db;
+
         if (db != null && db.hasBases()) {
-            remoteBase = db.getBases().get(0);
+            dbStart = 0;
+            dbCount = db.getBases().size();
 
-            localTalbles.clear();
-            remoteTables.clear();
+            nextDataBase();
 
-            DefaultListModel model = (DefaultListModel) lstOrg.getModel();
-            model.removeAllElements();
-
-            DataBaseElement dbe = XMLUtil.findByName(remoteBase.getName());
-
-            for (TableElement te : dbe.getTables()) {
-                localTalbles.put(te.getName(), te);
-            }
-
-            for (Table tb : remoteBase.getTables()) {
-                remoteTables.put(tb.getName(), tb);
-
-                String name = tb.getName();
-                if (!localTalbles.containsKey(name)) {
-                    name += " (new)";
-                }
-
-                model.addElement(name);
-            }
+            lblInfo.setText("Import successful.");
+            lblInfo.setForeground(Color.BLACK);
 
             btnNext.setEnabled(true);
-            lblDBInfo.setText("Database: " + remoteBase.getName());
 
         } else {
             btnNext.setEnabled(false);
             lblDBInfo.setText("No data base selected.");
         }
+    }
+
+    private void nextDataBase() {
+        populeListOrg(dbStore.getBases().get(dbStart));
+        dbStart++;
+
+        changeTab(0);
+        updateNextButton();
+    }
+
+    private short optIndex;
+
+    private void populeListOrg(DataBase db) {
+
+        remoteBase = db;
+        optIndex = 0;
+
+        localTalbles.clear();
+        remoteTables.clear();
+        newRemoteTables.clear();
+
+        DefaultListModel<Option> org = (DefaultListModel<Option>) lstOrg.getModel();
+        org.removeAllElements();
+
+        DefaultListModel<Option> dst = (DefaultListModel<Option>) lstDst.getModel();
+        dst.removeAllElements();
+
+        DataBaseElement dbe = XMLUtil.findByName(remoteBase.getName());
+        if (dbe != null) {
+            for (TableElement te : dbe.getTables()) {
+                localTalbles.put(te.getName(), te);
+            }
+        }
+
+        for (Table tb : remoteBase.getTables()) {
+            remoteTables.put(tb.getName(), tb);
+
+            String name = tb.getName();
+            if (!localTalbles.containsKey(name)) {
+                name += " (new)";
+            }
+
+            org.addElement(new Option(optIndex++, tb, name));
+        }
+
+        lblDBInfo.setText("Database: " + remoteBase.getName());
     }
 
     private FieldTreeNode.Diff compareFields(Field fa, Field fb, StringBuilder log) {
@@ -263,7 +298,7 @@ public class ImportBases extends javax.swing.JFrame {
             }
         });
 
-        lstOrg.setModel(new DefaultListModel());
+        lstOrg.setModel(new DefaultListModel<Option>());
         jScrollPane1.setViewportView(lstOrg);
 
         btnAdd.setText(">");
@@ -273,7 +308,7 @@ public class ImportBases extends javax.swing.JFrame {
             }
         });
 
-        lstDst.setModel(new DefaultListModel());
+        lstDst.setModel(new DefaultListModel<Option>());
         jScrollPane2.setViewportView(lstDst);
 
         btnAddAll.setText(">>");
@@ -539,14 +574,11 @@ public class ImportBases extends javax.swing.JFrame {
         try {
             URL url = new URL(tfOrigin.getText());
 
-            InputStreamReader stream = new InputStreamReader(url.openStream(), charset);
-
-            DataBaseStore db = XMLUtil.parseToDataBase(stream);
-
-            populeListOrg(db);
-
-            lblInfo.setText("Import successful.");
-            lblInfo.setForeground(Color.BLACK);
+            DataBaseStore db;
+            try (InputStreamReader stream = new InputStreamReader(url.openStream(), Common.importCharset)) {
+                db = XMLUtil.parseToDataBase(stream);
+                startImport(db);
+            }
 
         } catch (JAXBException ex) {
             lblInfo.setText(ex.getMessage());
@@ -568,7 +600,6 @@ public class ImportBases extends javax.swing.JFrame {
         } finally {
             tfOrigin.setEnabled(true);
             btnURL.setEnabled(true);
-
         }
 
     }//GEN-LAST:event_btnURLActionPerformed
@@ -579,23 +610,24 @@ public class ImportBases extends javax.swing.JFrame {
         fc.showOpenDialog(this);
 
         File f = fc.getSelectedFile();
+
         if (f != null) {
-
             try {
-                InputStreamReader stream = new InputStreamReader(new FileInputStream(f), charset);
-                DataBaseStore db = XMLUtil.parseToDataBase(stream);
-                populeListOrg(db);
-
-                tfOrigin.setText(f.getAbsolutePath());
+                DataBaseStore db;
+                try (InputStreamReader stream = new InputStreamReader(new FileInputStream(f), Common.charset)) {
+                    db = XMLUtil.parseToDataBase(stream);
+                    tfOrigin.setText(f.getAbsolutePath());
+                    startImport(db);
+                }
 
             } catch (JAXBException | FileNotFoundException ex) {
                 lblInfo.setText(ex.getMessage());
                 lblInfo.setForeground(Color.RED);
-
                 Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
 
+            } catch (IOException ex) {
+                Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
             }
-
         }
 
     }//GEN-LAST:event_btnFileActionPerformed
@@ -656,11 +688,7 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
 
-        if (tab.getSelectedIndex() == tab.getTabCount()) {
-            btnNext.setText("Finish");
-        } else {
-            btnNext.setText("Next");
-        }
+        updateNextButton();
 
         if (tab.getSelectedIndex() == 0) {
             runStepOne();
@@ -671,12 +699,24 @@ public class ImportBases extends javax.swing.JFrame {
         } else if (tab.getSelectedIndex() == 2) {
             runStepThree();
 
+        } else if (dbStart < dbCount) {
+            persist();
+            nextDataBase();
+
         } else {
+            persist();
             finish();
         }
 
-
     }//GEN-LAST:event_btnNextActionPerformed
+
+    private void updateNextButton() {
+        if (tab.getSelectedIndex() == tab.getTabCount() - 2) {
+            btnNext.setText(String.format("Finish %d of %d", dbStart, dbCount));
+        } else {
+            btnNext.setText(String.format("Next %d of %d", dbStart, dbCount));
+        }
+    }
 
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
@@ -766,7 +806,6 @@ public class ImportBases extends javax.swing.JFrame {
             treeIndexImport.updateUI();
         }
 
-
     }//GEN-LAST:event_btnUpdateIndexActionPerformed
 
     private void treeIndexImportValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeIndexImportValueChanged
@@ -834,19 +873,6 @@ public class ImportBases extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnUpdateAllIndicesActionPerformed
 
-    private void runStepOne() {
-        DefaultListModel model = (DefaultListModel) lstTablesConflict.getModel();
-        model.removeAllElements();
-
-        for (String name : localTalbles.keySet()) {
-            if (!remoteTables.containsKey(name)) {
-                model.addElement(name);
-            }
-        }
-
-        changeTab(1);
-    }
-
     private void changeTab(int index) {
         tab.setSelectedIndex(index);
 
@@ -856,20 +882,41 @@ public class ImportBases extends javax.swing.JFrame {
 
     }
 
+    /**
+     * Check new local tables
+     */
+    private void runStepOne() {
+        DefaultListModel model = (DefaultListModel) lstTablesConflict.getModel();
+        model.removeAllElements();
+        for (String name : localTalbles.keySet()) {
+            if (!remoteTables.containsKey(name)) {
+                model.addElement(name);
+            }
+        }
+
+        changeTab(1);
+    }
+
+    /**
+     * Check fields conflicts and new remote tables
+     */
     private void runStepTwo() {
 
         if (tableRoot == null) {
             tableRoot = new DefaultMutableTreeNode("Tables");
         } else {
             tableRoot.removeAllChildren();
+            tfLog.setText(null);
         }
 
-        DefaultListModel dst = (DefaultListModel) lstDst.getModel();
+        DefaultListModel<Option> dst = (DefaultListModel<Option>) lstDst.getModel();
 
         for (Object tbName : dst.toArray()) {
             TableElement lt = localTalbles.get(tbName.toString());
 
             if (lt == null) {
+                Option opt = (Option) tbName;
+                newRemoteTables.add((Table) opt.getValue());
                 continue;
             }
 
@@ -933,13 +980,12 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void runStepThree() {
 
-        logIndices.clear();
-        tfLogIndex.setText(null);
-
         if (indexRoot == null) {
             indexRoot = new DefaultMutableTreeNode("Indices");
         } else {
             indexRoot.removeAllChildren();
+            logIndices.clear();
+            tfLogIndex.setText(null);
         }
 
         for (String tbName : remoteTables.keySet()) {
@@ -1110,11 +1156,40 @@ public class ImportBases extends javax.swing.JFrame {
     }
 
     private void finish() {
-        for (String tbName : updateFields.keySet()) {
+        this.dispose();
+    }
 
+    private void persist() {
+
+        lblInfo.setForeground(Color.BLACK);
+        lblInfo.setText(String.format("Changes on %s were updated.", remoteBase.getName()));
+
+        DataBaseElement db = XMLUtil.findByName(remoteBase.getName());
+
+        if (db == null) {
+            db = new DataBaseElement(remoteBase);
+            XMLUtil.addDataBase(db);
+        }
+
+        for (Table tb : newRemoteTables) {
+            TableElement tbe = new TableElement(db, tb);
+
+            if (tb.getIndices() != null) {
+                for (Index i : tb.getIndices()) {
+                    XMLUtil.indices.add(new IndexElement(i, tbe));
+                }
+            }
+
+            tbe.update();
+            db.addTable(tbe);
+            XMLUtil.addFilterTable(tbe);
+            //te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+        }
+
+        for (String tbName : updateFields.keySet()) {
             Set<FieldChange> fchg = updateFields.get(tbName);
 
-            TableElement tb = XMLUtil.findByName(remoteBase.getName(), tbName);
+            TableElement tb = XMLUtil.findByName(db.getName(), tbName);
 
             for (FieldChange f : fchg) {
 
@@ -1151,10 +1226,7 @@ public class ImportBases extends javax.swing.JFrame {
                     XMLUtil.indices.set(idx, k.index);
                 }
             }
-
         }
-
-        this.dispose();
     }
 
 }

@@ -54,7 +54,15 @@ public class DataBaseElement {
     }
 
     public void setTables(List<TableElement> tables) {
+        if (tables == null) {
+            throw new IllegalArgumentException();
+        }
+
         this.tables = tables;
+    }
+
+    public void addTable(TableElement tbe) {
+        this.tables.add(tbe);
     }
 
     @Override

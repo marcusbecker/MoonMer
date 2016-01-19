@@ -7,6 +7,7 @@ package br.com.mvbos.mymer.el;
 
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.Index;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,10 @@ public class IndexElement extends ElementModel {
         this.unique = unique;
         this.active = active;
         this.table = table;
+    }
+
+    public IndexElement(Index i, TableElement tb) {
+        this(i.getName(), i.getPrimary(), i.getUnique(), i.getActive(), tb);
     }
 
     public Boolean getPrimary() {

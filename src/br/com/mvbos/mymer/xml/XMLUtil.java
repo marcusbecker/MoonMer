@@ -6,6 +6,7 @@
 package br.com.mvbos.mymer.xml;
 
 import br.com.mvbos.jeg.element.ElementModel;
+import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.Find;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
@@ -20,11 +21,15 @@ import br.com.mvbos.mymer.xml.field.Relationship;
 import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.View;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -53,19 +58,18 @@ public class XMLUtil {
 
     public static final DataBaseElement DEFAULT_DATA_BASE;
 
-    public static final List<TableElement> filter;
+    private static final List<TableElement> filter;
     public static final List<IndexElement> indices;
     public static final List<RelationshipElement> relations;
-    public static final List<DataBaseElement> filterBases = new ArrayList<>(10);
+    private static final List<DataBaseElement> filterBases = new ArrayList<>(10);
 
     public static Set<DataBaseElement> dataBases = new LinkedHashSet<>(10);
 
     private static final int LIST_TABLE_SIZE = 60;
     private static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
 
-
     /*Folders*/
-    private static final File CURRENT_PATH = new File(".");
+    private static final File CURRENT_PATH = new File(Common.currentPath);
     private static final File DIR_CONFIG = new File(CURRENT_PATH, "config");
     private static final File FILE_DIR_DB = new File(CURRENT_PATH, "dbs");
     private static final File FILE_DIR_REL = new File(CURRENT_PATH, "relations");
@@ -79,6 +83,8 @@ public class XMLUtil {
     private static final File FILE_POSITION_STORE = new File(DIR_CONFIG, "field_config.xml");
     private static final File FILE_RELATIONSHIP_STORE = new File(FILE_DIR_REL, "relationship_config.xml");
 
+    private static final List<ActionListener> listern = new ArrayList<>(4);
+
     static {
         DEFAULT_DATA_BASE = new DataBaseElement("New data base", new Color(74, 189, 218));
 
@@ -91,7 +97,6 @@ public class XMLUtil {
         indices = importIndices();
 
         tableCount = filter.size();
-
     }
 
     public static boolean exportFields() {
@@ -136,9 +141,9 @@ public class XMLUtil {
                 m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
                 //m.marshal(fps, System.out);
 
-                m.marshal(dbs, dst);
+                m.marshal(dbs, getFileOutputStream(dst));
 
-            } catch (Exception ex) {
+            } catch (JAXBException | FileNotFoundException ex) {
                 Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
 
                 return false;
@@ -275,9 +280,9 @@ public class XMLUtil {
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
             //m.marshal(fps, System.out);
 
-            m.marshal(fps, FILE_POSITION_STORE);
+            m.marshal(fps, getFileOutputStream(FILE_POSITION_STORE));
 
-        } catch (Exception ex) {
+        } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
@@ -311,9 +316,9 @@ public class XMLUtil {
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
 
-            m.marshal(rStore, FILE_RELATIONSHIP_STORE);
+            m.marshal(rStore, getFileOutputStream(FILE_RELATIONSHIP_STORE));
 
-        } catch (Exception ex) {
+        } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
@@ -343,9 +348,9 @@ public class XMLUtil {
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
 
-            m.marshal(rStore, FILE_INDEX_STORE);
+            m.marshal(rStore, getFileOutputStream(FILE_INDEX_STORE));
 
-        } catch (Exception ex) {
+        } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
@@ -382,9 +387,9 @@ public class XMLUtil {
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
 
-            m.marshal(cs, FILE_CONFIG);
+            m.marshal(cs, getFileOutputStream(FILE_CONFIG));
 
-        } catch (Exception ex) {
+        } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
@@ -405,13 +410,13 @@ public class XMLUtil {
             JAXBContext context = JAXBContext.newInstance(ConfigStore.class);
             Unmarshaller um = context.createUnmarshaller();
 
-            config = (ConfigStore) um.unmarshal(new FileReader(FILE_CONFIG));
+            config = (ConfigStore) um.unmarshal(getFileInputStream(FILE_CONFIG));
 
         } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        if (config != null) {
+        if (config != null && config.getBases() != null) {
 
             for (DataBaseElement db : dataBases) {
                 for (DataConfig c : config.getBases()) {
@@ -436,7 +441,7 @@ public class XMLUtil {
                 JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
                 Unmarshaller um = context.createUnmarshaller();
 
-                dbs = (DataBaseStore) um.unmarshal(new FileReader(f));
+                dbs = (DataBaseStore) um.unmarshal(getFileInputStream(f));
 
             } catch (JAXBException | FileNotFoundException ex) {
                 Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -496,7 +501,7 @@ public class XMLUtil {
                 JAXBContext context = JAXBContext.newInstance(RelationshipStore.class);
                 Unmarshaller um = context.createUnmarshaller();
 
-                rStore = (RelationshipStore) um.unmarshal(new FileReader(FILE_RELATIONSHIP_STORE));
+                rStore = (RelationshipStore) um.unmarshal(getFileInputStream(FILE_RELATIONSHIP_STORE));
             }
 
         } catch (JAXBException | FileNotFoundException ex) {
@@ -563,7 +568,7 @@ public class XMLUtil {
                 JAXBContext context = JAXBContext.newInstance(IndexStore.class);
                 Unmarshaller um = context.createUnmarshaller();
 
-                iStore = (IndexStore) um.unmarshal(new FileReader(FILE_INDEX_STORE));
+                iStore = (IndexStore) um.unmarshal(getFileInputStream(FILE_INDEX_STORE));
             }
 
         } catch (JAXBException | FileNotFoundException ex) {
@@ -581,7 +586,7 @@ public class XMLUtil {
                     continue;
                 }
 
-                IndexElement ie = new IndexElement(i.getName(), i.getPrimary(), i.getUnique(), i.getActive(), tb);
+                IndexElement ie = new IndexElement(i, tb);
 
                 if (i.getFields() != null) {
                     List<Field> lstField = new ArrayList<>(i.getFields().size());
@@ -604,9 +609,6 @@ public class XMLUtil {
     }
 
     public static DataBaseStore parseToDataBase(InputStreamReader is) throws JAXBException {
-
-        DataBaseStore dbs = null;
-
         JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
         Unmarshaller um = context.createUnmarshaller();
 
@@ -625,7 +627,7 @@ public class XMLUtil {
             JAXBContext context = JAXBContext.newInstance(FieldPositionStore.class);
             Unmarshaller um = context.createUnmarshaller();
 
-            fps = (FieldPositionStore) um.unmarshal(new FileReader(FILE_POSITION_STORE));
+            fps = (FieldPositionStore) um.unmarshal(getFileInputStream(FILE_POSITION_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -667,11 +669,20 @@ public class XMLUtil {
     public static void addDataBase(DataBaseElement db) {
         filterBases.add(db);
         dataBases.add(db);
+
+        ActionEvent evt = new ActionEvent(db, 0, "ADD_DATABASE");
+        for (ActionListener a : listern) {
+            a.actionPerformed(evt);
+        }
     }
 
     public static void removeDataBase(DataBaseElement db) {
         filterBases.remove(db);
         dataBases.remove(db);
+    }
+
+    public static List<DataBaseElement> getDataBase() {
+        return filterBases;
     }
 
     public static void removeField(TableElement e) {
@@ -816,7 +827,7 @@ public class XMLUtil {
                 JAXBContext context = JAXBContext.newInstance(ViewStore.class);
                 Unmarshaller um = context.createUnmarshaller();
 
-                ViewStore vs = (ViewStore) um.unmarshal(new FileReader(f));
+                ViewStore vs = (ViewStore) um.unmarshal(getFileInputStream(f));
 
                 if (vs.getViews() != null) {
                     lst.addAll(vs.getViews());
@@ -844,15 +855,40 @@ public class XMLUtil {
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
 
-            m.marshal(vs, FILE_VIEW_STORE);
+            m.marshal(vs, getFileOutputStream(FILE_VIEW_STORE));
 
-        } catch (Exception ex) {
+        } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
         }
 
         return true;
+    }
+
+    private static InputStreamReader getFileInputStream(File file) throws FileNotFoundException {
+        return new InputStreamReader(new FileInputStream(file), Common.charset);
+    }
+
+    private static OutputStreamWriter getFileOutputStream(File file) throws FileNotFoundException {
+        return new OutputStreamWriter(new FileOutputStream(file), Common.charset);
+    }
+
+    public static void addFilterTable(TableElement te) {
+        XMLUtil.filter.add(te);
+
+        ActionEvent evt = new ActionEvent(te, 1, "ADD_TABLE");
+        for (ActionListener a : listern) {
+            a.actionPerformed(evt);
+        }
+    }
+
+    public static List<TableElement> getFilterTable() {
+        return filter;
+    }
+
+    public static void addActionListern(ActionListener actionListener) {
+        listern.add(actionListener);
     }
 
 }

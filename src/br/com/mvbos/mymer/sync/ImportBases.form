@@ -162,7 +162,7 @@
                 <Component class="javax.swing.JList" name="lstOrg">
                   <Properties>
                     <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="new DefaultListModel()" type="code"/>
+                      <Connection code="new DefaultListModel&lt;Option&gt;()" type="code"/>
                     </Property>
                   </Properties>
                 </Component>
@@ -186,7 +186,7 @@
                 <Component class="javax.swing.JList" name="lstDst">
                   <Properties>
                     <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="new DefaultListModel()" type="code"/>
+                      <Connection code="new DefaultListModel&lt;Option&gt;()" type="code"/>
                     </Property>
                   </Properties>
                 </Component>

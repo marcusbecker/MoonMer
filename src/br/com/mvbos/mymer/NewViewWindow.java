@@ -10,6 +10,7 @@ import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.View;
 import br.com.mvbos.mymer.xml.field.ViewTable;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,10 +24,11 @@ import javax.swing.DefaultListModel;
 public class NewViewWindow extends javax.swing.JFrame {
 
     private int px;
+    private short ct;
 
     private View selected;
     private List<View> views;
-    private ElementModel[] selectedTables;
+    private ElementModel[] selectedTables = new ElementModel[0];
 
     public ElementModel[] getSelectedTables() {
         return selectedTables;
@@ -34,6 +36,18 @@ public class NewViewWindow extends javax.swing.JFrame {
 
     public void setSelectedTables(ElementModel[] selectedTables) {
         this.selectedTables = selectedTables;
+        temp.delete(0, temp.length());
+
+        for (ct = 0; ct < selectedTables.length; ct++) {
+            if (selectedTables[ct] == null) {
+                break;
+            }
+
+            temp.append(selectedTables[ct].getName()).append(", ");
+        }
+
+        setTitle(temp.toString());
+        lblInfo.setText(String.format("%d tables selecteds.", ct));
     }
 
     /**
@@ -69,7 +83,8 @@ public class NewViewWindow extends javax.swing.JFrame {
         btnNext = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstViews = new javax.swing.JList();
-        tfTables = new javax.swing.JTextField();
+        tfLabelTables = new javax.swing.JTextField();
+        lblInfo = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -91,9 +106,16 @@ public class NewViewWindow extends javax.swing.JFrame {
                 lstViewsValueChanged(evt);
             }
         });
+        lstViews.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                lstViewsKeyReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(lstViews);
 
-        tfTables.setEditable(false);
+        tfLabelTables.setEditable(false);
+
+        lblInfo.setText(" ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -108,9 +130,10 @@ public class NewViewWindow extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tfName))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(lblInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnNext))
-                    .addComponent(tfTables))
+                    .addComponent(tfLabelTables))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -123,10 +146,12 @@ public class NewViewWindow extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tfTables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(9, 9, 9)
-                .addComponent(btnNext)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(tfLabelTables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblInfo)
+                    .addComponent(btnNext))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
 
         pack();
@@ -136,7 +161,10 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         ViewWindow vw = new ViewWindow();
 
-        if (selected == null) {
+        if (selected == null && ct == 0) {
+            tfLabelTables.setText("No tables selected.");
+
+        } else if (selected == null) {
 
             selected = new View(tfName.getText());
             //List<TableElement> lst = new ArrayList<>(selectedTables.length);
@@ -195,23 +223,49 @@ public class NewViewWindow extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnNextActionPerformed
 
+    private final StringBuilder temp = new StringBuilder(100);
+
     private void lstViewsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_lstViewsValueChanged
 
         if (evt.getValueIsAdjusting()) {
+            temp.delete(0, temp.length());
+
             selected = views.get(lstViews.getSelectedIndex());
             tfName.setText(selected.getName());
+
+            for (ViewTable v : selected.getTables()) {
+                temp.append(v.getTableName()).append(", ");
+            }
+
+            tfLabelTables.setText(temp.toString());
         }
 
     }//GEN-LAST:event_lstViewsValueChanged
+
+    private void lstViewsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lstViewsKeyReleased
+
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+            int idx = lstViews.getSelectedIndex();
+            if (idx > -1) {
+                views.remove(idx);
+                ((DefaultListModel) lstViews.getModel()).removeElementAt(idx);
+
+                selected = null;
+                tfLabelTables.setText(null);
+            }
+        }
+
+    }//GEN-LAST:event_lstViewsKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnNext;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbl;
+    private javax.swing.JLabel lblInfo;
     private javax.swing.JList lstViews;
+    private javax.swing.JTextField tfLabelTables;
     private javax.swing.JTextField tfName;
-    private javax.swing.JTextField tfTables;
     // End of variables declaration//GEN-END:variables
 
     private TableElement copy(TableElement t, ViewTable v) {

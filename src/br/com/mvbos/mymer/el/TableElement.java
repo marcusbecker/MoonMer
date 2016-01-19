@@ -8,6 +8,7 @@ package br.com.mvbos.mymer.el;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.Table;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -34,6 +35,11 @@ public class TableElement extends ElementModel {
     private boolean autoWidth = true;
     private boolean autoHeight = true;
     private Color headerColor = Color.DARK_GRAY;
+
+    public TableElement(DataBaseElement dataBase, Table tb) {
+        this(0, 0, 50, 50, dataBase, tb.getName());
+        fields.addAll(tb.getFields());
+    }
 
     public TableElement(int width, int height, DataBaseElement dataBase, String name) {
         this(0, 0, width, height, dataBase, name);
