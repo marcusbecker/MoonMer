@@ -91,6 +91,7 @@ public class XMLUtil {
         indices = importIndices();
 
         tableCount = filter.size();
+
     }
 
     public static boolean exportFields() {
@@ -410,7 +411,7 @@ public class XMLUtil {
             Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        if (config != null && config.getBases() != null) {
+        if (config != null) {
 
             for (DataBaseElement db : dataBases) {
                 for (DataConfig c : config.getBases()) {
