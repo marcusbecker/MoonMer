@@ -83,6 +83,9 @@ public class XMLUtil {
     private static final File FILE_POSITION_STORE = new File(DIR_CONFIG, "field_config.xml");
     private static final File FILE_RELATIONSHIP_STORE = new File(FILE_DIR_REL, "relationship_config.xml");
 
+    public static final int EVT_ADD = 0;
+    public static final int EVT_REMOVE = 1;
+
     private static final List<ActionListener> listern = new ArrayList<>(4);
 
     static {
@@ -670,7 +673,7 @@ public class XMLUtil {
         filterBases.add(db);
         dataBases.add(db);
 
-        ActionEvent evt = new ActionEvent(db, 0, "ADD_DATABASE");
+        ActionEvent evt = new ActionEvent(db, EVT_ADD, "ADD_DATABASE");
         for (ActionListener a : listern) {
             a.actionPerformed(evt);
         }
@@ -685,12 +688,20 @@ public class XMLUtil {
         return filterBases;
     }
 
-    public static void removeField(TableElement e) {
-        DataBaseElement db = e.getDataBase();
+    public static void removeTable(TableElement e) {
+        removeTable(e.getDataBase(), e);
+    }
+
+    public static void removeTable(DataBaseElement db, TableElement e) {
         db.getTables().remove(e);
         filter.remove(e);
 
         Undo.add(e);
+
+        ActionEvent evt = new ActionEvent(e, EVT_REMOVE, "REMOVE_TABLE");
+        for (ActionListener a : listern) {
+            a.actionPerformed(evt);
+        }
     }
 
     public static DataBaseElement findByName(String name) {
@@ -877,7 +888,7 @@ public class XMLUtil {
     public static void addFilterTable(TableElement te) {
         XMLUtil.filter.add(te);
 
-        ActionEvent evt = new ActionEvent(te, 1, "ADD_TABLE");
+        ActionEvent evt = new ActionEvent(te, EVT_ADD, "ADD_TABLE");
         for (ActionListener a : listern) {
             a.actionPerformed(evt);
         }
@@ -889,6 +900,14 @@ public class XMLUtil {
 
     public static void addActionListern(ActionListener actionListener) {
         listern.add(actionListener);
+    }
+
+    public static void addIndex(IndexElement indexElement) {
+        indices.add(indexElement);
+    }
+
+    public static void removeIndex(IndexElement indexElement) {
+        indices.remove(indexElement);
     }
 
 }

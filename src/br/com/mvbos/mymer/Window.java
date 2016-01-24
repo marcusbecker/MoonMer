@@ -104,94 +104,6 @@ public class Window extends javax.swing.JFrame {
 
     private EditTool mode = EditTool.SELECTOR;
 
-    private void removeTable(TableElement e) {
-        XMLUtil.removeField(e);
-        populeTreeNodes();
-    }
-
-    private void selectLast(JComboBox cb) {
-        cb.setSelectedIndex(cb.getItemCount() - 1);
-    }
-
-    private static int cc = 0;
-
-    private void contaChamadas(String name) {
-        System.out.println("name " + name + " " + ++cc);
-    }
-
-    private TableElement getTableSeletected() {
-        if (selectedElements[0] instanceof TableElement) {
-            return (TableElement) selectedElements[0];
-        }
-
-        return null;
-    }
-
-    private void addNewTableOnTree(TableElement te) {
-
-        for (int i = 0; i < root.getChildCount(); i++) {
-            DataTreeNode dtn = (DataTreeNode) root.getChildAt(i);
-
-            if (dtn.get().equals(te.getDataBase())) {
-                dtn.add(new TableTreeNode(te));
-                break;
-            }
-
-        }
-
-        treeBases.updateUI();
-    }
-
-    private void expandTableOnTree3() {
-        TreePath rootPath = new TreePath(root);
-        Enumeration<TreePath> expandedPaths = treeBases.getExpandedDescendants(rootPath);
-
-        TreePath selectedPath = treeBases.getSelectionPath();
-
-        populeTreeNodes();
-
-        while (expandedPaths != null && expandedPaths.hasMoreElements()) {
-            TreePath path = expandedPaths.nextElement();
-            System.out.println("expand " + path);
-            treeBases.expandPath(path);
-        }
-
-        //if (isPathValid(selectedPath)) {
-        treeBases.setSelectionPath(selectedPath);
-        //}
-    }
-
-    private void expandTableOnTree2() {
-        //TreePath[] selectionPaths = treeBases.getSelectionPaths();
-        boolean[] sel = new boolean[root.getChildCount()];
-        for (int i = 0; i < root.getChildCount(); i++) {
-            treeBases.isExpanded(new TreePath(root.getChildAt(i)));
-            sel[i] = treeBases.isExpanded(i);
-            root.getChildAt(i);
-            System.out.println("expandRow " + sel[i] + " " + root.getChildAt(i));
-
-            //System.out.println("expandRow " + sel[i]);
-        }
-
-        populeTreeNodes();
-
-        for (int i = 0; i < sel.length; i++) {
-            if (sel[i]) {
-
-                treeBases.expandRow(i);
-            }
-        }
-
-    }
-
-    private void cancelTablesEditions(JTable... tables) {
-        for (JTable tb : tables) {
-            if (tb.isEditing()) {
-                tb.getCellEditor().stopCellEditing();
-            }
-        }
-    }
-
     private class MyDispatcher implements KeyEventDispatcher {
 
         @Override
@@ -313,7 +225,11 @@ public class Window extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
 
                 if (e.getSource() instanceof TableElement) {
-                    addNewTableOnTree((TableElement) e.getSource());
+                    if (e.getID() == XMLUtil.EVT_ADD) {
+                        addNewTableOnTree((TableElement) e.getSource());
+                    } else if (e.getID() == XMLUtil.EVT_REMOVE) {
+                        populeTreeNodes();
+                    }
 
                 } else if (e.getSource() instanceof DataBaseElement) {
                     populeComboBoxes();
@@ -1025,9 +941,9 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSearchField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 386, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSave))
@@ -1360,6 +1276,7 @@ public class Window extends javax.swing.JFrame {
 
         miBases.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
         miBases.setText("New Database");
+        miBases.setToolTipText("Add or edit database");
         miBases.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miBasesActionPerformed(evt);
@@ -1567,9 +1484,10 @@ public class Window extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRemoveTableActionPerformed
 
     private void removeSelectedTables() throws HeadlessException {
-        if (selectedElements[0] != null) {
+        TableElement sel = getTableSeletected();
+        if (sel != null) {
             if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
-                removeTable((TableElement) selectedElements[0]);
+                XMLUtil.removeTable(sel);
                 singleSelection(null);
             }
         }
@@ -1939,7 +1857,11 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnSQLTempTableActionPerformed
 
+    //private int startFieldSearch;
+
     private void tfSearchFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfSearchFieldKeyReleased
+
+        int start = evt.isShiftDown() ? 0 : tbFields.getSelectedRow();
 
         if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
             //tfSearchField.setText("");
@@ -1947,22 +1869,27 @@ public class Window extends javax.swing.JFrame {
             return;
         }
 
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            start++;
+        }
+
         if (selectedElements[0] != null && !tfSearchField.getText().isEmpty()) {
             TableElement t = (TableElement) selectedElements[0];
-            for (int i = 0; i < t.getFields().size(); i++) {
-                Field f = t.getFields().get(i);
+
+            if (start == -1 || start >= t.getFields().size()) {
+                start = 0;
+            }
+
+            for (; start < t.getFields().size(); start++) {
+                Field f = t.getFields().get(start);
 
                 if (f.getName().contains(tfSearchField.getText())) {
-                    tbFields.setRowSelectionInterval(i, i);
-                    tbFields.scrollRectToVisible(tbFields.getCellRect(i, 0, true));
+                    tbFields.setRowSelectionInterval(start, start);
+                    tbFields.scrollRectToVisible(tbFields.getCellRect(start, 0, true));
                     //spTbFields.r
                     break;
                 }
             }
-        }
-
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            dlgSearchField.setVisible(false);
         }
 
 
@@ -1972,6 +1899,7 @@ public class Window extends javax.swing.JFrame {
         dlgSearchField.pack();
         dlgSearchField.setLocationRelativeTo(this);
         dlgSearchField.setVisible(true);
+        tfSearchField.selectAll();
     }//GEN-LAST:event_btnSearchFieldActionPerformed
 
     private void tfTableNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfTableNameKeyReleased
@@ -2200,14 +2128,7 @@ public class Window extends javax.swing.JFrame {
     private void miCloneTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCloneTableActionPerformed
         TableElement te = getTableSeletected();
         if (te != null) {
-            TableElement nte = new TableElement(te.getPx() + 5, te.getPy() + 5, te.getWidth(), te.getHeight(), te.getDataBase(), "copy_" + te.getName());
-            for (Field f : te.getFields()) {
-                Field ff = new Field(f.getName(), f.getType());
-                nte.addFields(ff);
-            }
-
-            nte.update();
-            te.getDataBase().getTables().add(nte);
+            TableElement nte = EntityUtil.clone(te);
             XMLUtil.addFilterTable(nte);
         }
 
@@ -3078,5 +2999,88 @@ public class Window extends javax.swing.JFrame {
         this.dispose();
 
         System.exit(0);
+    }
+
+    private void selectLast(JComboBox cb) {
+        cb.setSelectedIndex(cb.getItemCount() - 1);
+    }
+
+    private static int cc = 0;
+
+    private void contaChamadas(String name) {
+        System.out.println("name " + name + " " + ++cc);
+    }
+
+    private TableElement getTableSeletected() {
+        if (selectedElements[0] instanceof TableElement) {
+            return (TableElement) selectedElements[0];
+        }
+
+        return null;
+    }
+
+    private void addNewTableOnTree(TableElement te) {
+
+        for (int i = 0; i < root.getChildCount(); i++) {
+            DataTreeNode dtn = (DataTreeNode) root.getChildAt(i);
+
+            if (dtn.get().equals(te.getDataBase())) {
+                dtn.add(new TableTreeNode(te));
+                break;
+            }
+
+        }
+
+        treeBases.updateUI();
+    }
+
+    private void expandTableOnTree3() {
+        TreePath rootPath = new TreePath(root);
+        Enumeration<TreePath> expandedPaths = treeBases.getExpandedDescendants(rootPath);
+
+        TreePath selectedPath = treeBases.getSelectionPath();
+
+        populeTreeNodes();
+
+        while (expandedPaths != null && expandedPaths.hasMoreElements()) {
+            TreePath path = expandedPaths.nextElement();
+            System.out.println("expand " + path);
+            treeBases.expandPath(path);
+        }
+
+        //if (isPathValid(selectedPath)) {
+        treeBases.setSelectionPath(selectedPath);
+        //}
+    }
+
+    private void expandTableOnTree2() {
+        //TreePath[] selectionPaths = treeBases.getSelectionPaths();
+        boolean[] sel = new boolean[root.getChildCount()];
+        for (int i = 0; i < root.getChildCount(); i++) {
+            treeBases.isExpanded(new TreePath(root.getChildAt(i)));
+            sel[i] = treeBases.isExpanded(i);
+            root.getChildAt(i);
+            System.out.println("expandRow " + sel[i] + " " + root.getChildAt(i));
+
+            //System.out.println("expandRow " + sel[i]);
+        }
+
+        populeTreeNodes();
+
+        for (int i = 0; i < sel.length; i++) {
+            if (sel[i]) {
+
+                treeBases.expandRow(i);
+            }
+        }
+
+    }
+
+    private void cancelTablesEditions(JTable... tables) {
+        for (JTable tb : tables) {
+            if (tb.isEditing()) {
+                tb.getCellEditor().stopCellEditing();
+            }
+        }
     }
 }

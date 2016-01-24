@@ -63,6 +63,8 @@ public class ImportBases extends javax.swing.JFrame {
     private final List<Table> newRemoteTables = new ArrayList<>(30);
     private final Map<String, Table> remoteTables = new HashMap<>(30);
     private final Map<String, TableElement> localTalbles = new HashMap<>(30);
+    private final List<TableElement> lstRemoveLocalTable = new ArrayList<>(30);
+
     private final boolean filterBySelected = true;
 
     private int dbStart;
@@ -132,6 +134,7 @@ public class ImportBases extends javax.swing.JFrame {
         initComponents();
         changeTab(0);
         fc.setFileFilter(new FileNameExtensionFilter("XML File", "xml"));
+        tfOrigin.setText(Common.importURL);
     }
 
     private void startImport(DataBaseStore db) {
@@ -172,6 +175,7 @@ public class ImportBases extends javax.swing.JFrame {
         localTalbles.clear();
         remoteTables.clear();
         newRemoteTables.clear();
+        lstRemoveLocalTable.clear();
 
         DefaultListModel<Option> org = (DefaultListModel<Option>) lstOrg.getModel();
         org.removeAllElements();
@@ -263,6 +267,7 @@ public class ImportBases extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         lstTablesConflict = new javax.swing.JList();
+        btnRemoveLocalTable = new javax.swing.JButton();
         pnStepThree = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         treeFieldImport = new javax.swing.JTree();
@@ -391,6 +396,13 @@ public class ImportBases extends javax.swing.JFrame {
         lstTablesConflict.setModel(new DefaultListModel());
         jScrollPane3.setViewportView(lstTablesConflict);
 
+        btnRemoveLocalTable.setText("Remove");
+        btnRemoveLocalTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveLocalTableActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnStepTwoLayout = new javax.swing.GroupLayout(pnStepTwo);
         pnStepTwo.setLayout(pnStepTwoLayout);
         pnStepTwoLayout.setHorizontalGroup(
@@ -399,7 +411,10 @@ public class ImportBases extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepTwoLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnRemoveLocalTable)))
                 .addContainerGap())
         );
         pnStepTwoLayout.setVerticalGroup(
@@ -408,7 +423,9 @@ public class ImportBases extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnRemoveLocalTable)
                 .addContainerGap())
         );
 
@@ -873,6 +890,17 @@ public class ImportBases extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnUpdateAllIndicesActionPerformed
 
+    private void btnRemoveLocalTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveLocalTableActionPerformed
+
+        if (lstTablesConflict.getSelectedValue() != null) {
+            String name = lstTablesConflict.getSelectedValue().toString();
+            lstRemoveLocalTable.add(localTalbles.get(name));
+
+            ((DefaultListModel) lstTablesConflict.getModel()).removeElement(lstTablesConflict.getSelectedValue());
+        }
+
+    }//GEN-LAST:event_btnRemoveLocalTableActionPerformed
+
     private void changeTab(int index) {
         tab.setSelectedIndex(index);
 
@@ -1108,6 +1136,7 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JButton btnNext;
     private javax.swing.JButton btnRem;
     private javax.swing.JButton btnRemAll;
+    private javax.swing.JButton btnRemoveLocalTable;
     private javax.swing.JButton btnURL;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JButton btnUpdateAll;
@@ -1169,6 +1198,11 @@ public class ImportBases extends javax.swing.JFrame {
         if (db == null) {
             db = new DataBaseElement(remoteBase);
             XMLUtil.addDataBase(db);
+
+        } else {
+            for (TableElement t : lstRemoveLocalTable) {
+                XMLUtil.removeTable(db, t);
+            }
         }
 
         for (Table tb : newRemoteTables) {
@@ -1176,7 +1210,7 @@ public class ImportBases extends javax.swing.JFrame {
 
             if (tb.getIndices() != null) {
                 for (Index i : tb.getIndices()) {
-                    XMLUtil.indices.add(new IndexElement(i, tbe));
+                    XMLUtil.addIndex(new IndexElement(i, tbe));
                 }
             }
 
@@ -1217,7 +1251,7 @@ public class ImportBases extends javax.swing.JFrame {
 
                 if (idx == -1) {
                     if (FieldTreeNode.Diff.NEW == k.diff) {
-                        XMLUtil.indices.add(k.index);
+                        XMLUtil.addIndex(k.index);
                     }
                 } else if (FieldTreeNode.Diff.DELETED == k.diff) {
                     XMLUtil.indices.remove(idx);
@@ -1227,6 +1261,7 @@ public class ImportBases extends javax.swing.JFrame {
                 }
             }
         }
+
     }
 
 }

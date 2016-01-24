@@ -65,45 +65,18 @@ public class ViewWindow extends javax.swing.JFrame {
     private View selected;
     private boolean AUTO_SAVE = true;
 
-    public void addTable(TableElement tb) {
-
-        if (tables.contains(tb)) {
-            return;
-        }
-        tables.add(tb);
-    }
-
-    private List<TableElement> getTables() {
-        return tables;
-    }
-
-    public List<RelationshipElement> getRelations() {
-        return relations;
-    }
-
-    private void addRelations(Set<RelationshipElement> relationship) {
-        relations.clear();
-        for (RelationshipElement r : relationship) {
-            TableElement parent = tables.get(tables.indexOf(r.getParent()));
-            TableElement child = tables.get(tables.indexOf(r.getChild()));
-
-            RelationshipElement re = new RelationshipElement(r.getType(), parent, child);
-            re.setCam(cam);
-
-            relations.add(re);
-        }
-    }
-
-    public void init(View selected, List<View> views) {
-        this.selected = selected;
-        this.views = views;
-        addRelations(XMLUtil.findRelationship(getTables()));
-    }
-
     private class MyDispatcher implements KeyEventDispatcher {
 
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
+
+            isAltDown = e.isAltDown();
+            isControlDown = e.isControlDown();
+
+            if (getFocusOwner() == null) {
+                return false;
+            }
+
             if (e.getID() == KeyEvent.KEY_PRESSED) {
 
                 if (KeyEvent.VK_PAGE_DOWN == e.getKeyCode() || KeyEvent.VK_PAGE_UP == e.getKeyCode()) {
@@ -121,11 +94,12 @@ public class ViewWindow extends javax.swing.JFrame {
                 }
 
             } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    removeSelTables();
+                }
+
             } else if (e.getID() == KeyEvent.KEY_TYPED) {
             }
-
-            isAltDown = e.isAltDown();
-            isControlDown = e.isControlDown();
 
             if (isAltDown) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
@@ -135,6 +109,7 @@ public class ViewWindow extends javax.swing.JFrame {
 
             return false;
         }
+
     }
 
     /**
@@ -179,6 +154,8 @@ public class ViewWindow extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tfStruct = new javax.swing.JTextArea();
         btnBuildSctruct = new javax.swing.JButton();
+        btnAddRelOneOne = new javax.swing.JButton();
+        btnAddRelOneMany = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("MoonMer - View");
@@ -262,10 +239,26 @@ public class ViewWindow extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addComponent(btnBuildSctruct)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
+
+        btnAddRelOneOne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/one_to_one.png"))); // NOI18N
+        btnAddRelOneOne.setToolTipText("Add One to One relationship");
+        btnAddRelOneOne.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddRelOneOneActionPerformed(evt);
+            }
+        });
+
+        btnAddRelOneMany.setIcon(new javax.swing.ImageIcon(getClass().getResource("/one_to_many.png"))); // NOI18N
+        btnAddRelOneMany.setToolTipText("Add One to Many relationship");
+        btnAddRelOneMany.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddRelOneManyActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnBottomLayout = new javax.swing.GroupLayout(pnBottom);
         pnBottom.setLayout(pnBottomLayout);
@@ -273,13 +266,22 @@ public class ViewWindow extends javax.swing.JFrame {
             pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnBottomLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1)
+                .addGroup(pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTabbedPane1)
+                    .addGroup(pnBottomLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnAddRelOneOne)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAddRelOneMany)))
                 .addContainerGap())
         );
         pnBottomLayout.setVerticalGroup(
             pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnBottomLayout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnBottomLayout.createSequentialGroup()
+                .addGroup(pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnAddRelOneOne)
+                    .addComponent(btnAddRelOneMany))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1)
                 .addContainerGap())
         );
@@ -314,7 +316,6 @@ public class ViewWindow extends javax.swing.JFrame {
                         vt.setPx(t.getPx());
                         vt.setPy(t.getPy());
                     }
-
                 }
             }
 
@@ -405,8 +406,20 @@ public class ViewWindow extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnBuildSctructActionPerformed
 
+    private void btnAddRelOneOneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddRelOneOneActionPerformed
+        mode = EditTool.RELATION;
+        relType = RelationshipElement.Type.ONE_TO_ONE;
+    }//GEN-LAST:event_btnAddRelOneOneActionPerformed
+
+    private void btnAddRelOneManyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddRelOneManyActionPerformed
+        mode = EditTool.RELATION;
+        relType = RelationshipElement.Type.ONE_TO_MORE;
+    }//GEN-LAST:event_btnAddRelOneManyActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddRelOneMany;
+    private javax.swing.JButton btnAddRelOneOne;
     private javax.swing.JButton btnBuildSctruct;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
@@ -521,7 +534,16 @@ public class ViewWindow extends javax.swing.JFrame {
 
                     mouseElement.setPxy(e.getX() + cam.getCpx(), e.getY() + cam.getCpy());
 
-                    selectElementOnStage(hasColision(mouseElement));
+                    switch (mode) {
+                        case SELECTOR:
+                            selectElementOnStage(hasColision(mouseElement));
+                            return;
+                        case RELATION:
+                            addRelationship(hasColision(mouseElement));
+                            return;
+                        case HAND:
+                            return;
+                    }
 
                 } else {
                     selector.setEnabled(false);
@@ -660,6 +682,25 @@ public class ViewWindow extends javax.swing.JFrame {
 
     }
 
+    private void addRelationship(ElementModel el) {
+        if (el == null) {
+            return;
+        }
+
+        if (relLeft == null) {
+            relLeft = (TableElement) el;
+        } else if (relRight == null) {
+            relRight = (TableElement) el;
+        }
+
+        if (relLeft != null && relRight != null) {
+            XMLUtil.addNewRelationship(relType, relLeft, relRight);
+            relType = null;
+            relRight = relLeft = null;
+            mode = EditTool.SELECTOR;
+        }
+    }
+
     private void multiSelect(ElementModel el) {
         for (int i = 0; i < selectedElements.length; i++) {
             if (selectedElements[i] != null) {
@@ -719,6 +760,62 @@ public class ViewWindow extends javax.swing.JFrame {
     private void positionCam(MouseEvent e) {
         cam.rollX(mousePos.x - e.getX());
         cam.rollY(mousePos.y - e.getY());
+    }
+
+    public void addTable(TableElement tb) {
+
+        if (tables.contains(tb)) {
+            return;
+        }
+        tables.add(tb);
+    }
+
+    private List<TableElement> getTables() {
+        return tables;
+    }
+
+    public List<RelationshipElement> getRelations() {
+        return relations;
+    }
+
+    private void addRelations(Set<RelationshipElement> relationship) {
+        relations.clear();
+        for (RelationshipElement r : relationship) {
+            TableElement parent = tables.get(tables.indexOf(r.getParent()));
+            TableElement child = tables.get(tables.indexOf(r.getChild()));
+
+            RelationshipElement re = new RelationshipElement(r.getType(), parent, child);
+            re.setCam(cam);
+
+            relations.add(re);
+        }
+    }
+
+    public void init(View selected, List<View> views) {
+        this.selected = selected;
+        this.views = views;
+        addRelations(XMLUtil.findRelationship(getTables()));
+    }
+
+    private void removeSelTables() {
+        if (selectedElements[0] != null) {
+            if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+
+                TableElement t = (TableElement) selectedElements[0];
+
+                ViewTable toRemove = null;
+                for (ViewTable v : selected.getTables()) {
+                    if (EntityUtil.compare(t, v)) {
+                        toRemove = v;
+                        break;
+                    }
+                }
+
+                tables.remove(t);
+                selected.getTables().remove(toRemove);
+                singleSelection(null);
+            }
+        }
     }
 
 }

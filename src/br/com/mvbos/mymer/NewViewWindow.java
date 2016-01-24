@@ -13,9 +13,8 @@ import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -85,6 +84,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         lstViews = new javax.swing.JList();
         tfLabelTables = new javax.swing.JTextField();
         lblInfo = new javax.swing.JLabel();
+        cbIgnore = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -117,6 +117,9 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         lblInfo.setText(" ");
 
+        cbIgnore.setSelected(true);
+        cbIgnore.setText("Ignore selecteds tables");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -124,14 +127,16 @@ public class NewViewWindow extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lbl, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tfName))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(lblInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbIgnore)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnNext))
                     .addComponent(tfLabelTables))
                 .addContainerGap())
@@ -144,14 +149,15 @@ public class NewViewWindow extends javax.swing.JFrame {
                     .addComponent(lbl)
                     .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tfLabelTables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblInfo)
-                    .addComponent(btnNext))
-                .addContainerGap(14, Short.MAX_VALUE))
+                    .addComponent(btnNext)
+                    .addComponent(cbIgnore))
+                .addContainerGap())
         );
 
         pack();
@@ -161,23 +167,21 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         ViewWindow vw = new ViewWindow();
 
-        if (selected == null && ct == 0) {
-            tfLabelTables.setText("No tables selected.");
-
-        } else if (selected == null) {
+        if (selected == null) {
 
             selected = new View(tfName.getText());
             //List<TableElement> lst = new ArrayList<>(selectedTables.length);
 
-            for (ElementModel e : selectedTables) {
-                if (e instanceof TableElement) {
-                    TableElement t = (TableElement) e;
+            if (!cbIgnore.isSelected()) {
+                for (ElementModel e : selectedTables) {
+                    if (e instanceof TableElement) {
+                        TableElement t = (TableElement) e;
 
-                    //lst.add(t);
-                    ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
-
-                    vw.addTable(copy(t, v));
-                    selected.getTables().add(v);
+                        //lst.add(t);
+                        ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
+                        vw.addTable(copy(t, v));
+                        selected.getTables().add(v);
+                    }
                 }
             }
 
@@ -186,36 +190,46 @@ public class NewViewWindow extends javax.swing.JFrame {
         } else {
             selected.setName(tfName.getText());
 
-            for (ViewTable v : selected.getTables()) {
+            //Validate if tables in view selected still exist
+            List<ViewTable> selTemp = new ArrayList<>(selected.getTables());
+            for (ViewTable v : selTemp) {
 
                 TableElement t = XMLUtil.findByName(v.getDataBaseName(), v.getTableName());
 
                 if (t == null) {
-                    Logger.getLogger(NewViewWindow.class.getName()).log(Level.INFO, "erro to find {0} {1}", new String[]{v.getDataBaseName(), v.getTableName()});
+                    String msg = String.format("Apparently the table %s from %s don't exist more. Do you like do remove this?", v.getTableName(), v.getDataBaseName());
+                    int res = JOptionPane.showConfirmDialog(this, msg);
+                    if (res == JOptionPane.OK_OPTION) {
+                        selected.getTables().remove(v);
+                    }
+                    //Logger.getLogger(NewViewWindow.class.getName()).log(Level.INFO, "erro to find {0} {1}", new String[]{v.getDataBaseName(), v.getTableName()});
                     continue;
                 }
 
                 vw.addTable(copy(t, v));
 
-                if (!selected.getTables().contains(v)) {
-                    selected.getTables().add(new ViewTable(t.getDataBase().getName(), t.getName()));
-                }
+                /*if (!selected.getTables().contains(v)) {
+                 selected.getTables().add(new ViewTable(t.getDataBase().getName(), t.getName()));
+                 }*/
             }
 
-            for (ElementModel e : selectedTables) {
-                if (e instanceof TableElement) {
-                    TableElement t = (TableElement) e;
+            if (!cbIgnore.isSelected()) {
+                for (ElementModel e : selectedTables) {
+                    if (e instanceof TableElement) {
+                        TableElement t = (TableElement) e;
 
-                    ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
+                        ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
 
-                    if (!selected.getTables().contains(v)) {
-                        vw.addTable(copy(t, v));
-                        selected.getTables().add(v);
+                        if (!selected.getTables().contains(v)) {
+                            vw.addTable(copy(t, v));
+                            selected.getTables().add(v);
+                        }
                     }
                 }
             }
         }
 
+        //Send all views do save
         vw.init(selected, views);
         vw.setVisible(true);
 
@@ -260,6 +274,7 @@ public class NewViewWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnNext;
+    private javax.swing.JCheckBox cbIgnore;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbl;
     private javax.swing.JLabel lblInfo;
@@ -269,13 +284,10 @@ public class NewViewWindow extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private TableElement copy(TableElement t, ViewTable v) {
+        TableElement copy = EntityUtil.copy(t);
         int ppx = v.getPx() == 0 ? px : v.getPx();
-
-        TableElement copy = new TableElement(ppx, v.getPy(), t.getWidth(), t.getHeight(), t.getDataBase(), t.getName());
-        copy.setFields(t.getFields());
-        copy.update();
-
-        px += copy.getWidth() + 10;
+        
+        copy.setPxy(ppx, v.getPy());
 
         return copy;
     }

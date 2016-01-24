@@ -34,6 +34,7 @@ public class Common {
 
     public static final String[] comboTypes = MMProperties.get("comboTypes", "character,date,decimal,integer,logical,rowid,handle").split(",");
 
+    public static final String importURL = MMProperties.get("importUrl", "");
     public static final Charset charset = Charset.forName(MMProperties.get("charset", "UTF-8"));
     public static final Charset importCharset = Charset.forName(MMProperties.get("importCharset", "UTF-8"));
 
