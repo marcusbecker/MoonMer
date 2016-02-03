@@ -65,6 +65,8 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -78,6 +80,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -104,6 +107,21 @@ public class Window extends javax.swing.JFrame {
 
     private EditTool mode = EditTool.SELECTOR;
 
+    private final WindowSerializable ws;
+
+    private void reoderRow(JTable table, boolean up) {
+        int sel = table.getSelectedRow();
+        FieldTableModel model = (FieldTableModel) table.getModel();
+
+        if (model.moveRow(sel, up)) {
+            if (up) {
+                table.setRowSelectionInterval(sel - 1, sel - 1);
+            } else {
+                table.setRowSelectionInterval(sel + 1, sel + 1);
+            }
+        }
+    }
+
     private class MyDispatcher implements KeyEventDispatcher {
 
         @Override
@@ -113,6 +131,17 @@ public class Window extends javax.swing.JFrame {
             isControlDown = e.isControlDown();
 
             if (getFocusOwner() == null) {
+                return false;
+            }
+
+            if (isAltDown) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+            } else {
+                setCursor(Cursor.getDefaultCursor());
+            }
+
+            //Ignore keys if table or textfield editions
+            if (ignoreKey()) {
                 return false;
             }
 
@@ -134,9 +163,6 @@ public class Window extends javax.swing.JFrame {
                 }
 
             } else if (e.getID() == KeyEvent.KEY_RELEASED) {
-                if (tbFields.isEditing()) {
-                    return false;
-                }
                 //System.out.println("e.getKeyCode() " + e.getKeyCode());
                 if (107 == e.getKeyCode()) {
                     //scale += 0.1f;
@@ -160,13 +186,12 @@ public class Window extends javax.swing.JFrame {
             } else if (e.getID() == KeyEvent.KEY_TYPED) {
             }
 
-            if (isAltDown) {
-                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            } else {
-                setCursor(Cursor.getDefaultCursor());
-            }
-
             return false;
+        }
+
+        private boolean ignoreKey() {
+
+            return getFocusOwner() instanceof JTable || getFocusOwner() instanceof JTextComponent || getFocusOwner() instanceof JList;
         }
     }
 
@@ -197,8 +222,29 @@ public class Window extends javax.swing.JFrame {
         //Camera.c().offSet(100, 100);
         Camera.c().setAllowOffset(true);
 
-        WindowSerializable ws = WindowSerializable.load();
+        ws = WindowSerializable.load();
+
+        if (ws.windowState == JFrame.MAXIMIZED_BOTH) {
+            setExtendedState(ws.windowState);
+        } else {
+            setSize(ws.windowSize);
+        }
+
         Camera.c().move(ws.cam.x, ws.cam.y);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("vv " + splitVer.isShowing());
+                if (ws.hDivider > 0) {
+                    splitHor.setDividerLocation(ws.hDivider);
+                }
+
+                if (ws.vDivider > 0) {
+                    splitVer.setDividerLocation(ws.vDivider);
+                }
+            }
+        });
 
         stageEl.setSize(Common.camSize, Common.camSize);
 
@@ -309,14 +355,21 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void save() {
-        if (XMLUtil.exportFields() && XMLUtil.exportFieldsPosition() && XMLUtil.exportConfig() && XMLUtil.exportRelations()) {
-            XMLUtil.exportIndices();
+        if (XMLUtil.saveAll()) {
             lblInfo.setText("Save sucess at " + Calendar.getInstance().getTime());
+
+        } else {
+            lblInfo.setText("Save error!");
         }
 
-        WindowSerializable ws = new WindowSerializable();
         ws.cam = new Point(Camera.c().getPx(), Camera.c().getPy());
+        ws.windowSize = this.getSize();
+        ws.windowState = this.getExtendedState();
+        ws.hDivider = splitHor.getDividerLocation();
+        ws.vDivider = splitVer.getDividerLocation();
+
         WindowSerializable.save(ws);
+
     }
 
     private void copyToClip() {
@@ -365,9 +418,9 @@ public class Window extends javax.swing.JFrame {
         ccCanvas = new javax.swing.JColorChooser();
         tfCanvasSize = new javax.swing.JTextField();
         btnSaveCanvas = new javax.swing.JButton();
-        jSplitPane1 = new javax.swing.JSplitPane();
+        splitHor = new javax.swing.JSplitPane();
         pnTop = new javax.swing.JPanel();
-        jSplitPane2 = new javax.swing.JSplitPane();
+        splitVer = new javax.swing.JSplitPane();
         pnLeft = new javax.swing.JPanel();
         pnMenu = new javax.swing.JPanel();
         btnCanvasColor = new javax.swing.JButton();
@@ -590,18 +643,18 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        jSplitPane1.setDividerLocation(300);
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+        splitHor.setDividerLocation(300);
+        splitHor.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        splitHor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                jSplitPane1PropertyChange(evt);
+                splitHorPropertyChange(evt);
             }
         });
 
-        jSplitPane2.setDividerLocation(600);
-        jSplitPane2.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+        splitVer.setDividerLocation(600);
+        splitVer.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                jSplitPane2PropertyChange(evt);
+                splitVerPropertyChange(evt);
             }
         });
 
@@ -734,7 +787,7 @@ public class Window extends javax.swing.JFrame {
             .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jSplitPane2.setLeftComponent(pnLeft);
+        splitVer.setLeftComponent(pnLeft);
 
         tfFilter.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -830,22 +883,27 @@ public class Window extends javax.swing.JFrame {
             .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jSplitPane2.setRightComponent(pnTree);
+        splitVer.setRightComponent(pnTree);
 
         javax.swing.GroupLayout pnTopLayout = new javax.swing.GroupLayout(pnTop);
         pnTop.setLayout(pnTopLayout);
         pnTopLayout.setHorizontalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2)
+            .addComponent(splitVer)
         );
         pnTopLayout.setVerticalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane2)
+            .addComponent(splitVer)
         );
 
-        jSplitPane1.setTopComponent(pnTop);
+        splitHor.setTopComponent(pnTop);
 
         tbFields.setModel(createFieldTableModel());
+        tbFields.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tbFieldsKeyReleased(evt);
+            }
+        });
         spTbFields.setViewportView(tbFields);
         configureTable();
 
@@ -1201,7 +1259,7 @@ public class Window extends javax.swing.JFrame {
                 .addComponent(lblInfo))
         );
 
-        jSplitPane1.setRightComponent(pnBottom);
+        splitHor.setRightComponent(pnBottom);
 
         menuFile.setText("File");
 
@@ -1337,11 +1395,11 @@ public class Window extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1)
+            .addComponent(splitHor)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1)
+            .addComponent(splitHor)
         );
 
         pack();
@@ -1760,16 +1818,16 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_formComponentResized
 
-    private void jSplitPane1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jSplitPane1PropertyChange
+    private void splitHorPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitHorPropertyChange
 
         Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
 
-    }//GEN-LAST:event_jSplitPane1PropertyChange
+    }//GEN-LAST:event_splitHorPropertyChange
 
-    private void jSplitPane2PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jSplitPane2PropertyChange
+    private void splitVerPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitVerPropertyChange
 
 
-    }//GEN-LAST:event_jSplitPane2PropertyChange
+    }//GEN-LAST:event_splitVerPropertyChange
 
     private final StringBuilder clip = new StringBuilder(100);
 
@@ -2218,6 +2276,18 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnCanvasColorActionPerformed
 
+    private void tbFieldsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbFieldsKeyReleased
+
+        if (evt.isAltDown()) {
+            JTable tb = (JTable) evt.getSource();
+            cancelTablesEditions(tb);
+            if (evt.getKeyCode() == KeyEvent.VK_UP || evt.getKeyCode() == KeyEvent.VK_DOWN) {
+                reoderRow(tb, evt.getKeyCode() == KeyEvent.VK_UP);
+            }
+        }
+
+    }//GEN-LAST:event_tbFieldsKeyReleased
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2270,8 +2340,6 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JSlider jsZoom;
     private javax.swing.JLabel lblInfo;
@@ -2300,6 +2368,8 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JPanel pnTop;
     private javax.swing.JPanel pnTree;
     private javax.swing.JScrollPane spTbFields;
+    private javax.swing.JSplitPane splitHor;
+    private javax.swing.JSplitPane splitVer;
     private javax.swing.JPanel tabIndex;
     private javax.swing.JPanel tabRelation;
     private javax.swing.JPanel tabStruct;

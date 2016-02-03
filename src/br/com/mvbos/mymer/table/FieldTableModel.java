@@ -126,4 +126,19 @@ public class FieldTableModel extends AbstractTableModel {
         this.data = data;
     }
 
+    public boolean moveRow(int sel, boolean up) {
+        int pos = up ? sel - 1 : sel + 1;
+        if (pos < 0 || pos >= data.size()) {
+            return false;
+        }
+
+        Field temp = data.get(pos);
+        data.set(pos, data.get(sel));
+        data.set(sel, temp);
+
+        fireTableRowsUpdated(up ? pos : sel, up ? sel : pos);
+
+        return true;
+    }
+
 }

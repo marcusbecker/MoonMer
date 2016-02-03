@@ -9,10 +9,13 @@ import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.jeg.element.SelectorElement;
 import br.com.mvbos.jeg.engine.GraphicTool;
 import br.com.mvbos.jeg.window.Camera;
+import br.com.mvbos.mymer.combo.Option;
+import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.list.GenericListModel;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.View;
@@ -145,6 +148,11 @@ public class ViewWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        dlgAddTable = new javax.swing.JDialog();
+        tfTableFilter = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lstTables = new javax.swing.JList();
+        btnAddTable = new javax.swing.JButton();
         split = new javax.swing.JSplitPane();
         pnTop = new javax.swing.JPanel();
         pnCanvas = createCanvas();
@@ -156,6 +164,46 @@ public class ViewWindow extends javax.swing.JFrame {
         btnBuildSctruct = new javax.swing.JButton();
         btnAddRelOneOne = new javax.swing.JButton();
         btnAddRelOneMany = new javax.swing.JButton();
+        btnShowDlgTable = new javax.swing.JButton();
+
+        dlgAddTable.setTitle("Search and add tables");
+
+        tfTableFilter.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tfTableFilterKeyReleased(evt);
+            }
+        });
+
+        jScrollPane2.setViewportView(lstTables);
+
+        btnAddTable.setText("OK");
+        btnAddTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddTableActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout dlgAddTableLayout = new javax.swing.GroupLayout(dlgAddTable.getContentPane());
+        dlgAddTable.getContentPane().setLayout(dlgAddTableLayout);
+        dlgAddTableLayout.setHorizontalGroup(
+            dlgAddTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tfTableFilter)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgAddTableLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnAddTable)
+                .addContainerGap())
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+        );
+        dlgAddTableLayout.setVerticalGroup(
+            dlgAddTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dlgAddTableLayout.createSequentialGroup()
+                .addComponent(tfTableFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnAddTable)
+                .addContainerGap())
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("MoonMer - View");
@@ -260,6 +308,13 @@ public class ViewWindow extends javax.swing.JFrame {
             }
         });
 
+        btnShowDlgTable.setText("+");
+        btnShowDlgTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowDlgTableActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnBottomLayout = new javax.swing.GroupLayout(pnBottom);
         pnBottom.setLayout(pnBottomLayout);
         pnBottomLayout.setHorizontalGroup(
@@ -270,6 +325,8 @@ public class ViewWindow extends javax.swing.JFrame {
                     .addComponent(jTabbedPane1)
                     .addGroup(pnBottomLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnShowDlgTable)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAddRelOneOne)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAddRelOneMany)))
@@ -278,9 +335,10 @@ public class ViewWindow extends javax.swing.JFrame {
         pnBottomLayout.setVerticalGroup(
             pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnBottomLayout.createSequentialGroup()
-                .addGroup(pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnAddRelOneOne)
-                    .addComponent(btnAddRelOneMany))
+                .addGroup(pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnShowDlgTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1)
                 .addContainerGap())
@@ -312,7 +370,7 @@ public class ViewWindow extends javax.swing.JFrame {
         if (AUTO_SAVE) {
             for (TableElement t : tables) {
                 for (ViewTable vt : selected.getTables()) {
-                    if (t.getName().equalsIgnoreCase(vt.getTableName())) {
+                    if (EntityUtil.compare(t, vt)) {
                         vt.setPx(t.getPx());
                         vt.setPy(t.getPy());
                     }
@@ -416,25 +474,75 @@ public class ViewWindow extends javax.swing.JFrame {
         relType = RelationshipElement.Type.ONE_TO_MORE;
     }//GEN-LAST:event_btnAddRelOneManyActionPerformed
 
+    private void tfTableFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfTableFilterKeyReleased
+
+        String filter = tfTableFilter.getText();
+
+        myListModel.getList().clear();
+
+        for (DataBaseElement d : XMLUtil.getDataBase()) {
+
+            for (TableElement t : d.getTables()) {
+                if (t.getName().toLowerCase().contains(filter.toLowerCase())) {
+                    myListModel.add(new Option((short) t.getId(), t, t.getName()));
+                }
+            }
+        }
+
+        lstTables.setModel(myListModel);
+
+    }//GEN-LAST:event_tfTableFilterKeyReleased
+
+    private void btnAddTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTableActionPerformed
+
+        for (Object obj : lstTables.getSelectedValuesList()) {
+            Option o = (Option) obj;
+
+            TableElement copy = EntityUtil.copy((TableElement) o.getValue());
+            ViewTable v = new ViewTable(copy.getDataBase().getName(), copy.getName());
+
+            addTable(copy);
+            addViewTable(v);
+        }
+
+        dlgAddTable.setVisible(false);
+
+    }//GEN-LAST:event_btnAddTableActionPerformed
+
+    private void btnShowDlgTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowDlgTableActionPerformed
+        dlgAddTable.pack();
+        dlgAddTable.setLocationRelativeTo(this);
+        dlgAddTable.setVisible(true);
+
+    }//GEN-LAST:event_btnShowDlgTableActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddRelOneMany;
     private javax.swing.JButton btnAddRelOneOne;
+    private javax.swing.JButton btnAddTable;
     private javax.swing.JButton btnBuildSctruct;
+    private javax.swing.JButton btnShowDlgTable;
+    private javax.swing.JDialog dlgAddTable;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JList lstTables;
     private javax.swing.JPanel pnBottom;
     private javax.swing.JPanel pnCanvas;
     private javax.swing.JPanel pnTop;
     private javax.swing.JSplitPane split;
     private javax.swing.JPanel tabStruct;
     private javax.swing.JTextArea tfStruct;
+    private javax.swing.JTextField tfTableFilter;
     // End of variables declaration//GEN-END:variables
 
     private enum EditTool {
 
         SELECTOR, HAND, RELATION;
     }
+
+    private final GenericListModel myListModel = new GenericListModel();
 
     //private static final Color BACKGROUND_COLOR = new Color(153, 153, 153);
     private Point mousePos = new Point();
@@ -675,9 +783,9 @@ public class ViewWindow extends javax.swing.JFrame {
         if (el == null) {
 
         } else if (el instanceof TableElement) {
-            //System.out.println("el " + el);
+            //System.out.println("list " + list);
 
-            TableElement e = (TableElement) el;
+            //TableElement e = (TableElement) el;
         }
 
     }
@@ -767,7 +875,12 @@ public class ViewWindow extends javax.swing.JFrame {
         if (tables.contains(tb)) {
             return;
         }
+
         tables.add(tb);
+    }
+
+    public void addViewTable(ViewTable v) {
+        selected.getTables().add(v);
     }
 
     private List<TableElement> getTables() {

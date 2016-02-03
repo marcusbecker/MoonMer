@@ -300,7 +300,7 @@ public class XMLUtil {
         List<Relationship> rel = new ArrayList<>(relations.size());
 
         for (RelationshipElement e : relations) {
-            Relationship r = new Relationship(e.getType().ordinal(), e.getParent().getName(), e.getChild().getName(), e.getParent().getDataBase().getName(), e.getChild().getDataBase().getName());
+            Relationship r = new Relationship(e);
 
             r.setChildFields(new LinkedHashSet<>(e.getChildFields()));
             r.setParentFields(new LinkedHashSet<>(e.getParentFields()));
@@ -908,6 +908,14 @@ public class XMLUtil {
 
     public static void removeIndex(IndexElement indexElement) {
         indices.remove(indexElement);
+    }
+
+    public static boolean saveAll() {
+        if (XMLUtil.exportFields() && XMLUtil.exportFieldsPosition() && XMLUtil.exportConfig() && XMLUtil.exportRelations()) {
+            return XMLUtil.exportIndices();
+        }
+
+        return false;
     }
 
 }

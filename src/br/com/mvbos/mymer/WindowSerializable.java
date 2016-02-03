@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +23,11 @@ import java.util.logging.Logger;
  */
 public class WindowSerializable implements Serializable {
 
+    public WindowSerializable() {
+        this.cam = new Point();
+        this.windowSize = new Dimension(800, 600);
+    }
+
     static void save(WindowSerializable ws) {
 
         try (ObjectOutputStream oo = new ObjectOutputStream(new FileOutputStream(FILE_CONFIG))) {
@@ -35,7 +41,6 @@ public class WindowSerializable implements Serializable {
 
     static WindowSerializable load() {
         WindowSerializable ws = new WindowSerializable();
-        ws.cam = new Point();
 
         if (FILE_CONFIG.exists()) {
 
@@ -51,4 +56,8 @@ public class WindowSerializable implements Serializable {
     }
 
     public Point cam;
+    public Dimension windowSize;
+    public int windowState;
+    public int hDivider;
+    public int vDivider;
 }

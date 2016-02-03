@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import br.com.mvbos.mymer.el.RelationshipElement;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -28,6 +29,10 @@ public class Relationship {
     private Set<Field> childFields = new LinkedHashSet<>(5);
 
     public Relationship() {
+    }
+
+    public Relationship(RelationshipElement e) {
+        this(e.getType().ordinal(), e.getParent().getName(), e.getChild().getName(), e.getParent().getDataBase().getName(), e.getChild().getDataBase().getName());
     }
 
     public Relationship(int type, String parent, String child, String db) {
