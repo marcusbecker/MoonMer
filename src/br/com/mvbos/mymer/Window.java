@@ -235,7 +235,6 @@ public class Window extends javax.swing.JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                System.out.println("vv " + splitVer.isShowing());
                 if (ws.hDivider > 0) {
                     splitHor.setDividerLocation(ws.hDivider);
                 }

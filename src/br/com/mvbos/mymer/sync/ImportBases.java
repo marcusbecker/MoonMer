@@ -28,6 +28,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -190,15 +192,32 @@ public class ImportBases extends javax.swing.JFrame {
             }
         }
 
+        List<Option> lstOrdered = new ArrayList<>(remoteBase.getTables().size());
+
         for (Table tb : remoteBase.getTables()) {
             remoteTables.put(tb.getName(), tb);
 
             String name = tb.getName();
+            short tempIndex = optIndex++;
+
             if (!localTalbles.containsKey(name)) {
                 name += " (new)";
+                tempIndex = (short) -tempIndex;
             }
 
-            org.addElement(new Option(optIndex++, tb, name));
+            lstOrdered.add(new Option(tempIndex, tb, name));
+        }
+
+        Collections.sort(lstOrdered, new Comparator<Option>() {
+
+            @Override
+            public int compare(Option o1, Option o2) {
+                return Short.compare(o1.getIndex(), o2.getIndex());
+            }
+        });
+
+        for (Option p : lstOrdered) {
+            org.addElement(p);
         }
 
         lblDBInfo.setText("Database: " + remoteBase.getName());
@@ -597,18 +616,18 @@ public class ImportBases extends javax.swing.JFrame {
                 startImport(db);
             }
 
-        } catch (JAXBException ex) {
-            lblInfo.setText(ex.getMessage());
-            lblInfo.setForeground(Color.RED);
-
-            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
-
         } catch (MalformedURLException ex) {
             lblInfo.setText(ex.getMessage());
             lblInfo.setForeground(Color.RED);
 
             Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+
+            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
+
+        } catch (Exception ex) {
             lblInfo.setText(ex.getMessage());
             lblInfo.setForeground(Color.RED);
 
@@ -637,12 +656,9 @@ public class ImportBases extends javax.swing.JFrame {
                     startImport(db);
                 }
 
-            } catch (JAXBException | FileNotFoundException ex) {
+            } catch (Exception ex) {
                 lblInfo.setText(ex.getMessage());
                 lblInfo.setForeground(Color.RED);
-                Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
-
-            } catch (IOException ex) {
                 Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

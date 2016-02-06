@@ -611,7 +611,7 @@ public class XMLUtil {
         return lst == null ? new ArrayList<IndexElement>(10) : lst;
     }
 
-    public static DataBaseStore parseToDataBase(InputStreamReader is) throws JAXBException {
+    public static DataBaseStore parseToDataBase(InputStreamReader is) throws Exception {
         JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
         Unmarshaller um = context.createUnmarshaller();
 
