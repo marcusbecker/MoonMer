@@ -1813,13 +1813,21 @@ public class Window extends javax.swing.JFrame {
 
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
 
-        Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        try {
+            Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
 
     }//GEN-LAST:event_formComponentResized
 
     private void splitHorPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitHorPropertyChange
 
-        Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        try {
+            Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
 
     }//GEN-LAST:event_splitHorPropertyChange
 
@@ -3055,19 +3063,22 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void exit() {
-        int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
-        if (r == JOptionPane.CANCEL_OPTION) {
-            return;
+        try {
+            int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
+            if (r == JOptionPane.CANCEL_OPTION) {
+                return;
+            }
+
+            if (r == JOptionPane.OK_OPTION) {
+                save();
+            }
+
+            timer.stop();
+            this.dispose();
+
+        } finally {
+            System.exit(0);
         }
-
-        if (r == JOptionPane.OK_OPTION) {
-            save();
-        }
-
-        timer.stop();
-        this.dispose();
-
-        System.exit(0);
     }
 
     private void selectLast(JComboBox cb) {

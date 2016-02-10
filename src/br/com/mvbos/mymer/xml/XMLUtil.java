@@ -66,10 +66,10 @@ public class XMLUtil {
     public static Set<DataBaseElement> dataBases = new LinkedHashSet<>(10);
 
     private static final int LIST_TABLE_SIZE = 60;
-    private static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
+    public static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
 
     /*Folders*/
-    private static final File CURRENT_PATH = new File(Common.currentPath);
+    public static final File CURRENT_PATH = new File(Common.currentPath);
     private static final File DIR_CONFIG = new File(CURRENT_PATH, "config");
     private static final File FILE_DIR_DB = new File(CURRENT_PATH, "dbs");
     private static final File FILE_DIR_REL = new File(CURRENT_PATH, "relations");
@@ -877,11 +877,11 @@ public class XMLUtil {
         return true;
     }
 
-    private static InputStreamReader getFileInputStream(File file) throws FileNotFoundException {
+    public static InputStreamReader getFileInputStream(File file) throws FileNotFoundException {
         return new InputStreamReader(new FileInputStream(file), Common.charset);
     }
 
-    private static OutputStreamWriter getFileOutputStream(File file) throws FileNotFoundException {
+    public static OutputStreamWriter getFileOutputStream(File file) throws FileNotFoundException {
         return new OutputStreamWriter(new FileOutputStream(file), Common.charset);
     }
 
