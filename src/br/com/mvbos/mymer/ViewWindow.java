@@ -153,15 +153,8 @@ public class ViewWindow extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         lstTables = new javax.swing.JList();
         btnAddTable = new javax.swing.JButton();
-        split = new javax.swing.JSplitPane();
-        pnTop = new javax.swing.JPanel();
         pnCanvas = createCanvas();
         pnBottom = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        tabStruct = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tfStruct = new javax.swing.JTextArea();
-        btnBuildSctruct = new javax.swing.JButton();
         btnAddRelOneOne = new javax.swing.JButton();
         btnAddRelOneMany = new javax.swing.JButton();
         btnShowDlgTable = new javax.swing.JButton();
@@ -223,74 +216,16 @@ public class ViewWindow extends javax.swing.JFrame {
             }
         });
 
-        split.setDividerLocation(300);
-        split.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        split.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                splitPropertyChange(evt);
-            }
-        });
-
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
         pnCanvas.setLayout(pnCanvasLayout);
         pnCanvasLayout.setHorizontalGroup(
             pnCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 923, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         pnCanvasLayout.setVerticalGroup(
             pnCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 297, Short.MAX_VALUE)
+            .addGap(0, 643, Short.MAX_VALUE)
         );
-
-        javax.swing.GroupLayout pnTopLayout = new javax.swing.GroupLayout(pnTop);
-        pnTop.setLayout(pnTopLayout);
-        pnTopLayout.setHorizontalGroup(
-            pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnTopLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        pnTopLayout.setVerticalGroup(
-            pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnTopLayout.createSequentialGroup()
-                .addGap(1, 1, 1)
-                .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(1, 1, 1))
-        );
-
-        split.setTopComponent(pnTop);
-
-        tfStruct.setColumns(20);
-        tfStruct.setRows(5);
-        jScrollPane1.setViewportView(tfStruct);
-
-        btnBuildSctruct.setText("Build");
-        btnBuildSctruct.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBuildSctructActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout tabStructLayout = new javax.swing.GroupLayout(tabStruct);
-        tabStruct.setLayout(tabStructLayout);
-        tabStructLayout.setHorizontalGroup(
-            tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 918, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnBuildSctruct)
-                .addContainerGap())
-        );
-        tabStructLayout.setVerticalGroup(
-            tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
-                .addComponent(btnBuildSctruct)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Struct", tabStruct);
 
         btnAddRelOneOne.setIcon(new javax.swing.ImageIcon(getClass().getResource("/one_to_one.png"))); // NOI18N
         btnAddRelOneOne.setToolTipText("Add One to One relationship");
@@ -320,16 +255,12 @@ public class ViewWindow extends javax.swing.JFrame {
         pnBottomLayout.setHorizontalGroup(
             pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnBottomLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnBottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1)
-                    .addGroup(pnBottomLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnShowDlgTable)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAddRelOneOne)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAddRelOneMany)))
+                .addContainerGap(774, Short.MAX_VALUE)
+                .addComponent(btnShowDlgTable)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAddRelOneOne)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnAddRelOneMany)
                 .addContainerGap())
         );
         pnBottomLayout.setVerticalGroup(
@@ -339,22 +270,28 @@ public class ViewWindow extends javax.swing.JFrame {
                     .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnShowDlgTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        split.setRightComponent(pnBottom);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(split)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnBottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(split)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pnBottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -394,75 +331,8 @@ public class ViewWindow extends javax.swing.JFrame {
 
     }//GEN-LAST:event_formComponentResized
 
-    private void splitPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitPropertyChange
-
-        cam.config(cam.getSceneWidth(), cam.getSceneHeight(), canvas.getWidth(), canvas.getHeight());
-
-    }//GEN-LAST:event_splitPropertyChange
-
     private final StringBuilder clip = new StringBuilder(100);
 
-
-    private void btnBuildSctructActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuildSctructActionPerformed
-
-        StringBuilder sb = new StringBuilder(600);
-        for (ElementModel e : selectedElements) {
-            if (!(e instanceof TableElement)) {
-                continue;
-            }
-
-            TableElement te = (TableElement) e;
-
-            sb.append("ADD TABLE \"").append(te.getName()).append("\"\n");
-            sb.append("  AREA \"Dados\"\n");
-            sb.append("  DESCRIPTION \"\"\n");
-            sb.append("  DUMP-NAME \"").append(te.getName()).append("\"\n");
-            sb.append("\n");
-
-            int ct = 1;
-            for (Field f : te.getFields()) {
-                sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(te.getName()).append("\" AS ").append(f.getType()).append("\n");
-                sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
-                sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
-                sb.append("  INITIAL \"\"\n");
-                sb.append("  LABEL \"").append(f.getName()).append("\"\n");
-                //sb.append("  POSITION ").append(ct).append("\n");
-                //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
-                sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
-                sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
-                sb.append("  ORDER ").append(ct * 10).append("\n");
-
-                sb.append("\n");
-                ct++;
-            }
-
-            for (IndexElement ie : XMLUtil.indices) {
-                if (!te.equals(ie.getTable())) {
-                    continue;
-                }
-
-                sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(te.getName()).append("\"\n");
-                sb.append("  AREA \"Indices\"\n");
-                if (ie.getPrimary()) {
-                    sb.append("  UNIQUE\n");
-                }
-                if (ie.getUnique()) {
-                    sb.append("  PRIMARY\n");
-                }
-
-                for (Field f : ie.getFields()) {
-                    sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
-                }
-
-                sb.append("\n");
-            }
-
-        }
-
-        tfStruct.setText(sb.toString());
-
-
-    }//GEN-LAST:event_btnBuildSctructActionPerformed
 
     private void btnAddRelOneOneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddRelOneOneActionPerformed
         mode = EditTool.RELATION;
@@ -521,19 +391,12 @@ public class ViewWindow extends javax.swing.JFrame {
     private javax.swing.JButton btnAddRelOneMany;
     private javax.swing.JButton btnAddRelOneOne;
     private javax.swing.JButton btnAddTable;
-    private javax.swing.JButton btnBuildSctruct;
     private javax.swing.JButton btnShowDlgTable;
     private javax.swing.JDialog dlgAddTable;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList lstTables;
     private javax.swing.JPanel pnBottom;
     private javax.swing.JPanel pnCanvas;
-    private javax.swing.JPanel pnTop;
-    private javax.swing.JSplitPane split;
-    private javax.swing.JPanel tabStruct;
-    private javax.swing.JTextArea tfStruct;
     private javax.swing.JTextField tfTableFilter;
     // End of variables declaration//GEN-END:variables
 

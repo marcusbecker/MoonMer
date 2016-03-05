@@ -179,7 +179,8 @@ public class NewViewWindow extends javax.swing.JFrame {
 
                         //lst.add(t);
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
-                        vw.addTable(copy(t, v));
+                        final TableElement tableCopy = copy(t, v);
+                        vw.addTable(tableCopy);
                         selected.getTables().add(v);
                     }
                 }
