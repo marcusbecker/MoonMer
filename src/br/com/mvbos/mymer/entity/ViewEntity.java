@@ -7,10 +7,7 @@ package br.com.mvbos.mymer.entity;
 
 import br.com.mvbos.mymer.xml.ViewStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
-import br.com.mvbos.mymer.xml.XMLUtil1;
-import static br.com.mvbos.mymer.xml.XMLUtil1.FORMATTED_OUTPUT;
-import static br.com.mvbos.mymer.xml.XMLUtil1.getFileInputStream;
-import static br.com.mvbos.mymer.xml.XMLUtil1.getFileOutputStream;
+import static br.com.mvbos.mymer.xml.XMLUtil.getFileInputStream;
 import br.com.mvbos.mymer.xml.field.View;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -43,7 +40,8 @@ public class ViewEntity implements IElementEntity<View> {
 
     @Override
     public boolean remove(View e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        views.remove(e);
+        return true;
     }
 
     @Override
@@ -58,12 +56,12 @@ public class ViewEntity implements IElementEntity<View> {
 
             JAXBContext context = JAXBContext.newInstance(ViewStore.class);
             Marshaller m = context.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, XMLUtil.FORMATTED_OUTPUT);
 
-            m.marshal(vs, getFileOutputStream(FILE_VIEW_STORE));
+            m.marshal(vs, XMLUtil.getFileOutputStream(FILE_VIEW_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil1.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ViewEntity.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
         }
@@ -99,7 +97,7 @@ public class ViewEntity implements IElementEntity<View> {
                 }
 
             } catch (JAXBException | FileNotFoundException ex) {
-                Logger.getLogger(XMLUtil1.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ViewEntity.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 

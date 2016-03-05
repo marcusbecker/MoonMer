@@ -116,7 +116,10 @@ public class Window extends javax.swing.JFrame {
     private final WindowSerializable ws;
 
     private final EntityManager em = EntityManager.e();
+    private final RelationEntity rEntity = em.getEntity(RelationEntity.class);
     private final DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
+
+    private final int BD_SP = 5; //Border space
 
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
@@ -306,7 +309,7 @@ public class Window extends javax.swing.JFrame {
 
         cbEditDataBase.addItem(DataBaseEntity.DEFAULT_DATA_BASE.getName());
 
-        for (DataBaseElement d : XMLUtil.dataBases) {
+        for (DataBaseElement d : dbEntity.getList()) {
             cbBases.addItem(d.getName());
             cbEditDataBase.addItem(d.getName());
         }
@@ -319,7 +322,7 @@ public class Window extends javax.swing.JFrame {
             root.removeAllChildren();
         }
 
-        for (DataBaseElement d : XMLUtil.dataBases) {
+        for (DataBaseElement d : dbEntity.getList()) {
             DefaultMutableTreeNode db = new DataTreeNode(d);
 
             for (TableElement t : d.getTables()) {
@@ -341,7 +344,7 @@ public class Window extends javax.swing.JFrame {
 
         filterRoot = (DefaultMutableTreeNode) root.clone();
 
-        for (DataBaseElement d : XMLUtil.dataBases) {
+        for (DataBaseElement d : dbEntity.getList()) {
             DefaultMutableTreeNode db = new DataTreeNode(d);
 
             for (TableElement t : d.getTables()) {
@@ -1417,7 +1420,6 @@ public class Window extends javax.swing.JFrame {
 
         save();
 
-
     }//GEN-LAST:event_miSaveActionPerformed
 
     private void miOrderByRowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miOrderByRowActionPerformed
@@ -1561,17 +1563,15 @@ public class Window extends javax.swing.JFrame {
 
     private void btnAddTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTableActionPerformed
 
-        addNewTable();
+        addNewTable(null);
 
     }//GEN-LAST:event_btnAddTableActionPerformed
 
-    private void addNewTable() {
-        addNewTable(null);
-    }
-
+    private short lastAdd;
+    
     private void addNewTable(TableElement te) {
 
-        DataBaseElement db = DataBaseEntity.DEFAULT_DATA_BASE;
+        DataBaseElement db = dataBaseSelected != null ? dataBaseSelected : DataBaseEntity.DEFAULT_DATA_BASE;
 
         if (te != null && te.getDataBase() != null) {
             db = te.getDataBase();
@@ -1581,11 +1581,10 @@ public class Window extends javax.swing.JFrame {
         }
 
         if (te == null) {
-            te = new TableElement(50, 50, db, "New Table " + ++XMLUtil.tableCount);
-
-            db.addTable(te);
-
-            te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+            te = new TableElement(50, 50, db, "New Table " + ++DataBaseEntity.tableCount);
+            te.setPxy(Camera.c().getCpx() + lastAdd, Camera.c().getCpy() + lastAdd);
+            
+            lastAdd += 10;
         }
 
         te.update();
@@ -1723,8 +1722,7 @@ public class Window extends javax.swing.JFrame {
 
         if (dataBaseSelected == null) {
             db = new DataBaseElement();
-            dbEntity.add(db);
-
+            dataBaseSelected = db;
         } else {
             db = dataBaseSelected;
         }
@@ -1732,8 +1730,10 @@ public class Window extends javax.swing.JFrame {
         db.setName(tfDBName.getText());
         db.setColor(ccDBColor.getColor());
 
+        dbEntity.add(db);
+
         for (TableElement el : db.getTables()) {
-            el.setDataBase(db);
+            //el.setDataBase(db);
             el.setColor(db.getColor());
             el.update();
         }
@@ -1815,8 +1815,11 @@ public class Window extends javax.swing.JFrame {
 
     private void formWindowStateChanged(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowStateChanged
 
-        Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
-
+        try {
+            Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
 
     }//GEN-LAST:event_formWindowStateChanged
 
@@ -2107,7 +2110,7 @@ public class Window extends javax.swing.JFrame {
     private void btnRemoveRelationshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveRelationshipActionPerformed
 
         Option opt = (Option) cbRelationship.getSelectedItem();
-        em.getEntity(RelationEntity.class).remove((RelationshipElement) opt.getValue());
+        rEntity.remove((RelationshipElement) opt.getValue());
         cbRelationship.removeItemAt(cbRelationship.getSelectedIndex());
 
     }//GEN-LAST:event_btnRemoveRelationshipActionPerformed
@@ -2134,7 +2137,7 @@ public class Window extends javax.swing.JFrame {
 
     private void miNewTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miNewTableActionPerformed
 
-        addNewTable();
+        addNewTable(null);
 
     }//GEN-LAST:event_miNewTableActionPerformed
 
@@ -2668,16 +2671,7 @@ public class Window extends javax.swing.JFrame {
                 stageEl.setColor(btnCanvasColor.getBackground());
                 Camera.c().draw(g, stageEl);
 
-                int sp = 5;
                 g.setColor(Color.BLACK);
-
-                for (ElementModel el : selectedElements) {
-                    if (el == null) {
-                        break;
-                    }
-
-                    g.drawRect(Camera.c().fx(el.getPx() - sp), Camera.c().fy(el.getPy() - sp), el.getWidth() + sp * 2, el.getHeight() + sp * 2);
-                }
 
                 if (startDrag != null) {
                     int npx = mousePos.x - startDrag.x;
@@ -2700,7 +2694,7 @@ public class Window extends javax.swing.JFrame {
 
                 } else {
 
-                    for (RelationshipElement rl : em.getEntity(RelationEntity.class).getList()) {
+                    for (RelationshipElement rl : rEntity.getList()) {
                         rl.drawMe(g);
                     }
 
@@ -2710,6 +2704,17 @@ public class Window extends javax.swing.JFrame {
 
                     selector.drawMe(g);
                     drawRelationPointer(g);
+                }
+
+                for (ElementModel el : selectedElements) {
+                    if (el == null) {
+                        break;
+                    }
+
+                    Camera.c().draw(g, el);
+
+                    g.setColor(BACKGROUND_COLOR);
+                    g.drawRect(Camera.c().fx(el.getPx() - BD_SP), Camera.c().fy(el.getPy() - BD_SP), el.getWidth() + BD_SP * 2, el.getHeight() + BD_SP * 2);
                 }
 
             }
@@ -2908,7 +2913,6 @@ public class Window extends javax.swing.JFrame {
         tbRelationshipRight.removeAll();
 
         if (e != null) {
-            RelationEntity rEntity = em.getEntity(RelationEntity.class);
             Set<RelationshipElement> lst = rEntity.findRelationship(e);
 
             short i = 0;
@@ -3029,7 +3033,7 @@ public class Window extends javax.swing.JFrame {
         }
 
         if (relLeft != null && relRight != null) {
-            em.getEntity(RelationEntity.class).addNewRelationship(relType, relLeft, relRight);
+            rEntity.addNewRelationship(relType, relLeft, relRight);
             relType = null;
             relRight = relLeft = null;
             mode = EditTool.SELECTOR;
@@ -3074,12 +3078,13 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void exit() {
-        try {
-            int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
-            if (r == JOptionPane.CANCEL_OPTION) {
-                return;
-            }
 
+        int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
+        if (r == JOptionPane.CANCEL_OPTION) {
+            return;
+        }
+
+        try {
             if (r == JOptionPane.OK_OPTION) {
                 save();
             }

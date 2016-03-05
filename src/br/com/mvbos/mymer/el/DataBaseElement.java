@@ -62,7 +62,9 @@ public class DataBaseElement {
     }
 
     public void addTable(TableElement tbe) {
-        this.tables.add(tbe);
+        if (!tables.contains(tbe)) {
+            tables.add(tbe);
+        }
     }
 
     @Override

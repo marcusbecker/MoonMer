@@ -55,7 +55,8 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
 
     @Override
     public boolean remove(RelationshipElement e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        relations.remove(e);
+        return true;
     }
 
     @Override

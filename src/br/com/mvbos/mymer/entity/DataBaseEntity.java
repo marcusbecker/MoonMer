@@ -32,6 +32,8 @@ import javax.xml.bind.Unmarshaller;
  */
 public class DataBaseEntity implements IElementEntity<DataBaseElement> {
 
+    public static int tableCount;
+
     public static final DataBaseElement DEFAULT_DATA_BASE = new DataBaseElement("New data base", new Color(74, 189, 218));
 
     private static final int LIST_TABLE_SIZE = 300;
@@ -75,10 +77,29 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         return true;
     }
 
+    @Override
+    public boolean remove(DataBaseElement e) {
+        if (!filterBases.contains(e)) {
+            return false;
+        }
+
+        filterBases.remove(e);
+
+        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_DATABASE");
+        for (ActionListener a : listern) {
+            a.actionPerformed(evt);
+        }
+
+        return true;
+    }
+
     public boolean addTable(TableElement e) {
         if (allTables.contains(e)) {
             return false;
         }
+
+        add(e.getDataBase());
+        e.getDataBase().addTable(e);
 
         allTables.add(e);
 
@@ -90,15 +111,15 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         return true;
     }
 
-    @Override
-    public boolean remove(DataBaseElement e) {
-        if (filterBases.contains(e)) {
+    public boolean removeTable(TableElement e) {
+        if (!allTables.contains(e)) {
             return false;
         }
 
-        filterBases.remove(e);
+        allTables.remove(e);
+        e.getDataBase().getTables().remove(e);
 
-        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_DATABASE");
+        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_TABLE");
         for (ActionListener a : listern) {
             a.actionPerformed(evt);
         }
@@ -143,7 +164,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
     }
 
     @Override
-    public boolean load(IElementEntity p) {
+    public boolean load(IElementEntity parent) {
         DataBaseStore dbs = null;
 
         for (File f : getDBFiles()) {
@@ -223,22 +244,6 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
     @Override
     public void addActionListern(ActionListener actionListener) {
         listern.add(actionListener);
-    }
-
-    public boolean removeTable(TableElement e) {
-        if (allTables.contains(e)) {
-            return false;
-        }
-
-        allTables.remove(e);
-        e.getDataBase().getTables().remove(e);
-
-        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_TABLE");
-        for (ActionListener a : listern) {
-            a.actionPerformed(evt);
-        }
-
-        return true;
     }
 
     /**

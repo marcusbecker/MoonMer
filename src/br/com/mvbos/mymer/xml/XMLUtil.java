@@ -9,6 +9,7 @@ import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
 import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Table;
@@ -40,11 +41,6 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class XMLUtil {
 
-    public static int tableCount;
-
-    public static Set<DataBaseElement> dataBases = new LinkedHashSet<>(10);
-
-    private static final int LIST_TABLE_SIZE = 60;
     public static final Boolean FORMATTED_OUTPUT = Boolean.TRUE;
 
     /*Folders*/
@@ -91,7 +87,7 @@ public class XMLUtil {
                     }
 
                     if (elTables.contains(e)) {
-                        e.setName(e.getName() + " " + ++XMLUtil.tableCount);
+                        e.setName(e.getName() + " " + ++DataBaseEntity.tableCount);
                     }
 
                     elTables.add(e);
@@ -164,5 +160,4 @@ public class XMLUtil {
         return new OutputStreamWriter(new FileOutputStream(file), Common.charset);
     }
 
- 
 }
