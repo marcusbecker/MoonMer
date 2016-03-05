@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.table.GenericTableModel;
 import br.com.mvbos.mymer.table.FieldTableModel;
 import br.com.mvbos.jeg.element.ElementModel;
@@ -2066,7 +2067,7 @@ public class Window extends javax.swing.JFrame {
 
         if (tbIndex.getSelectedRow() > -1 && cbIndexAvailField.getSelectedIndex() > -1) {
             IndexElement ind = tableModel.getData().get(tbIndex.getSelectedRow());
-            Field org = Find.findByName(ind.getTable().getFields(), cbIndexAvailField.getSelectedItem().toString());
+            Field org = EntityUtil.findFieldByName(ind.getTable().getFields(), cbIndexAvailField.getSelectedItem().toString());
             if (org != null) {
                 ind.getFields().add(org);
                 lstModel.addElement(cbIndexAvailField.getSelectedItem());
@@ -2084,7 +2085,7 @@ public class Window extends javax.swing.JFrame {
 
             if (tbIndex.getSelectedRow() > -1 && lstIndexFields.getSelectedIndex() > -1) {
                 IndexElement ind = tableModel.getData().get(tbIndex.getSelectedRow());
-                Field org = Find.findByName(ind.getTable().getFields(), lstIndexFields.getSelectedValue().toString());
+                Field org = EntityUtil.findFieldByName(ind.getTable().getFields(), lstIndexFields.getSelectedValue().toString());
 
                 if (org != null) {
                     ind.getFields().remove(org);

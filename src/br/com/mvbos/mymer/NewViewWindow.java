@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.XMLUtil;

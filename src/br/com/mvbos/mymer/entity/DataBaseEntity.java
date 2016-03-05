@@ -3,10 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.mvbos.mymer.xml;
+package br.com.mvbos.mymer.entity;
 
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.xml.DataBaseStore;
+import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.awt.Color;
@@ -66,6 +68,21 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         filterBases.add(e);
 
         ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_ADD, "ADD_DATABASE");
+        for (ActionListener a : listern) {
+            a.actionPerformed(evt);
+        }
+
+        return true;
+    }
+
+    public boolean addTable(TableElement e) {
+        if (allTables.contains(e)) {
+            return false;
+        }
+
+        allTables.add(e);
+
+        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_ADD, "ADD_TABLE");
         for (ActionListener a : listern) {
             a.actionPerformed(evt);
         }
@@ -206,21 +223,6 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
     @Override
     public void addActionListern(ActionListener actionListener) {
         listern.add(actionListener);
-    }
-
-    public boolean addTable(TableElement e) {
-        if (allTables.contains(e)) {
-            return false;
-        }
-
-        allTables.add(e);
-
-        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_ADD, "ADD_TABLE");
-        for (ActionListener a : listern) {
-            a.actionPerformed(evt);
-        }
-
-        return true;
     }
 
     public boolean removeTable(TableElement e) {
