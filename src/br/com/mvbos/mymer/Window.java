@@ -21,6 +21,11 @@ import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.IElementEntity;
+import br.com.mvbos.mymer.entity.IndexEntity;
+import br.com.mvbos.mymer.entity.RelationEntity;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
@@ -109,6 +114,9 @@ public class Window extends javax.swing.JFrame {
     private EditTool mode = EditTool.SELECTOR;
 
     private final WindowSerializable ws;
+
+    private final EntityManager em = EntityManager.e();
+    private final DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
 
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
@@ -265,15 +273,15 @@ public class Window extends javax.swing.JFrame {
 
         timer.start();
 
-        XMLUtil.addActionListern(new ActionListener() {
+        dbEntity.addActionListern(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
 
                 if (e.getSource() instanceof TableElement) {
-                    if (e.getID() == XMLUtil.EVT_ADD) {
+                    if (e.getID() == IElementEntity.EVT_ADD) {
                         addNewTableOnTree((TableElement) e.getSource());
-                    } else if (e.getID() == XMLUtil.EVT_REMOVE) {
+                    } else if (e.getID() == IElementEntity.EVT_REMOVE) {
                         populeTreeNodes();
                     }
 
@@ -296,7 +304,7 @@ public class Window extends javax.swing.JFrame {
             cbEditDataBase.removeAllItems();
         }
 
-        cbEditDataBase.addItem(XMLUtil.DEFAULT_DATA_BASE.getName());
+        cbEditDataBase.addItem(DataBaseEntity.DEFAULT_DATA_BASE.getName());
 
         for (DataBaseElement d : XMLUtil.dataBases) {
             cbBases.addItem(d.getName());
@@ -355,7 +363,7 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void save() {
-        if (XMLUtil.saveAll()) {
+        if (em.save()) {
             lblInfo.setText("Save sucess at " + Calendar.getInstance().getTime());
 
         } else {
@@ -1423,10 +1431,10 @@ public class Window extends javax.swing.JFrame {
         final ElementModel temp = new ElementModel();
         temp.setSize(10, 10);
 
-        //List<ElementModel> inStage = new ArrayList<>(XMLUtil.getFilterTable().size());
-        final IMemory mem = new MemoryImpl(XMLUtil.getFilterTable().size());
+        //List<ElementModel> inStage = new ArrayList<>(dbEntity.getTableList().size());
+        final IMemory mem = new MemoryImpl(dbEntity.getTableList().size());
 
-        for (TableElement e : XMLUtil.getFilterTable()) {
+        for (TableElement e : dbEntity.getTableList()) {
 
             ElementModel elCol = GraphicTool.g().collide(temp, mem);
 
@@ -1480,7 +1488,7 @@ public class Window extends javax.swing.JFrame {
         int maxWidth = 0;
         int sumWidth = 0;
 
-        for (TableElement filter : XMLUtil.getFilterTable()) {
+        for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
 
             maxWidth = e.getWidth() > maxWidth ? e.getWidth() : maxWidth;
@@ -1513,7 +1521,7 @@ public class Window extends javax.swing.JFrame {
         int maxHeight = 0;
         int sumHeight = 0;
 
-        for (TableElement filter : XMLUtil.getFilterTable()) {
+        for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
             maxHeight = e.getHeight() > maxHeight ? e.getHeight() : maxHeight;
             if (px + e.getWidth() > Common.camSize) {
@@ -1545,7 +1553,7 @@ public class Window extends javax.swing.JFrame {
         TableElement sel = getTableSeletected();
         if (sel != null) {
             if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
-                XMLUtil.removeTable(sel);
+                dbEntity.removeTable(sel);
                 singleSelection(null);
             }
         }
@@ -1563,7 +1571,7 @@ public class Window extends javax.swing.JFrame {
 
     private void addNewTable(TableElement te) {
 
-        DataBaseElement db = XMLUtil.DEFAULT_DATA_BASE;
+        DataBaseElement db = DataBaseEntity.DEFAULT_DATA_BASE;
 
         if (te != null && te.getDataBase() != null) {
             db = te.getDataBase();
@@ -1582,7 +1590,7 @@ public class Window extends javax.swing.JFrame {
 
         te.update();
 
-        XMLUtil.addFilterTable(te);
+        dbEntity.addTable(te);
 
     }
 
@@ -1636,7 +1644,7 @@ public class Window extends javax.swing.JFrame {
             TableElement e = (TableElement) selectedElements[0];
             e.update();
 
-            DataBaseElement db = XMLUtil.getDataBase().get(cbBases.getSelectedIndex());
+            DataBaseElement db = dbEntity.getList().get(cbBases.getSelectedIndex());
 
             if (!e.getDataBase().equals(db)) {
 
@@ -1655,13 +1663,13 @@ public class Window extends javax.swing.JFrame {
 
     private void miBasesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miBasesActionPerformed
 
-        if (getTableSeletected() == null || getTableSeletected().getDataBase() == XMLUtil.DEFAULT_DATA_BASE) {
+        if (getTableSeletected() == null || getTableSeletected().getDataBase() == DataBaseEntity.DEFAULT_DATA_BASE) {
             dataBaseSelected = null;
 
             tfDBName.setText(null);
             tfDBTablesCounter.setText("0");
             cbEditDataBase.setSelectedIndex(0);
-            ccDBColor.setColor(XMLUtil.DEFAULT_DATA_BASE.getColor());
+            ccDBColor.setColor(DataBaseEntity.DEFAULT_DATA_BASE.getColor());
 
         } else {
             dataBaseSelected = getTableSeletected().getDataBase();
@@ -1686,12 +1694,12 @@ public class Window extends javax.swing.JFrame {
             if (cb.getSelectedIndex() <= 0) {
                 tfDBName.setText(null);
                 tfDBTablesCounter.setText("0");
-                ccDBColor.setColor(XMLUtil.DEFAULT_DATA_BASE.getColor());
+                ccDBColor.setColor(DataBaseEntity.DEFAULT_DATA_BASE.getColor());
 
                 dataBaseSelected = null;
 
             } else {
-                DataBaseElement db = XMLUtil.getDataBase().get(cb.getSelectedIndex() - 1);
+                DataBaseElement db = dbEntity.getList().get(cb.getSelectedIndex() - 1);
 
                 tfDBName.setText(db.getName());
                 tfDBTablesCounter.setText(Integer.toString(db.getTables().size()));
@@ -1715,7 +1723,7 @@ public class Window extends javax.swing.JFrame {
 
         if (dataBaseSelected == null) {
             db = new DataBaseElement();
-            XMLUtil.addDataBase(db);
+            dbEntity.add(db);
 
         } else {
             db = dataBaseSelected;
@@ -1741,7 +1749,7 @@ public class Window extends javax.swing.JFrame {
         if (!tfFilter.getText().isEmpty()) {
 
             /*String s = tfFilter.getText().toLowerCase();
-             for (TableElement t : XMLUtil.getFilterTable()) {
+             for (TableElement t : dbEntity.getTableList()) {
              if (t.getName().toLowerCase().startsWith(s)) {
              positionCam(t.getPx(), t.getPy());
              break;
@@ -1982,7 +1990,7 @@ public class Window extends javax.swing.JFrame {
         TableElement e = Undo.get();
         if (e != null) {
             e.getDataBase().getTables().add(e);
-            XMLUtil.addFilterTable(e);
+            dbEntity.addTable(e);
         }
 
     }//GEN-LAST:event_miUndoActionPerformed
@@ -2029,7 +2037,7 @@ public class Window extends javax.swing.JFrame {
             ie.setFields(new ArrayList<Field>(5));
 
             m.getData().add(ie);
-            XMLUtil.indices.add(ie);
+            em.getEntity(IndexEntity.class).add(ie);
 
             tbIndex.updateUI();
         }
@@ -2047,7 +2055,7 @@ public class Window extends javax.swing.JFrame {
 
             IndexElement ie = m.getData().get(tbIndex.getSelectedRow());
 
-            XMLUtil.indices.remove(ie);
+            em.getEntity(IndexEntity.class).remove(ie);
             m.getData().remove(tbIndex.getSelectedRow());
 
             lstModel.removeAllElements();
@@ -2099,7 +2107,7 @@ public class Window extends javax.swing.JFrame {
     private void btnRemoveRelationshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveRelationshipActionPerformed
 
         Option opt = (Option) cbRelationship.getSelectedItem();
-        XMLUtil.relations.remove((RelationshipElement) opt.getValue());
+        em.getEntity(RelationEntity.class).remove((RelationshipElement) opt.getValue());
         cbRelationship.removeItemAt(cbRelationship.getSelectedIndex());
 
     }//GEN-LAST:event_btnRemoveRelationshipActionPerformed
@@ -2163,7 +2171,7 @@ public class Window extends javax.swing.JFrame {
                 ct++;
             }
 
-            for (IndexElement ie : XMLUtil.indices) {
+            for (IndexElement ie : em.getEntity(IndexEntity.class).getList()) {
                 if (!te.equals(ie.getTable())) {
                     continue;
                 }
@@ -2195,7 +2203,7 @@ public class Window extends javax.swing.JFrame {
         TableElement te = getTableSeletected();
         if (te != null) {
             TableElement nte = EntityUtil.clone(te);
-            XMLUtil.addFilterTable(nte);
+            dbEntity.addTable(nte);
         }
 
     }//GEN-LAST:event_miCloneTableActionPerformed
@@ -2580,7 +2588,7 @@ public class Window extends javax.swing.JFrame {
                 }
 
                 g.scale(w, h);
-                for (ElementModel el : XMLUtil.getFilterTable()) {
+                for (ElementModel el : dbEntity.getTableList()) {
                     g.setColor(el.getColor());
                     g.fillRect(el.getPx(), el.getPy(), el.getWidth(), el.getHeight());
                 }
@@ -2684,7 +2692,7 @@ public class Window extends javax.swing.JFrame {
                 }
 
                 if (Common.updateAll) {
-                    for (ElementModel el : XMLUtil.getFilterTable()) {
+                    for (ElementModel el : dbEntity.getTableList()) {
                         el.update();
                     }
 
@@ -2692,11 +2700,11 @@ public class Window extends javax.swing.JFrame {
 
                 } else {
 
-                    for (RelationshipElement rl : XMLUtil.relations) {
+                    for (RelationshipElement rl : em.getEntity(RelationEntity.class).getList()) {
                         rl.drawMe(g);
                     }
 
-                    for (ElementModel el : XMLUtil.getFilterTable()) {
+                    for (ElementModel el : dbEntity.getTableList()) {
                         Camera.c().draw(g, el);
                     }
 
@@ -2773,7 +2781,7 @@ public class Window extends javax.swing.JFrame {
 
                         singleSelection(null);
 
-                        for (ElementModel el : XMLUtil.getFilterTable()) {
+                        for (ElementModel el : dbEntity.getTableList()) {
 
                             if (GraphicTool.g().bcollide(el, selector)) {
                                 multiSelect(el);
@@ -2883,8 +2891,9 @@ public class Window extends javax.swing.JFrame {
 
             loadRelationship(e);
             cbBases.setSelectedItem(e.getDataBase().getName());
-            tbIndexModel.setData(XMLUtil.findIndex(e));
+            tbIndexModel.setData(em.getEntity(IndexEntity.class).findIndexByTable(e));
             tbTableModel.setData(e.getFields());
+
         }
 
         updateIndexSelection();
@@ -2899,7 +2908,8 @@ public class Window extends javax.swing.JFrame {
         tbRelationshipRight.removeAll();
 
         if (e != null) {
-            Set<RelationshipElement> lst = XMLUtil.findRelationship(e);
+            RelationEntity rEntity = em.getEntity(RelationEntity.class);
+            Set<RelationshipElement> lst = rEntity.findRelationship(e);
 
             short i = 0;
 
@@ -3019,7 +3029,7 @@ public class Window extends javax.swing.JFrame {
         }
 
         if (relLeft != null && relRight != null) {
-            XMLUtil.addNewRelationship(relType, relLeft, relRight);
+            em.getEntity(RelationEntity.class).addNewRelationship(relType, relLeft, relRight);
             relType = null;
             relRight = relLeft = null;
             mode = EditTool.SELECTOR;
@@ -3036,7 +3046,7 @@ public class Window extends javax.swing.JFrame {
     private ElementModel hasColision(ElementModel element) {
         ElementModel e = selectedElements[0];
 
-        for (ElementModel el : XMLUtil.getFilterTable()) {
+        for (ElementModel el : dbEntity.getTableList()) {
             if (EditTool.SELECTOR == mode && selectedElements[0] == el) {
                 continue;
             }

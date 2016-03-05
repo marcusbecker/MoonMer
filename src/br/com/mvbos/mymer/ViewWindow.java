@@ -12,13 +12,14 @@ import br.com.mvbos.jeg.engine.GraphicTool;
 import br.com.mvbos.jeg.window.Camera;
 import br.com.mvbos.mymer.combo.Option;
 import br.com.mvbos.mymer.el.DataBaseElement;
-import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.RelationEntity;
+import br.com.mvbos.mymer.entity.ViewEntity;
 import br.com.mvbos.mymer.list.GenericListModel;
-import br.com.mvbos.mymer.xml.XMLUtil;
-import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.View;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.awt.Color;
@@ -68,6 +69,9 @@ public class ViewWindow extends javax.swing.JFrame {
     private List<View> views;
     private View selected;
     private boolean AUTO_SAVE = true;
+
+    private final EntityManager em = EntityManager.e();
+    final DataBaseEntity entity = em.getEntity(DataBaseEntity.class);
 
     private class MyDispatcher implements KeyEventDispatcher {
 
@@ -378,7 +382,7 @@ public class ViewWindow extends javax.swing.JFrame {
                 }
             }
 
-            XMLUtil.saveViews(views);
+            em.getEntity(ViewEntity.class).save(null);
         }
 
     }//GEN-LAST:event_formWindowClosing
@@ -406,62 +410,6 @@ public class ViewWindow extends javax.swing.JFrame {
 
     private void btnBuildSctructActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuildSctructActionPerformed
 
-        StringBuilder sb = new StringBuilder(600);
-        for (ElementModel e : selectedElements) {
-            if (!(e instanceof TableElement)) {
-                continue;
-            }
-
-            TableElement te = (TableElement) e;
-
-            sb.append("ADD TABLE \"").append(te.getName()).append("\"\n");
-            sb.append("  AREA \"Dados\"\n");
-            sb.append("  DESCRIPTION \"\"\n");
-            sb.append("  DUMP-NAME \"").append(te.getName()).append("\"\n");
-            sb.append("\n");
-
-            int ct = 1;
-            for (Field f : te.getFields()) {
-                sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(te.getName()).append("\" AS ").append(f.getType()).append("\n");
-                sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
-                sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
-                sb.append("  INITIAL \"\"\n");
-                sb.append("  LABEL \"").append(f.getName()).append("\"\n");
-                //sb.append("  POSITION ").append(ct).append("\n");
-                //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
-                sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
-                sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
-                sb.append("  ORDER ").append(ct * 10).append("\n");
-
-                sb.append("\n");
-                ct++;
-            }
-
-            for (IndexElement ie : XMLUtil.indices) {
-                if (!te.equals(ie.getTable())) {
-                    continue;
-                }
-
-                sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(te.getName()).append("\"\n");
-                sb.append("  AREA \"Indices\"\n");
-                if (ie.getPrimary()) {
-                    sb.append("  UNIQUE\n");
-                }
-                if (ie.getUnique()) {
-                    sb.append("  PRIMARY\n");
-                }
-
-                for (Field f : ie.getFields()) {
-                    sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
-                }
-
-                sb.append("\n");
-            }
-
-        }
-
-        tfStruct.setText(sb.toString());
-
 
     }//GEN-LAST:event_btnBuildSctructActionPerformed
 
@@ -481,7 +429,7 @@ public class ViewWindow extends javax.swing.JFrame {
 
         myListModel.getList().clear();
 
-        for (DataBaseElement d : XMLUtil.getDataBase()) {
+        for (DataBaseElement d : entity.getList()) {
 
             for (TableElement t : d.getTables()) {
                 if (t.getName().toLowerCase().contains(filter.toLowerCase())) {
@@ -803,7 +751,9 @@ public class ViewWindow extends javax.swing.JFrame {
         }
 
         if (relLeft != null && relRight != null) {
-            XMLUtil.addNewRelationship(relType, relLeft, relRight);
+            final RelationEntity rEnt = em.getEntity(RelationEntity.class);
+            rEnt.addNewRelationship(relType, relLeft, relRight);
+
             relType = null;
             relRight = relLeft = null;
             mode = EditTool.SELECTOR;
@@ -908,7 +858,9 @@ public class ViewWindow extends javax.swing.JFrame {
     public void init(View selected, List<View> views) {
         this.selected = selected;
         this.views = views;
-        addRelations(XMLUtil.findRelationship(getTables()));
+
+        RelationEntity rEntity = em.getEntity(RelationEntity.class);
+        addRelations(rEntity.findRelationship(getTables()));
     }
 
     private void removeSelTables() {

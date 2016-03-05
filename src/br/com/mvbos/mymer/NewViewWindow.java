@@ -8,7 +8,9 @@ package br.com.mvbos.mymer;
 import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.el.TableElement;
-import br.com.mvbos.mymer.xml.XMLUtil;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.ViewEntity;
 import br.com.mvbos.mymer.xml.field.View;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.awt.event.KeyEvent;
@@ -57,7 +59,9 @@ public class NewViewWindow extends javax.swing.JFrame {
         initComponents();
 
         DefaultListModel<String> def = (DefaultListModel<String>) lstViews.getModel();
-        views = XMLUtil.loadViews();
+
+        views = EntityManager.e().getEntity(ViewEntity.class).getList();
+
         if (views != null) {
             for (View v : views) {
                 def.addElement(v.getName());
@@ -191,11 +195,14 @@ public class NewViewWindow extends javax.swing.JFrame {
         } else {
             selected.setName(tfName.getText());
 
+            EntityManager em = EntityManager.e();
+            DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
+
             //Validate if tables in view selected still exist
             List<ViewTable> selTemp = new ArrayList<>(selected.getTables());
             for (ViewTable v : selTemp) {
 
-                TableElement t = XMLUtil.findByName(v.getDataBaseName(), v.getTableName());
+                TableElement t = dbEntity.findByTableName(v.getDataBaseName(), v.getTableName());
 
                 if (t == null) {
                     String msg = String.format("Apparently the table %s from %s don't exist more. Do you like do remove this?", v.getTableName(), v.getDataBaseName());
@@ -287,7 +294,7 @@ public class NewViewWindow extends javax.swing.JFrame {
     private TableElement copy(TableElement t, ViewTable v) {
         TableElement copy = EntityUtil.copy(t);
         int ppx = v.getPx() == 0 ? px : v.getPx();
-        
+
         copy.setPxy(ppx, v.getPy());
 
         return copy;

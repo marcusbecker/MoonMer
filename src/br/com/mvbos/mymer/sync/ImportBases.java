@@ -10,6 +10,9 @@ import br.com.mvbos.mymer.combo.Option;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.tree.FieldTreeNode;
 import br.com.mvbos.mymer.tree.IndexTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
@@ -22,7 +25,6 @@ import br.com.mvbos.mymer.xml.field.Table;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -45,7 +47,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import javax.xml.bind.JAXBException;
 
 /**
  *
@@ -72,6 +73,8 @@ public class ImportBases extends javax.swing.JFrame {
     private int dbStart;
     private int dbCount;
     private DataBaseStore dbStore;
+
+    private final EntityManager em = EntityManager.e();
 
     class FieldChange {
 
@@ -185,7 +188,9 @@ public class ImportBases extends javax.swing.JFrame {
         DefaultListModel<Option> dst = (DefaultListModel<Option>) lstDst.getModel();
         dst.removeAllElements();
 
-        DataBaseElement dbe = XMLUtil.findByName(remoteBase.getName());
+        DataBaseEntity dbEnt = em.getEntity(DataBaseEntity.class);
+        DataBaseElement dbe = dbEnt.findByName(remoteBase.getName());
+
         if (dbe != null) {
             for (TableElement te : dbe.getTables()) {
                 localTalbles.put(te.getName(), te);
@@ -1061,7 +1066,9 @@ public class ImportBases extends javax.swing.JFrame {
 
                 sb.delete(0, sb.length());
 
-                IndexElement locIndex = XMLUtil.findIndexByName(ridx.getName(), lte);
+                IndexEntity indEnt = em.getEntity(IndexEntity.class);
+                IndexElement locIndex = indEnt.findByName(ridx.getName(), lte);
+
                 IndexTreeNode itn = null;
 
                 if (locIndex == null) {
@@ -1209,15 +1216,18 @@ public class ImportBases extends javax.swing.JFrame {
         lblInfo.setForeground(Color.BLACK);
         lblInfo.setText(String.format("Changes on %s were updated.", remoteBase.getName()));
 
-        DataBaseElement db = XMLUtil.findByName(remoteBase.getName());
+        DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
+        IndexEntity indexEntity = em.getEntity(IndexEntity.class);
+
+        DataBaseElement db = dbEntity.findByName(remoteBase.getName());
 
         if (db == null) {
             db = new DataBaseElement(remoteBase);
-            XMLUtil.addDataBase(db);
+            dbEntity.add(db);
 
         } else {
             for (TableElement t : lstRemoveLocalTable) {
-                XMLUtil.removeTable(db, t);
+                dbEntity.removeTable(db, t);
             }
         }
 
@@ -1226,20 +1236,19 @@ public class ImportBases extends javax.swing.JFrame {
 
             if (tb.getIndices() != null) {
                 for (Index i : tb.getIndices()) {
-                    XMLUtil.addIndex(new IndexElement(i, tbe));
+                    indexEntity.add(new IndexElement(i, tbe));
                 }
             }
 
             tbe.update();
             db.addTable(tbe);
-            XMLUtil.addFilterTable(tbe);
+            dbEntity.addTable(tbe);
             //te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
         }
 
         for (String tbName : updateFields.keySet()) {
             Set<FieldChange> fchg = updateFields.get(tbName);
-
-            TableElement tb = XMLUtil.findByName(db.getName(), tbName);
+            TableElement tb = dbEntity.findByTableName(db.getName(), tbName);
 
             for (FieldChange f : fchg) {
 
@@ -1263,17 +1272,17 @@ public class ImportBases extends javax.swing.JFrame {
 
             for (IndexChange k : ichg) {
 
-                int idx = XMLUtil.indices.indexOf(k.index);
-
+                int idx = indexEntity.getList().indexOf(k.index);
                 if (idx == -1) {
                     if (FieldTreeNode.Diff.NEW == k.diff) {
-                        XMLUtil.addIndex(k.index);
+                        indexEntity.add(k.index);
                     }
                 } else if (FieldTreeNode.Diff.DELETED == k.diff) {
-                    XMLUtil.indices.remove(idx);
+                    IndexElement temp = indexEntity.getList().get(idx);
+                    indexEntity.remove(temp);
 
                 } else if (FieldTreeNode.Diff.FIELD == k.diff) {
-                    XMLUtil.indices.set(idx, k.index);
+                    indexEntity.replace(idx, k.index);
                 }
             }
         }

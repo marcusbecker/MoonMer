@@ -20,8 +20,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
@@ -57,7 +59,7 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
     }
 
     @Override
-    public boolean save(Object... parent) {
+    public boolean save(IElementEntity parent) {
         RelationshipStore rStore = new RelationshipStore();
         List<Relationship> rel = new ArrayList<>(relations.size());
 
@@ -93,10 +95,12 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
     }
 
     @Override
-    public boolean load(Object... parent) {
-        RelationshipStore rStore = null;
+    public boolean load(IElementEntity parent) {
+        DataBaseEntity ent = (DataBaseEntity) parent;
 
-        List<DataBaseElement> dataBases = (List<DataBaseElement>) parent[0];
+        List<DataBaseElement> dataBases = ent.getList();
+
+        RelationshipStore rStore = null;
 
         try {
 
@@ -166,7 +170,7 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
 
     @Override
     public List<RelationshipElement> getList() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return relations;
     }
 
     @Override
@@ -182,6 +186,30 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
     @Override
     public void addActionListern(ActionListener actionListener) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public Set<RelationshipElement> findRelationship(TableElement e) {
+        Set<RelationshipElement> set = new HashSet<>(10);
+
+        for (RelationshipElement re : relations) {
+            if (re.getParent().equals(e) || re.getChild().equals(e)) {
+                set.add(re);
+            }
+        }
+
+        return set;
+    }
+
+    public Set<RelationshipElement> findRelationship(List<TableElement> lst) {
+        Set<RelationshipElement> set = new HashSet<>(10);
+
+        for (RelationshipElement re : relations) {
+            if (lst.contains(re.getParent()) && lst.contains(re.getChild())) {
+                set.add(re);
+            }
+        }
+
+        return set;
     }
 
 }

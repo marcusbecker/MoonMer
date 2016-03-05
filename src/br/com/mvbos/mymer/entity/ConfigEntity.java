@@ -51,8 +51,10 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
     }
 
     @Override
-    public boolean save(Object... parent) {
-        List<DataBaseElement> dataBases = (List<DataBaseElement>) parent[0];
+    public boolean save(IElementEntity parent) {
+        DataBaseEntity ent = (DataBaseEntity) parent;
+
+        List<DataBaseElement> dataBases = ent.getList();
 
         return saveConfig(dataBases) & saveTablePosition(dataBases);
     }
@@ -136,9 +138,10 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
     }
 
     @Override
-    public boolean load(Object... parent) {
+    public boolean load(IElementEntity parent) {
+        DataBaseEntity ent = (DataBaseEntity) parent;
 
-        List<DataBaseElement> dataBases = (List<DataBaseElement>) parent[0];
+        List<DataBaseElement> dataBases = ent.getList();
 
         return loadConfig(dataBases) & loadTablePosition(dataBases);
     }

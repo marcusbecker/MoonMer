@@ -107,7 +107,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
     }
 
     @Override
-    public boolean save(Object... p) {
+    public boolean save(IElementEntity p) {
         for (DataBaseElement e : filterBases) {
 
             DataBase db = new DataBase(e.getName());
@@ -143,7 +143,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
     }
 
     @Override
-    public boolean load(Object... p) {
+    public boolean load(IElementEntity p) {
         DataBaseStore dbs = null;
 
         for (File f : getDBFiles()) {
@@ -231,6 +231,28 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         }
 
         allTables.remove(e);
+        e.getDataBase().getTables().remove(e);
+
+        ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_TABLE");
+        for (ActionListener a : listern) {
+            a.actionPerformed(evt);
+        }
+
+        return true;
+    }
+
+    /**
+     * Use removeTable(TableElement e)
+     *
+     * @param db
+     * @param e
+     * @return
+     * @deprecated
+     */
+    @Deprecated
+    public boolean removeTable(DataBaseElement db, TableElement e) {
+        db.getTables().remove(e);
+        allTables.remove(e);
 
         ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_TABLE");
         for (ActionListener a : listern) {
@@ -267,4 +289,19 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         return temp;
     }
 
+    public TableElement findByTableName(String dbName, String name) {
+        DataBaseElement dbe = findByName(dbName);
+
+        if (dbe == null) {
+            return null;
+        }
+
+        for (TableElement e : dbe.getTables()) {
+            if (e.getName().equals(name)) {
+                return e;
+            }
+        }
+
+        return null;
+    }
 }

@@ -31,31 +31,21 @@ import javax.xml.bind.Unmarshaller;
  *
  * @author Marcus Becker
  */
-public class IndexEntity implements IElementEntity<IndexElement> {
-
-    private List<IndexElement> indices = null;
+public class _ViewEntity implements IElementEntity<IndexElement> {
 
     private static final File FILE_DIR_INDEX = new File(XMLUtil.CURRENT_PATH, "index");
     private static final File FILE_INDEX_STORE = new File(FILE_DIR_INDEX, "index.xml");
 
+    private List<IndexElement> indices = null;
+
     @Override
     public boolean add(IndexElement e) {
-        if (indices.contains(e)) {
-            return false;
-        }
-
-        indices.add(e);
-        return true;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public boolean remove(IndexElement e) {
-        if (!indices.contains(e)) {
-            return false;
-        }
-
-        indices.remove(e);
-        return true;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -92,7 +82,6 @@ public class IndexEntity implements IElementEntity<IndexElement> {
 
     @Override
     public boolean load(IElementEntity parent) {
-
         DataBaseEntity ent = (DataBaseEntity) parent;
 
         List<DataBaseElement> dataBases = ent.getList();
@@ -174,32 +163,4 @@ public class IndexEntity implements IElementEntity<IndexElement> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public IndexElement findByName(String indexName, TableElement e) {
-
-        for (IndexElement ie : indices) {
-            if (ie.getTable().equals(e)) {
-                if (ie.getName().equals(indexName)) {
-                    return ie;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public void replace(int idx, IndexElement index) {
-        indices.set(idx, index);
-    }
-
-    public List<IndexElement> findIndexByTable(TableElement e) {
-        List<IndexElement> lst = new ArrayList<>(15);
-
-        for (IndexElement ie : indices) {
-            if (ie.getTable().equals(e)) {
-                lst.add(ie);
-            }
-        }
-
-        return lst;
-    }
 }

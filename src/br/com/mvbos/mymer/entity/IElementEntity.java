@@ -21,9 +21,9 @@ public interface IElementEntity<T> {
 
     public boolean remove(T e);
 
-    public boolean save(Object... parent);
+    public boolean save(IElementEntity parent);
 
-    public boolean load(Object... parent);
+    public boolean load(IElementEntity parent);
 
     public List<T> getList();
 

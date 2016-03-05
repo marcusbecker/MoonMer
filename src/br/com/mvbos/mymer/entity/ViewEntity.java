@@ -5,18 +5,16 @@
  */
 package br.com.mvbos.mymer.entity;
 
-import br.com.mvbos.mymer.el.DataBaseElement;
-import br.com.mvbos.mymer.el.IndexElement;
-import br.com.mvbos.mymer.el.TableElement;
-import br.com.mvbos.mymer.xml.IndexStore;
+import br.com.mvbos.mymer.xml.ViewStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
-import static br.com.mvbos.mymer.xml.XMLUtil.FORMATTED_OUTPUT;
-import static br.com.mvbos.mymer.xml.XMLUtil.getFileInputStream;
-import static br.com.mvbos.mymer.xml.XMLUtil.getFileOutputStream;
-import br.com.mvbos.mymer.xml.field.Field;
-import br.com.mvbos.mymer.xml.field.Index;
+import br.com.mvbos.mymer.xml.XMLUtil1;
+import static br.com.mvbos.mymer.xml.XMLUtil1.FORMATTED_OUTPUT;
+import static br.com.mvbos.mymer.xml.XMLUtil1.getFileInputStream;
+import static br.com.mvbos.mymer.xml.XMLUtil1.getFileOutputStream;
+import br.com.mvbos.mymer.xml.field.View;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,48 +29,41 @@ import javax.xml.bind.Unmarshaller;
  *
  * @author Marcus Becker
  */
-public class ViewEntity implements IElementEntity<IndexElement> {
+public class ViewEntity implements IElementEntity<View> {
 
-    private static final File FILE_DIR_INDEX = new File(XMLUtil.CURRENT_PATH, "index");
-    private static final File FILE_INDEX_STORE = new File(FILE_DIR_INDEX, "index.xml");
+    private static final File FILE_DIR_VIEWS = new File(XMLUtil.CURRENT_PATH, "views");
+    private static final File FILE_VIEW_STORE = new File(FILE_DIR_VIEWS, "view.xml");
 
-    private List<IndexElement> indices = null;
+    private List<View> views;
 
     @Override
-    public boolean add(IndexElement e) {
+    public boolean add(View e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public boolean remove(IndexElement e) {
+    public boolean remove(View e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public boolean save(Object... parent) {
-        IndexStore rStore = new IndexStore();
-        List<Index> ind = new ArrayList<>(indices.size());
-
-        for (IndexElement ie : indices) {
-            Index i = new Index(ie.getTable().getDataBase().getName(), ie.getTable().getName(), ie.getName(), ie.getPrimary(), ie.getUnique(), ie.getActive(), ie.getFields());
-            ind.add(i);
-        }
-
-        rStore.setIndices(ind);
-
+    public boolean save(IElementEntity parent) {
         try {
-            if (!FILE_DIR_INDEX.exists()) {
-                FILE_DIR_INDEX.mkdir();
+            if (!FILE_DIR_VIEWS.exists()) {
+                FILE_DIR_VIEWS.mkdir();
             }
 
-            JAXBContext context = JAXBContext.newInstance(IndexStore.class);
+            ViewStore vs = new ViewStore();
+            vs.setViews(views);
+
+            JAXBContext context = JAXBContext.newInstance(ViewStore.class);
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
 
-            m.marshal(rStore, getFileOutputStream(FILE_INDEX_STORE));
+            m.marshal(vs, getFileOutputStream(FILE_VIEW_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(XMLUtil1.class.getName()).log(Level.SEVERE, null, ex);
 
             return false;
         }
@@ -81,78 +72,52 @@ public class ViewEntity implements IElementEntity<IndexElement> {
     }
 
     @Override
-    public boolean load(Object... parent) {
-        IndexStore iStore = null;
+    public boolean load(IElementEntity parent) {
+        views = new ArrayList<>(20);
 
-        List<DataBaseElement> dataBases = (List<DataBaseElement>) parent[0];
+        if (!FILE_DIR_VIEWS.exists()) {
+            return false;
+        }
 
-        try {
+        File[] files = FILE_DIR_VIEWS.listFiles(new FileFilter() {
 
-            if (!FILE_DIR_INDEX.exists()) {
-                FILE_DIR_INDEX.mkdir();
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isFile() && pathname.getName().toLowerCase().endsWith(".xml");
             }
+        });
 
-            if (FILE_INDEX_STORE.exists()) {
-
-                JAXBContext context = JAXBContext.newInstance(IndexStore.class);
+        for (File f : files) {
+            try {
+                JAXBContext context = JAXBContext.newInstance(ViewStore.class);
                 Unmarshaller um = context.createUnmarshaller();
 
-                iStore = (IndexStore) um.unmarshal(getFileInputStream(FILE_INDEX_STORE));
-            }
+                ViewStore vs = (ViewStore) um.unmarshal(getFileInputStream(f));
 
-        } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        if (iStore != null && iStore.getIndices() != null && !iStore.getIndices().isEmpty()) {
-
-            indices = new ArrayList<>(iStore.getIndices().size());
-
-            for (Index i : iStore.getIndices()) {
-
-                TableElement tb = EntityUtil.findTableByName(dataBases, i.getDataBaseName(), i.getTableName());
-                if (tb == null) {
-                    continue;
+                if (vs.getViews() != null) {
+                    views.addAll(vs.getViews());
                 }
 
-                IndexElement ie = new IndexElement(i, tb);
-
-                if (i.getFields() != null) {
-                    List<Field> lstField = new ArrayList<>(i.getFields().size());
-                    for (Field f : i.getFields()) {
-                        int index = tb.getFields().indexOf(f);
-
-                        if (index != -1) {
-                            lstField.add(tb.getFields().get(index));
-                        }
-                    }
-
-                    ie.setFields(lstField);
-                }
-
-                indices.add(ie);
+            } catch (JAXBException | FileNotFoundException ex) {
+                Logger.getLogger(XMLUtil1.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-
-        if (indices == null) {
-            indices = new ArrayList<>(10);
         }
 
         return true;
     }
 
     @Override
-    public List<IndexElement> getList() {
+    public List<View> getList() {
+        return views;
+    }
+
+    @Override
+    public View findByName(String name) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public IndexElement findByName(String name) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<IndexElement> findBy(IEntityFilter filter) {
+    public List<View> findBy(IEntityFilter filter) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
