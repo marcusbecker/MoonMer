@@ -82,7 +82,7 @@ public class IndexEntity implements IElementEntity<IndexElement> {
             m.marshal(rStore, getFileOutputStream(FILE_INDEX_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
 
             return false;
         }
@@ -114,7 +114,7 @@ public class IndexEntity implements IElementEntity<IndexElement> {
             }
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
 
         if (iStore != null && iStore.getIndices() != null && !iStore.getIndices().isEmpty()) {

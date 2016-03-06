@@ -87,7 +87,7 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
             m.marshal(rStore, getFileOutputStream(FILE_RELATIONSHIP_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
 
             return false;
         }
@@ -118,7 +118,7 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
             }
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
 
         if (rStore != null && rStore.getRelations() != null && !rStore.getRelations().isEmpty()) {

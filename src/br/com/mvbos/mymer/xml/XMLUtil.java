@@ -10,7 +10,7 @@ import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.entity.DataBaseEntity;
-import br.com.mvbos.mymer.entity.EntityUtil;
+import br.com.mvbos.mymer.entity.EntityManager;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.io.File;
@@ -49,6 +49,8 @@ public class XMLUtil {
     public static List<TableElement> stringToTables(String s) {
         DataBaseStore dbs = null;
         List<TableElement> tables = null;
+        
+        DataBaseEntity dbEntity = EntityManager.e().getEntity(DataBaseEntity.class);
 
         try {
             JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
@@ -66,7 +68,7 @@ public class XMLUtil {
             }
 
             for (DataBase db : dbs.getBases()) {
-                DataBaseElement dbEl = EntityUtil.findBaseByName(null, db.getName());
+                DataBaseElement dbEl = dbEntity.findByName(db.getName());
                 List<TableElement> elTables;
 
                 if (dbEl == null) {

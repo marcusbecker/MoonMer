@@ -154,7 +154,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
                 m.marshal(dbs, XMLUtil.getFileOutputStream(dst));
 
             } catch (JAXBException | FileNotFoundException ex) {
-                Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
 
                 return false;
             }

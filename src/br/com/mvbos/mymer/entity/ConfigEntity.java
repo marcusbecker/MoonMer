@@ -10,9 +10,6 @@ import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.ConfigStore;
 import br.com.mvbos.mymer.xml.FieldPositionStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
-import static br.com.mvbos.mymer.xml.XMLUtil.FORMATTED_OUTPUT;
-import static br.com.mvbos.mymer.xml.XMLUtil.getFileInputStream;
-import static br.com.mvbos.mymer.xml.XMLUtil.getFileOutputStream;
 import br.com.mvbos.mymer.xml.field.DataConfig;
 import br.com.mvbos.mymer.xml.field.FieldPosition;
 import java.awt.Color;
@@ -54,12 +51,13 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
     public boolean save(IElementEntity parent) {
         DataBaseEntity ent = (DataBaseEntity) parent;
 
-        List<DataBaseElement> dataBases = ent.getList();
-
-        return saveConfig(dataBases) & saveTablePosition(dataBases);
+        return saveConfig(ent) & saveTablePosition(ent);
     }
 
-    private boolean saveConfig(List<DataBaseElement> dataBases) {
+    private boolean saveConfig(DataBaseEntity ent) {
+
+        List<DataBaseElement> dataBases = ent.getList();
+
         ConfigStore cs = new ConfigStore();
         List<DataConfig> bases = new ArrayList<>(dataBases.size());
 
@@ -89,7 +87,7 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
             m.marshal(cs, XMLUtil.getFileOutputStream(FILE_CONFIG));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
 
             return false;
         }
@@ -97,41 +95,38 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
         return true;
     }
 
-    private boolean saveTablePosition(List<DataBaseElement> dataBases) {
+    private boolean saveTablePosition(DataBaseEntity ent) {
 
-        for (DataBaseElement db : dataBases) {
+        List<TableElement> lst = ent.getTableList();
 
-            List<TableElement> lst = db.getTables();
+        FieldPositionStore fps = new FieldPositionStore();
+        List<FieldPosition> fieldsPxy = new ArrayList<>(lst.size());
 
-            FieldPositionStore fps = new FieldPositionStore();
-            List<FieldPosition> fieldsPxy = new ArrayList<>(lst.size());
+        for (TableElement e : lst) {
+            FieldPosition fieldPosition = new FieldPosition(e.getPx(), e.getPy(), e.getDataBase().getName() + "." + e.getName());
+            fieldPosition.setColorName(e.getColor().getRGB());
 
-            for (TableElement e : lst) {
-                FieldPosition fieldPosition = new FieldPosition(e.getPx(), e.getPy(), e.getDataBase().getName() + "." + e.getName());
-                fieldPosition.setColorName(e.getColor().getRGB());
+            fieldsPxy.add(fieldPosition);
+        }
 
-                fieldsPxy.add(fieldPosition);
+        fps.setFields(fieldsPxy);
+
+        try {
+            if (!DIR_CONFIG.exists()) {
+                DIR_CONFIG.mkdir();
             }
 
-            fps.setFields(fieldsPxy);
+            JAXBContext context = JAXBContext.newInstance(FieldPositionStore.class);
+            Marshaller m = context.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, XMLUtil.FORMATTED_OUTPUT);
+            //m.marshal(fps, System.out);
 
-            try {
-                if (!DIR_CONFIG.exists()) {
-                    DIR_CONFIG.mkdir();
-                }
+            m.marshal(fps, XMLUtil.getFileOutputStream(FILE_POSITION_STORE));
 
-                JAXBContext context = JAXBContext.newInstance(FieldPositionStore.class);
-                Marshaller m = context.createMarshaller();
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
-                //m.marshal(fps, System.out);
+        } catch (JAXBException | FileNotFoundException ex) {
+            Logger.getLogger(ConfigEntity.class.getName()).log(Level.SEVERE, null, ex);
 
-                m.marshal(fps, getFileOutputStream(FILE_POSITION_STORE));
-
-            } catch (JAXBException | FileNotFoundException ex) {
-                Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
-
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -157,10 +152,10 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
             JAXBContext context = JAXBContext.newInstance(ConfigStore.class);
             Unmarshaller um = context.createUnmarshaller();
 
-            config = (ConfigStore) um.unmarshal(getFileInputStream(FILE_CONFIG));
+            config = (ConfigStore) um.unmarshal(XMLUtil.getFileInputStream(FILE_CONFIG));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
 
         if (config == null || config.getBases() == null) {
@@ -190,10 +185,10 @@ public class ConfigEntity implements IElementEntity<DataConfig> {
             JAXBContext context = JAXBContext.newInstance(FieldPositionStore.class);
             Unmarshaller um = context.createUnmarshaller();
 
-            fps = (FieldPositionStore) um.unmarshal(getFileInputStream(FILE_POSITION_STORE));
+            fps = (FieldPositionStore) um.unmarshal(XMLUtil.getFileInputStream(FILE_POSITION_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
-            Logger.getLogger(XMLUtil.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
         }
 
         if (fps == null || fps.getFields() == null || fps.getFields().isEmpty()) {

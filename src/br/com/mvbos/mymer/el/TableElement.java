@@ -50,13 +50,14 @@ public class TableElement extends ElementModel {
         this.dataBase = dataBase;
 
         if (dataBase == null) {
-            setColor(new Color(74, 189, 218));
+            this.setColor(new Color(74, 189, 218));
+            
         } else {
             if (dataBase.getColor() == null) {
                 dataBase.setColor(new Color(74, 189, 218));
             }
 
-            setColor(dataBase.getColor());
+            this.setColor(dataBase.getColor());
         }
     }
 

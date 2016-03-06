@@ -28,8 +28,8 @@ public class NewViewWindow extends javax.swing.JFrame {
     private int px;
     private short ct;
 
-    private View selected;
-    private List<View> views;
+    private View viewSelected;
+    private List<View> viewsList;
     private ElementModel[] selectedTables = new ElementModel[0];
 
     public ElementModel[] getSelectedTables() {
@@ -60,15 +60,15 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         DefaultListModel<String> def = (DefaultListModel<String>) lstViews.getModel();
 
-        views = EntityManager.e().getEntity(ViewEntity.class).getList();
+        viewsList = EntityManager.e().getEntity(ViewEntity.class).getList();
 
-        if (views != null) {
-            for (View v : views) {
+        if (viewsList != null) {
+            for (View v : viewsList) {
                 def.addElement(v.getName());
             }
 
         } else {
-            views = new ArrayList<>(5);
+            viewsList = new ArrayList<>(5);
         }
 
     }
@@ -92,6 +92,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         cbIgnore = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Management Views");
 
         lbl.setText("Name:");
 
@@ -106,6 +107,7 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         lstViews.setModel(new DefaultListModel<String>());
         lstViews.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstViews.setToolTipText("Press delete to exclude the View");
         lstViews.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 lstViewsValueChanged(evt);
@@ -142,7 +144,7 @@ public class NewViewWindow extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbIgnore)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnNext))
+                        .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(tfLabelTables))
                 .addContainerGap())
         );
@@ -172,9 +174,9 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         ViewWindow vw = new ViewWindow();
 
-        if (selected == null) {
+        if (viewSelected == null) {
 
-            selected = new View(tfName.getText());
+            viewSelected = new View(tfName.getText());
             //List<TableElement> lst = new ArrayList<>(selectedTables.length);
 
             if (!cbIgnore.isSelected()) {
@@ -185,21 +187,21 @@ public class NewViewWindow extends javax.swing.JFrame {
                         //lst.add(t);
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
                         vw.addTable(copy(t, v));
-                        selected.getTables().add(v);
+                        viewSelected.getTables().add(v);
                     }
                 }
             }
 
-            views.add(selected);
+            viewsList.add(viewSelected);
 
         } else {
-            selected.setName(tfName.getText());
+            viewSelected.setName(tfName.getText());
 
             EntityManager em = EntityManager.e();
             DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
 
             //Validate if tables in view selected still exist
-            List<ViewTable> selTemp = new ArrayList<>(selected.getTables());
+            List<ViewTable> selTemp = new ArrayList<>(viewSelected.getTables());
             for (ViewTable v : selTemp) {
 
                 TableElement t = dbEntity.findByTableName(v.getDataBaseName(), v.getTableName());
@@ -208,7 +210,7 @@ public class NewViewWindow extends javax.swing.JFrame {
                     String msg = String.format("Apparently the table %s from %s don't exist more. Do you like do remove this?", v.getTableName(), v.getDataBaseName());
                     int res = JOptionPane.showConfirmDialog(this, msg);
                     if (res == JOptionPane.OK_OPTION) {
-                        selected.getTables().remove(v);
+                        viewSelected.getTables().remove(v);
                     }
                     //Logger.getLogger(NewViewWindow.class.getName()).log(Level.INFO, "erro to find {0} {1}", new String[]{v.getDataBaseName(), v.getTableName()});
                     continue;
@@ -228,9 +230,9 @@ public class NewViewWindow extends javax.swing.JFrame {
 
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
 
-                        if (!selected.getTables().contains(v)) {
+                        if (!viewSelected.getTables().contains(v)) {
                             vw.addTable(copy(t, v));
-                            selected.getTables().add(v);
+                            viewSelected.getTables().add(v);
                         }
                     }
                 }
@@ -238,7 +240,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         }
 
         //Send all views do save
-        vw.init(selected, views);
+        vw.init(viewSelected, viewsList);
         vw.setVisible(true);
 
         this.dispose();
@@ -252,14 +254,16 @@ public class NewViewWindow extends javax.swing.JFrame {
         if (evt.getValueIsAdjusting()) {
             temp.delete(0, temp.length());
 
-            selected = views.get(lstViews.getSelectedIndex());
-            tfName.setText(selected.getName());
+            viewSelected = viewsList.get(lstViews.getSelectedIndex());
+            tfName.setText(viewSelected.getName());
 
-            for (ViewTable v : selected.getTables()) {
+            for (ViewTable v : viewSelected.getTables()) {
                 temp.append(v.getTableName()).append(", ");
             }
 
             tfLabelTables.setText(temp.toString());
+            
+            lbl.setText("Change name to:");
         }
 
     }//GEN-LAST:event_lstViewsValueChanged
@@ -269,10 +273,10 @@ public class NewViewWindow extends javax.swing.JFrame {
         if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
             int idx = lstViews.getSelectedIndex();
             if (idx > -1) {
-                views.remove(idx);
+                viewsList.remove(idx);
                 ((DefaultListModel) lstViews.getModel()).removeElementAt(idx);
 
-                selected = null;
+                viewSelected = null;
                 tfLabelTables.setText(null);
             }
         }

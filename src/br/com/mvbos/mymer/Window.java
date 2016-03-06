@@ -548,20 +548,18 @@ public class Window extends javax.swing.JFrame {
                             .addGroup(dlgDataBaseLayout.createSequentialGroup()
                                 .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(dlgDataBaseLayout.createSequentialGroup()
-                                .addComponent(cbEditDataBase, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSaveDataBase)))))
+                                .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnSaveDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbEditDataBase, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         dlgDataBaseLayout.setVerticalGroup(
             dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
-                .addGap(8, 8, 8)
-                .addGroup(dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbEditDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSaveDataBase))
+                .addGap(9, 9, 9)
+                .addComponent(cbEditDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -573,7 +571,9 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ccDBColor, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
+                .addComponent(ccDBColor, javax.swing.GroupLayout.PREFERRED_SIZE, 281, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnSaveDataBase)
                 .addContainerGap())
         );
 
@@ -594,7 +594,8 @@ public class Window extends javax.swing.JFrame {
             .addComponent(tfSearchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        jLabel3.setText("Canvas size:");
+        jLabel3.setText("Canvas size (in pixels):");
+        jLabel3.setToolTipText("The value must be bigger than the window");
 
         btnSaveCanvas.setText("Save");
         btnSaveCanvas.addActionListener(new java.awt.event.ActionListener() {
@@ -608,16 +609,21 @@ public class Window extends javax.swing.JFrame {
         dlgCanvasLayout.setHorizontalGroup(
             dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jSeparator5)
-            .addGroup(dlgCanvasLayout.createSequentialGroup()
-                .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ccCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(dlgCanvasLayout.createSequentialGroup()
-                        .addContainerGap(562, Short.MAX_VALUE)
-                        .addComponent(btnSaveCanvas))
+                        .addContainerGap()
+                        .addComponent(ccCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
                     .addGroup(dlgCanvasLayout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfCanvasSize, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(10, 10, 10)
+                        .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tfCanvasSize, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnSaveCanvas, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         dlgCanvasLayout.setVerticalGroup(
@@ -672,7 +678,7 @@ public class Window extends javax.swing.JFrame {
         pnMenu.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         btnCanvasColor.setBackground(new java.awt.Color(255, 255, 255));
-        btnCanvasColor.setText(" ");
+        btnCanvasColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/canvas.png"))); // NOI18N
         btnCanvasColor.setToolTipText("Change background color");
         btnCanvasColor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -769,7 +775,7 @@ public class Window extends javax.swing.JFrame {
                 .addComponent(btnView)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCrop)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
@@ -853,7 +859,7 @@ public class Window extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(pnMiniMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
                     .addComponent(jScrollPane2))
                 .addContainerGap())
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1025,7 +1031,7 @@ public class Window extends javax.swing.JFrame {
                                 .addComponent(btnSQLColNames))
                             .addComponent(btnSQLTempTable))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)))
+                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 877, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -1055,7 +1061,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSQLColNames)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSQLTempTable)
-                        .addGap(0, 151, Short.MAX_VALUE))
+                        .addGap(0, 157, Short.MAX_VALUE))
                     .addComponent(spTbFields, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1114,10 +1120,10 @@ public class Window extends javax.swing.JFrame {
                             .addComponent(btnAddIndexFieldTable)
                             .addComponent(btnRemIndex))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
                             .addGroup(tabIndexLayout.createSequentialGroup()
                                 .addComponent(cbIndexAvailField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1139,7 +1145,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnRemIndex)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(tabIndexLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cbIndexAvailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1212,7 +1218,7 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
 
@@ -1233,10 +1239,10 @@ public class Window extends javax.swing.JFrame {
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 938, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnBuildSctruct)
+                .addComponent(btnBuildSctruct, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         tabStructLayout.setVerticalGroup(
@@ -1244,7 +1250,7 @@ public class Window extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addComponent(btnBuildSctruct)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
@@ -1568,7 +1574,7 @@ public class Window extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAddTableActionPerformed
 
     private short lastAdd;
-    
+
     private void addNewTable(TableElement te) {
 
         DataBaseElement db = dataBaseSelected != null ? dataBaseSelected : DataBaseEntity.DEFAULT_DATA_BASE;
@@ -1583,7 +1589,7 @@ public class Window extends javax.swing.JFrame {
         if (te == null) {
             te = new TableElement(50, 50, db, "New Table " + ++DataBaseEntity.tableCount);
             te.setPxy(Camera.c().getCpx() + lastAdd, Camera.c().getCpy() + lastAdd);
-            
+
             lastAdd += 10;
         }
 
@@ -1760,9 +1766,7 @@ public class Window extends javax.swing.JFrame {
     }//GEN-LAST:event_tfFilterKeyReleased
 
     private void miExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExitActionPerformed
-
         exit();
-
     }//GEN-LAST:event_miExitActionPerformed
 
 
@@ -2269,16 +2273,20 @@ public class Window extends javax.swing.JFrame {
     private void btnSaveCanvasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveCanvasActionPerformed
 
         try {
-            Common.camSize = Integer.parseInt(tfCanvasSize.getText());
-            Common.backgroundColor = ccCanvas.getColor().getRGB();
+            int newSize = Integer.parseInt(tfCanvasSize.getText());
 
+            Camera.c().config(newSize, newSize, canvas.getWidth(), canvas.getHeight());
+            Common.camSize = newSize;
+
+            Common.backgroundColor = ccCanvas.getColor().getRGB();
             btnCanvasColor.setBackground(ccCanvas.getColor());
             dlgCanvas.setVisible(false);
 
             MMProperties.save();
-
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, "Error: The canvas size is very small.");
         } catch (Exception e) {
-
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, null, e.getMessage());
         }
 
 
