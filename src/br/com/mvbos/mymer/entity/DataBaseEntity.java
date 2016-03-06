@@ -136,6 +136,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
 
             for (TableElement te : e.getTables()) {
                 Table tb = new Table(te.getName());
+                tb.setDescription(te.getDescription());
                 tb.setFields(te.getFields());
 
                 db.addTable(tb);
@@ -197,6 +198,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
                     for (Table t : db.getTables()) {
                         TableElement e = new TableElement(0, 0, dbEl, t.getName());
 
+                        e.setDescription(t.getDescription());
                         if (t.getFields() != null) {
                             e.setFields(t.getFields());
                         }

@@ -30,6 +30,7 @@ public class TableElement extends ElementModel {
     private short headerSize = 10;
     private short fieldSize = 10;
     private DataBaseElement dataBase;
+    private String description;
     private List<Field> fields = new ArrayList<>(10);
 
     private boolean autoWidth = true;
@@ -37,21 +38,27 @@ public class TableElement extends ElementModel {
     private Color headerColor = Color.DARK_GRAY;
 
     public TableElement(DataBaseElement dataBase, Table tb) {
-        this(0, 0, 50, 50, dataBase, tb.getName());
-        fields.addAll(tb.getFields());
+        this(0, 0, 50, 50, dataBase, tb.getName(), tb.getDescription());
+        this.fields.addAll(tb.getFields());
+
     }
 
     public TableElement(int width, int height, DataBaseElement dataBase, String name) {
-        this(0, 0, width, height, dataBase, name);
+        this(0, 0, width, height, dataBase, name, "");
     }
 
     public TableElement(float px, float py, int width, int height, DataBaseElement dataBase, String name) {
+        this(0, 0, width, height, dataBase, name, "");
+    }
+
+    public TableElement(float px, float py, int width, int height, DataBaseElement dataBase, String name, String description) {
         super(px, py, width, height, name);
         this.dataBase = dataBase;
+        this.description = description;
 
         if (dataBase == null) {
             this.setColor(new Color(74, 189, 218));
-            
+
         } else {
             if (dataBase.getColor() == null) {
                 dataBase.setColor(new Color(74, 189, 218));
@@ -79,6 +86,14 @@ public class TableElement extends ElementModel {
 
     public void setDataBase(DataBaseElement dataBase) {
         this.dataBase = dataBase;
+    }
+
+    public String getDescription() {
+        return description == null ? "" : description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

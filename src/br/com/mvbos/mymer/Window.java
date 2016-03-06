@@ -468,6 +468,7 @@ public class Window extends javax.swing.JFrame {
         btnSQLTempTable = new javax.swing.JButton();
         btnSearchField = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
+        tfTableDesc = new javax.swing.JTextField();
         tabIndex = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tbIndex = new javax.swing.JTable();
@@ -924,6 +925,7 @@ public class Window extends javax.swing.JFrame {
         spTbFields.setViewportView(tbFields);
         configureTable();
 
+        tfTableName.setToolTipText("Name");
         tfTableName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 tfTableNameKeyReleased(evt);
@@ -1001,6 +1003,8 @@ public class Window extends javax.swing.JFrame {
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
+        tfTableDesc.setToolTipText("Description");
+
         javax.swing.GroupLayout tabTableFieldLayout = new javax.swing.GroupLayout(tabTableField);
         tabTableField.setLayout(tabTableFieldLayout);
         tabTableFieldLayout.setHorizontalGroup(
@@ -1016,8 +1020,10 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSearchField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(84, 84, 84)
+                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfTableDesc)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1048,7 +1054,8 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnAddFieldTable)
                         .addComponent(btnRemFieldTable)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnSearchField)))
+                        .addComponent(btnSearchField)
+                        .addComponent(tfTableDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(tabTableFieldLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(tabTableFieldLayout.createSequentialGroup()
@@ -1647,6 +1654,12 @@ public class Window extends javax.swing.JFrame {
 
         if (selectedElements[0] != null) {
             TableElement e = (TableElement) selectedElements[0];
+
+            if (!tfTableName.getText().trim().isEmpty()) {
+                e.setName(tfTableName.getText());
+            }
+
+            e.setDescription(tfTableDesc.getText());
             e.update();
 
             DataBaseElement db = dbEntity.getList().get(cbBases.getSelectedIndex());
@@ -1985,7 +1998,7 @@ public class Window extends javax.swing.JFrame {
 
     private void tfTableNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfTableNameKeyReleased
 
-        if (selectedElements[0] != null) {
+        if (Common.enableFastUpdate && selectedElements[0] != null) {
             selectedElements[0].setName(tfTableName.getText());
             selectedElements[0].update();
         }
@@ -2412,6 +2425,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JTextField tfInfoIndexFields;
     private javax.swing.JTextField tfSearchField;
     private javax.swing.JTextArea tfStruct;
+    private javax.swing.JTextField tfTableDesc;
     private javax.swing.JTextField tfTableName;
     private javax.swing.JTree treeBases;
     // End of variables declaration//GEN-END:variables
@@ -2891,6 +2905,7 @@ public class Window extends javax.swing.JFrame {
 
         if (el == null) {
             tfTableName.setText("");
+            tfTableDesc.setText("");
 
             loadRelationship(null);
             tbIndexModel.setData(Collections.EMPTY_LIST);
@@ -2899,6 +2914,7 @@ public class Window extends javax.swing.JFrame {
         } else if (el instanceof TableElement) {
             //System.out.println("el " + el);
             tfTableName.setText(el.getName());
+            tfTableDesc.setText(((TableElement) el).getDescription());
 
             TableElement e = (TableElement) el;
 
