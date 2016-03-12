@@ -11,7 +11,9 @@ import br.com.mvbos.mymer.xml.field.Field;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -42,6 +44,8 @@ public class RelationshipElement extends ElementModel {
 
     private List<Field> parentFields;
     private List<Field> childFields;
+
+    private Map<Field, Field> group = new HashMap<>(5);
 
     public RelationshipElement() {
     }
@@ -106,6 +110,14 @@ public class RelationshipElement extends ElementModel {
 
     public void setCam(Camera cam) {
         this.cam = cam;
+    }
+
+    public Map<Field, Field> getGroup() {
+        return group;
+    }
+
+    public void setGroup(Map<Field, Field> group) {
+        this.group = group;
     }
 
     @Override

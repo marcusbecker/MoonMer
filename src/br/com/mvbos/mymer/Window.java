@@ -29,6 +29,7 @@ import br.com.mvbos.mymer.entity.RelationEntity;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
+import br.com.mvbos.mymer.table.RelationshipTableModel;
 import br.com.mvbos.mymer.table.RowItemSelection;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.Undo;
@@ -480,12 +481,10 @@ public class Window extends javax.swing.JFrame {
         btnAddFieldIndexList = new javax.swing.JButton();
         tfInfoIndexFields = new javax.swing.JTextField();
         tabRelation = new javax.swing.JPanel();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        tbRelationshipRight = new javax.swing.JTable();
         cbRelationship = new javax.swing.JComboBox();
         btnRemoveRelationship = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
-        tbRelationshipLeft = new javax.swing.JTable();
+        tbRelationship = new javax.swing.JTable();
         cbRelationshipType = new javax.swing.JComboBox();
         tabStruct = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1166,11 +1165,6 @@ public class Window extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Index", tabIndex);
 
-        tbRelationshipRight.setModel(createRelationshipTableModel(tbRelationshipRight));
-        tbRelationshipRight.setName("tbRelationshipRight"); // NOI18N
-        jScrollPane5.setViewportView(tbRelationshipRight);
-        preConfig(tbRelationshipRight);
-
         cbRelationship.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbRelationshipItemStateChanged(evt);
@@ -1184,10 +1178,10 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        tbRelationshipLeft.setModel(createRelationshipTableModel(tbRelationshipLeft));
-        tbRelationshipLeft.setName("tbRelationshipLeft"); // NOI18N
-        jScrollPane6.setViewportView(tbRelationshipLeft);
-        preConfig(tbRelationshipLeft);
+        tbRelationship.setModel(createRelationshipTableModel(tbRelationship));
+        tbRelationship.setName("tbRelationship"); // NOI18N
+        jScrollPane6.setViewportView(tbRelationship);
+        preConfig(tbRelationship);
 
         cbRelationshipType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1 .. 1", "1 .. *" }));
         cbRelationshipType.addActionListener(new java.awt.event.ActionListener() {
@@ -1203,16 +1197,13 @@ public class Window extends javax.swing.JFrame {
             .addGroup(tabRelationLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane6)
                     .addGroup(tabRelationLayout.createSequentialGroup()
                         .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbRelationship, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(cbRelationship, 0, 673, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemoveRelationship))
-                    .addGroup(tabRelationLayout.createSequentialGroup()
-                        .addComponent(jScrollPane6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane5)))
+                        .addComponent(btnRemoveRelationship)))
                 .addContainerGap())
         );
         tabRelationLayout.setVerticalGroup(
@@ -1224,9 +1215,7 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(btnRemoveRelationship)
                     .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Relationship", tabRelation);
@@ -1621,7 +1610,7 @@ public class Window extends javax.swing.JFrame {
             e.update();
             FieldTableModel m = (FieldTableModel) tbFields.getModel();
             m.fireTableDataChanged();
-            
+
             final int start = e.getFields().size() - 1;
             tbFields.setRowSelectionInterval(start, start);
             tbFields.scrollRectToVisible(tbFields.getCellRect(start, 0, true));
@@ -2383,7 +2372,6 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
@@ -2426,8 +2414,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JPanel tabTableField;
     private javax.swing.JTable tbFields;
     private javax.swing.JTable tbIndex;
-    private javax.swing.JTable tbRelationshipLeft;
-    private javax.swing.JTable tbRelationshipRight;
+    private javax.swing.JTable tbRelationship;
     private javax.swing.JTextField tfCanvasSize;
     private javax.swing.JTextField tfDBName;
     private javax.swing.JTextField tfDBTablesCounter;
@@ -2464,12 +2451,10 @@ public class Window extends javax.swing.JFrame {
         return ind;
     }
 
-    private GenericTableModel createRelationshipTableModel(final JTable tb) {
-        final Set<String> ignore = new HashSet<>(Arrays.asList("value"));
+    private RelationshipTableModel createRelationshipTableModel(final JTable tb) {
+        RelationshipTableModel rtm = new RelationshipTableModel();
 
-        GenericTableModel<RowItemSelection> ris = new GenericTableModel<>(RowItemSelection.class, ignore);
-
-        ris.addTableModelListener(new TableModelListener() {
+        rtm.addTableModelListener(new TableModelListener() {
 
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -2478,7 +2463,7 @@ public class Window extends javax.swing.JFrame {
 
         });
 
-        return ris;
+        return rtm;
     }
 
     private void changeIndexFields(JTable tb) {
@@ -2492,7 +2477,7 @@ public class Window extends javax.swing.JFrame {
 
         GenericTableModel<RowItemSelection> m = (GenericTableModel<RowItemSelection>) tb.getModel();
 
-        if (tb.equals(tbRelationshipLeft)) {
+        if (tb.equals(tbRelationship)) {
             re.getParentFields().clear();
 
             for (RowItemSelection r : m.getData()) {
@@ -2908,7 +2893,7 @@ public class Window extends javax.swing.JFrame {
 
         selectedElements[0] = el;
 
-        cancelTablesEditions(tbFields, tbIndex, tbRelationshipLeft, tbRelationshipRight);
+        cancelTablesEditions(tbFields, tbIndex, tbRelationship);
 
         FieldTableModel tbTableModel = (FieldTableModel) tbFields.getModel();
         GenericTableModel<IndexElement> tbIndexModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
@@ -2943,8 +2928,7 @@ public class Window extends javax.swing.JFrame {
 
     private void loadRelationship(TableElement e) {
         cbRelationship.removeAllItems();
-        tbRelationshipLeft.removeAll();
-        tbRelationshipRight.removeAll();
+        tbRelationship.removeAll();
 
         if (e != null) {
             Set<RelationshipElement> lst = rEntity.findRelationship(e);
@@ -2954,7 +2938,6 @@ public class Window extends javax.swing.JFrame {
             for (RelationshipElement re : lst) {
                 final String label = String.format("%s < %s > %s", re.getParent().getName(), re.getType().label, re.getChild().getName());
                 cbRelationship.addItem(new Option(i++, re, label));
-
             }
 
             if (cbRelationship.getItemCount() == 0) {
@@ -2969,36 +2952,23 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void loadRelationshipFieldTable(RelationshipElement re) {
-        GenericTableModel<RowItemSelection> mLeft = (GenericTableModel<RowItemSelection>) tbRelationshipLeft.getModel();
-        GenericTableModel<RowItemSelection> mRight = (GenericTableModel<RowItemSelection>) tbRelationshipRight.getModel();
+        RelationshipTableModel rtm = (RelationshipTableModel) tbRelationship.getModel();
+
+        rtm.setRelationShip(re);
+        TableColumn comboColumn = tbRelationship.getColumnModel().getColumn(2);
 
         if (re != null) {
-
-            List<RowItemSelection> lstLeft = new ArrayList<>(re.getParent().getFields().size());
-            List<RowItemSelection> lstRight = new ArrayList<>(re.getChild().getFields().size());
-
-            String label;
-
-            for (Field f : re.getParent().getFields()) {
-                label = String.format("%s ( %s )", f.getName(), f.getType());
-                lstLeft.add(new RowItemSelection(re.getParentFields().contains(f), label, f));
-            }
-
+            List<String> lst = new ArrayList<>(re.getChild().getFields().size());
             for (Field f : re.getChild().getFields()) {
-                label = String.format("%s ( %s )", f.getName(), f.getType());
-                lstRight.add(new RowItemSelection(re.getChildFields().contains(f), label, f));
+                lst.add(f.getName());
             }
 
-            mLeft.setData(lstLeft);
-            mRight.setData(lstRight);
-
+            comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(lst.toArray(new String[0]))));
         } else {
-            mLeft.setData(Collections.EMPTY_LIST);
-            mRight.setData(Collections.EMPTY_LIST);
+            comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(new String[0])));
         }
 
-        tbRelationshipLeft.updateUI();
-        tbRelationshipRight.updateUI();
+        tbRelationship.updateUI();
     }
 
     private void updateRelationType() {
