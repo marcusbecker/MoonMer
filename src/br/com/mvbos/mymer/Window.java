@@ -1615,20 +1615,24 @@ public class Window extends javax.swing.JFrame {
 
     private void btnAddFieldTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddFieldTableActionPerformed
 
-        if (selectedElements[0] != null) {
-            TableElement e = (TableElement) selectedElements[0];
+        TableElement e = getTableSeletected();
+        if (e != null) {
             e.getFields().add(new Field("New", Common.comboTypes[0]));
             e.update();
             FieldTableModel m = (FieldTableModel) tbFields.getModel();
             m.fireTableDataChanged();
+            
+            final int start = e.getFields().size() - 1;
+            tbFields.setRowSelectionInterval(start, start);
+            tbFields.scrollRectToVisible(tbFields.getCellRect(start, 0, true));
         }
 
     }//GEN-LAST:event_btnAddFieldTableActionPerformed
 
     private void btnRemFieldTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemFieldTableActionPerformed
 
-        if (selectedElements[0] != null && tbFields.getSelectedRow() != -1) {
-            TableElement e = (TableElement) selectedElements[0];
+        TableElement e = getTableSeletected();
+        if (e != null && tbFields.getSelectedRow() != -1) {
             e.getFields().remove(tbFields.getSelectedRow());
 
             e.update();
@@ -1652,8 +1656,8 @@ public class Window extends javax.swing.JFrame {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
 
-        if (selectedElements[0] != null) {
-            TableElement e = (TableElement) selectedElements[0];
+        TableElement e = getTableSeletected();
+        if (e != null) {
 
             if (!tfTableName.getText().trim().isEmpty()) {
                 e.setName(tfTableName.getText());
@@ -1869,9 +1873,10 @@ public class Window extends javax.swing.JFrame {
 
     private void btnSQLFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSQLFindActionPerformed
 
-        if (selectedElements[0] != null) {
+        TableElement t = getTableSeletected();
+
+        if (t != null) {
             clip.delete(0, clip.length());
-            TableElement t = (TableElement) selectedElements[0];
 
             clip.append("FIND FIRST ").append(t.getName()).append(" NO-LOCK NO-ERROR.");
             clip.append("\r\nDISP ").append(t.getName()).append(".");
@@ -1883,9 +1888,10 @@ public class Window extends javax.swing.JFrame {
 
     private void btnSQLSelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSQLSelActionPerformed
 
-        if (selectedElements[0] != null) {
+        TableElement t = getTableSeletected();
+
+        if (t != null) {
             clip.delete(0, clip.length());
-            TableElement t = (TableElement) selectedElements[0];
 
             clip.append("FOR EACH ").append(t.getName()).append(" NO-LOCK:");
             clip.append("\r\nDISP ").append(t.getName()).append(".");
@@ -1898,10 +1904,10 @@ public class Window extends javax.swing.JFrame {
 
     private void btnSQLInsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSQLInsActionPerformed
 
-        if (selectedElements[0] != null) {
-            clip.delete(0, clip.length());
-            TableElement t = (TableElement) selectedElements[0];
+        TableElement t = getTableSeletected();
 
+        if (t != null) {
+            clip.delete(0, clip.length());
             clip.append("CREATE ").append(t.getName()).append(".");
             clip.append("\r\nASSIGN\r\n");
 
@@ -1919,9 +1925,10 @@ public class Window extends javax.swing.JFrame {
 
     private void btnSQLColNamesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSQLColNamesActionPerformed
 
-        if (selectedElements[0] != null) {
+        TableElement t = getTableSeletected();
+
+        if (t != null) {
             clip.delete(0, clip.length());
-            TableElement t = (TableElement) selectedElements[0];
 
             for (Field f : t.getFields()) {
                 clip.append(f.getName()).append("\r\n");
@@ -1934,9 +1941,10 @@ public class Window extends javax.swing.JFrame {
 
     private void btnSQLTempTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSQLTempTableActionPerformed
 
-        if (selectedElements[0] != null) {
+        TableElement t = getTableSeletected();
+
+        if (t != null) {
             clip.delete(0, clip.length());
-            TableElement t = (TableElement) selectedElements[0];
 
             clip.append("DEF TEMP-TABLE ").append(t.getName()).append(" NO-UNDO");
             for (Field f : t.getFields()) {
@@ -1967,8 +1975,9 @@ public class Window extends javax.swing.JFrame {
             start++;
         }
 
-        if (selectedElements[0] != null && !tfSearchField.getText().isEmpty()) {
-            TableElement t = (TableElement) selectedElements[0];
+        TableElement t = getTableSeletected();
+
+        if (t != null && !tfSearchField.getText().isEmpty()) {
 
             if (start == -1 || start >= t.getFields().size()) {
                 start = 0;
@@ -2047,8 +2056,9 @@ public class Window extends javax.swing.JFrame {
 
     private void btnAddIndexFieldTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddIndexFieldTableActionPerformed
 
-        if (selectedElements[0] != null) {
-            TableElement te = (TableElement) selectedElements[0];
+        TableElement te = getTableSeletected();
+
+        if (te != null) {
             GenericTableModel<IndexElement> m = (GenericTableModel<IndexElement>) tbIndex.getModel();
 
             String name = String.format("%s%02d", te.getName(), m.getData().size() + 1);
@@ -2066,8 +2076,7 @@ public class Window extends javax.swing.JFrame {
 
     private void btnRemIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemIndexActionPerformed
 
-        if (selectedElements[0] != null && tbIndex.getSelectedRow() > -1) {
-            //TableElement te = (TableElement) selectedElements[0];
+        if (getTableSeletected() != null && tbIndex.getSelectedRow() > -1) {
             DefaultListModel lstModel = (DefaultListModel) lstIndexFields.getModel();
             DefaultComboBoxModel combModel = (DefaultComboBoxModel) cbIndexAvailField.getModel();
 
@@ -2293,6 +2302,7 @@ public class Window extends javax.swing.JFrame {
 
             Common.backgroundColor = ccCanvas.getColor().getRGB();
             btnCanvasColor.setBackground(ccCanvas.getColor());
+            stageEl.setSize(Common.camSize, Common.camSize);
             dlgCanvas.setVisible(false);
 
             MMProperties.save();
