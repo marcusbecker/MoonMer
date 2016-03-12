@@ -22,7 +22,7 @@ public class Field {
     private String type;
     private String format;
     private String initial;
-    private Integer decimal;
+    private Integer decimals = 0;
     private String description;
 
     public Field() {
@@ -73,12 +73,12 @@ public class Field {
         this.initial = initial;
     }
 
-    public Integer getDecimal() {
-        return decimal;
+    public Integer getDecimals() {
+        return decimals;
     }
 
-    public void setDecimal(Integer decimal) {
-        this.decimal = decimal;
+    public void setDecimals(Integer decimals) {
+        this.decimals = decimals;
     }
 
     public String getDescription() {

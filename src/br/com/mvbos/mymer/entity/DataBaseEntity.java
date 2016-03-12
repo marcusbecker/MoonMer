@@ -296,6 +296,10 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         return temp;
     }
 
+    public TableElement findByTableName(DataBaseElement db, String name) {
+        return db != null ? findByTableName(db.getName(), name) : null;
+    }
+
     public TableElement findByTableName(String dbName, String name) {
         DataBaseElement dbe = findByName(dbName);
 

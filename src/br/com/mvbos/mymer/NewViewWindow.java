@@ -13,6 +13,7 @@ import br.com.mvbos.mymer.entity.EntityManager;
 import br.com.mvbos.mymer.entity.ViewEntity;
 import br.com.mvbos.mymer.xml.field.View;
 import br.com.mvbos.mymer.xml.field.ViewTable;
+import java.awt.HeadlessException;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,6 @@ public class NewViewWindow extends javax.swing.JFrame {
             temp.append(selectedTables[ct].getName()).append(", ");
         }
 
-        setTitle(temp.toString());
         lblInfo.setText(String.format("%d tables selecteds.", ct));
     }
 
@@ -108,6 +108,11 @@ public class NewViewWindow extends javax.swing.JFrame {
         lstViews.setModel(new DefaultListModel<String>());
         lstViews.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         lstViews.setToolTipText("Press delete to exclude the View");
+        lstViews.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lstViewsMouseClicked(evt);
+            }
+        });
         lstViews.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 lstViewsValueChanged(evt);
@@ -172,6 +177,11 @@ public class NewViewWindow extends javax.swing.JFrame {
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
 
+        openView();
+
+    }//GEN-LAST:event_btnNextActionPerformed
+
+    private void openView() throws HeadlessException {
         ViewWindow vw = new ViewWindow();
 
         if (viewSelected == null) {
@@ -186,7 +196,8 @@ public class NewViewWindow extends javax.swing.JFrame {
 
                         //lst.add(t);
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
-                        vw.addTable(copy(t, v));
+                        //vw.addTable(copy(t, v));
+                        viewSelected.addTempTable(copy(t, v));
                         viewSelected.getTables().add(v);
                     }
                 }
@@ -216,7 +227,8 @@ public class NewViewWindow extends javax.swing.JFrame {
                     continue;
                 }
 
-                vw.addTable(copy(t, v));
+                //vw.addTable(copy(t, v));
+                viewSelected.addTempTable(copy(t, v));
 
                 /*if (!selected.getTables().contains(v)) {
                  selected.getTables().add(new ViewTable(t.getDataBase().getName(), t.getName()));
@@ -231,7 +243,8 @@ public class NewViewWindow extends javax.swing.JFrame {
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
 
                         if (!viewSelected.getTables().contains(v)) {
-                            vw.addTable(copy(t, v));
+                            //vw.addTable(copy(t, v));
+                            viewSelected.addTempTable(copy(t, v));
                             viewSelected.getTables().add(v);
                         }
                     }
@@ -244,8 +257,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         vw.setVisible(true);
 
         this.dispose();
-
-    }//GEN-LAST:event_btnNextActionPerformed
+    }
 
     private final StringBuilder temp = new StringBuilder(100);
 
@@ -262,7 +274,7 @@ public class NewViewWindow extends javax.swing.JFrame {
             }
 
             tfLabelTables.setText(temp.toString());
-            
+
             lbl.setText("Change name to:");
         }
 
@@ -270,18 +282,32 @@ public class NewViewWindow extends javax.swing.JFrame {
 
     private void lstViewsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lstViewsKeyReleased
 
-        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
-            int idx = lstViews.getSelectedIndex();
-            if (idx > -1) {
-                viewsList.remove(idx);
-                ((DefaultListModel) lstViews.getModel()).removeElementAt(idx);
+        int idx = lstViews.getSelectedIndex();
+        if (idx == -1) {
+            return;
+        }
 
-                viewSelected = null;
-                tfLabelTables.setText(null);
-            }
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+
+            viewsList.remove(idx);
+            ((DefaultListModel) lstViews.getModel()).removeElementAt(idx);
+
+            viewSelected = null;
+            tfLabelTables.setText(null);
+
+        } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            openView();
         }
 
     }//GEN-LAST:event_lstViewsKeyReleased
+
+    private void lstViewsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstViewsMouseClicked
+
+        if (evt.getClickCount() == 2 && lstViews.getSelectedIndex() > -1) {
+            openView();
+        }
+
+    }//GEN-LAST:event_lstViewsMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

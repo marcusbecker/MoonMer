@@ -36,14 +36,14 @@ public class EntityUtil {
 
     /**
      * Generate a new TableElement object with new Field objects
+     *
      * @param te
-     * @return 
+     * @return
      */
     public static TableElement clone(TableElement te) {
         TableElement nte = new TableElement(te.getPx() + 5, te.getPy() + 5, te.getWidth(), te.getHeight(), te.getDataBase(), "copy_" + te.getName());
-        
+
         //nte.setColor(te.getColor());
-        
         for (Field f : te.getFields()) {
             Field ff = new Field(f.getName(), f.getType());
             nte.addFields(ff);
@@ -57,8 +57,9 @@ public class EntityUtil {
 
     /**
      * Generate a new TableElement object but share the Fields object
+     *
      * @param t
-     * @return 
+     * @return
      */
     public static TableElement copy(TableElement t) {
         TableElement copy = new TableElement(0, 0, t.getWidth(), t.getHeight(), t.getDataBase(), t.getName());
@@ -169,6 +170,25 @@ public class EntityUtil {
         }
 
         return set;
+    }
+
+    public static boolean maths(String filter, TableElement t) {
+        return t.getName().toLowerCase().contains(filter.toLowerCase());
+    }
+
+    /**
+     * Convert ViewTable in TableElement
+     * @param tableElement
+     * @param viewTable
+     * @return tableElement
+     */
+    public static TableElement convert(TableElement tableElement, ViewTable viewTable) {
+        TableElement copy = EntityUtil.copy(tableElement);
+
+        copy.setPxy(viewTable.getPx(), viewTable.getPy());
+
+        return copy;
+
     }
 
 }

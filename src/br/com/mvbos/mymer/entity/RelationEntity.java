@@ -49,8 +49,12 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
         return true;
     }
 
-    public void addNewRelationship(RelationshipElement.Type type, TableElement elLeft, TableElement elRight) {
-        relations.add(new RelationshipElement(type, elLeft, elRight));
+    public RelationshipElement addNewRelationship(RelationshipElement.Type type, TableElement elLeft, TableElement elRight) {
+        RelationshipElement relationshipElement = new RelationshipElement(type, elLeft, elRight);
+        
+        relations.add(relationshipElement);
+        
+        return relationshipElement;
     }
 
     @Override

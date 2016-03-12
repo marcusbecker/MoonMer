@@ -76,6 +76,29 @@ public class ImportBases extends javax.swing.JFrame {
 
     private final EntityManager em = EntityManager.e();
 
+    private boolean containsOption(List<Option> options, String value) {
+        for (Option o : options) {
+
+            if (o.getValue() instanceof TableElement) {
+                TableElement tb = (TableElement) o.getValue();
+                if (tb.getName().equals(value)) {
+                    return true;
+                }
+
+            } else if (o.getValue() instanceof Table) {
+                Table tb = (Table) o.getValue();
+                if (tb.getName().equals(value)) {
+                    return true;
+                }
+
+            } else if (o.getValue().equals(value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     class FieldChange {
 
         Field field;
@@ -244,7 +267,7 @@ public class ImportBases extends javax.swing.JFrame {
                 fr.setAccessible(true);
 
                 if (fl.get(fa) == null || fr.get(fb) == null) {
-                    continue;
+                    //continue;
                 }
 
                 if (!fl.get(fa).equals(fr.get(fb))) {
@@ -946,6 +969,12 @@ public class ImportBases extends javax.swing.JFrame {
         for (String name : localTalbles.keySet()) {
             if (!remoteTables.containsKey(name)) {
                 model.addElement(name);
+
+            } else {
+                //TODO improve better fix
+                Table rTb = remoteTables.get(name);
+                TableElement lTb = localTalbles.get(name);
+                lTb.setDescription(rTb.getDescription());
             }
         }
 
@@ -1043,6 +1072,9 @@ public class ImportBases extends javax.swing.JFrame {
             tfLogIndex.setText(null);
         }
 
+        DefaultListModel model = (DefaultListModel) lstDst.getModel();
+        List<Option> list = Collections.list(model.elements());
+
         for (String tbName : remoteTables.keySet()) {
             TableElement lte = localTalbles.get(tbName);
 
@@ -1050,9 +1082,7 @@ public class ImportBases extends javax.swing.JFrame {
                 continue;
             }
 
-            DefaultListModel model = (DefaultListModel) lstDst.getModel();
-
-            if (filterBySelected && !model.contains(tbName)) {
+            if (filterBySelected && !containsOption(list, tbName)) {
                 continue;
             }
 
@@ -1257,7 +1287,6 @@ public class ImportBases extends javax.swing.JFrame {
             TableElement tb = dbEntity.findByTableName(db.getName(), tbName);
 
             for (FieldChange f : fchg) {
-
                 int idx = tb.getFields().indexOf(f.field);
 
                 if (idx == -1) {

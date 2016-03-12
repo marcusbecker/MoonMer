@@ -348,7 +348,7 @@ public class Window extends javax.swing.JFrame {
             DefaultMutableTreeNode db = new DataTreeNode(d);
 
             for (TableElement t : d.getTables()) {
-                if (t.getName().toLowerCase().contains(filter.toLowerCase())) {
+                if (EntityUtil.maths(filter, t)) {
                     db.add(new TableTreeNode(t));
                 }
             }

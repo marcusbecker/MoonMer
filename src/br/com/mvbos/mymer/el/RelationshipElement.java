@@ -189,4 +189,13 @@ public class RelationshipElement extends ElementModel {
         return Objects.equals(this.child, other.child);
     }
 
+    public boolean isPart(TableElement t) {
+        if (t == null) {
+            return false;
+        }
+
+        return parent == t || child == t;
+
+    }
+
 }

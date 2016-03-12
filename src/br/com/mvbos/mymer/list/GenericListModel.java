@@ -36,5 +36,14 @@ public class GenericListModel extends AbstractListModel<Option> {
         list.add(option);
         fireContentsChanged(this, 0, list.size());
     }
+    
+    public void remove(Option option) {
+        int idx = list.indexOf(option);
+        if(idx == -1)
+            return;
+        
+        list.remove(idx);
+        fireIntervalRemoved(option, idx, idx);
+    }
 
 }

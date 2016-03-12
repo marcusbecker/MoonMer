@@ -58,7 +58,7 @@ public class ViewWindow extends javax.swing.JFrame {
     private boolean isAltDown;
     private boolean isControlDown;
 
-    private final List<TableElement> tables = new ArrayList<>(30);
+    private List<TableElement> tables;// = new ArrayList<>(30);
     private final List<RelationshipElement> relations = new ArrayList<>(30);
 
     private final ElementModel stageEl = new StageElement();
@@ -67,11 +67,14 @@ public class ViewWindow extends javax.swing.JFrame {
 
     private final Camera cam = Camera.createNew();
     private List<View> views;
-    private View selected;
+    private View selectedView;
+
     private boolean AUTO_SAVE = true;
+    private boolean AUTO_CREATE_RELATIONSHIP = true;
 
     private final EntityManager em = EntityManager.e();
-    final DataBaseEntity entity = em.getEntity(DataBaseEntity.class);
+    private final DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
+    private final RelationEntity relEntity = em.getEntity(RelationEntity.class);
 
     private class MyDispatcher implements KeyEventDispatcher {
 
@@ -162,6 +165,8 @@ public class ViewWindow extends javax.swing.JFrame {
         btnAddRelOneOne = new javax.swing.JButton();
         btnAddRelOneMany = new javax.swing.JButton();
         btnShowDlgTable = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         pnCanvas = createCanvas();
 
         dlgAddTable.setTitle("Search and add tables");
@@ -172,6 +177,16 @@ public class ViewWindow extends javax.swing.JFrame {
             }
         });
 
+        lstTables.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lstTablesMouseClicked(evt);
+            }
+        });
+        lstTables.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                lstTablesKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(lstTables);
 
         btnAddTable.setText("OK");
@@ -188,7 +203,7 @@ public class ViewWindow extends javax.swing.JFrame {
             .addComponent(tfTableFilter)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgAddTableLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnAddTable)
+                .addComponent(btnAddTable, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
@@ -197,8 +212,8 @@ public class ViewWindow extends javax.swing.JFrame {
             .addGroup(dlgAddTableLayout.createSequentialGroup()
                 .addComponent(tfTableFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddTable)
                 .addContainerGap())
         );
@@ -244,27 +259,47 @@ public class ViewWindow extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("<");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText(">");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnButtonsLayout = new javax.swing.GroupLayout(pnButtons);
         pnButtons.setLayout(pnButtonsLayout);
         pnButtonsLayout.setHorizontalGroup(
             pnButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnButtonsLayout.createSequentialGroup()
-                .addContainerGap(769, Short.MAX_VALUE)
                 .addComponent(btnShowDlgTable)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddRelOneOne)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddRelOneMany)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton2)
+                .addGap(0, 685, Short.MAX_VALUE))
         );
         pnButtonsLayout.setVerticalGroup(
             pnButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnButtonsLayout.createSequentialGroup()
-                .addGroup(pnButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnShowDlgTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(btnShowDlgTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(pnButtonsLayout.createSequentialGroup()
+                .addComponent(jButton2)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(pnButtonsLayout.createSequentialGroup()
+                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
@@ -275,7 +310,7 @@ public class ViewWindow extends javax.swing.JFrame {
         );
         pnCanvasLayout.setVerticalGroup(
             pnCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 436, Short.MAX_VALUE)
+            .addGap(0, 442, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -305,7 +340,7 @@ public class ViewWindow extends javax.swing.JFrame {
         //if (r == JOptionPane.OK_OPTION){}
         if (AUTO_SAVE) {
             for (TableElement t : tables) {
-                for (ViewTable vt : selected.getTables()) {
+                for (ViewTable vt : selectedView.getTables()) {
                     if (EntityUtil.compare(t, vt)) {
                         vt.setPx(t.getPx());
                         vt.setPy(t.getPy());
@@ -349,16 +384,17 @@ public class ViewWindow extends javax.swing.JFrame {
 
         myListModel.getList().clear();
 
-        for (DataBaseElement d : entity.getList()) {
+        for (DataBaseElement d : dbEntity.getList()) {
 
             for (TableElement t : d.getTables()) {
-                if (t.getName().toLowerCase().contains(filter.toLowerCase())) {
+                if (EntityUtil.maths(filter, t)) {
                     myListModel.add(new Option((short) t.getId(), t, t.getName()));
                 }
             }
         }
 
         lstTables.setModel(myListModel);
+        lstTables.updateUI();
 
     }//GEN-LAST:event_tfTableFilterKeyReleased
 
@@ -367,11 +403,7 @@ public class ViewWindow extends javax.swing.JFrame {
         for (Object obj : lstTables.getSelectedValuesList()) {
             Option o = (Option) obj;
 
-            TableElement copy = EntityUtil.copy((TableElement) o.getValue());
-            ViewTable v = new ViewTable(copy.getDataBase().getName(), copy.getName());
-
-            addTable(copy);
-            addViewTable(v);
+            addCopyTable(o);
         }
 
         dlgAddTable.setVisible(false);
@@ -385,6 +417,26 @@ public class ViewWindow extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnShowDlgTableActionPerformed
 
+    private void lstTablesKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lstTablesKeyReleased
+
+        addFoundTable();
+
+    }//GEN-LAST:event_lstTablesKeyReleased
+
+    private void lstTablesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstTablesMouseClicked
+        if (evt.getClickCount() == 2) {
+            addFoundTable();
+        }
+    }//GEN-LAST:event_lstTablesMouseClicked
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        go(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        go(true);
+    }//GEN-LAST:event_jButton2ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddRelOneMany;
@@ -392,6 +444,8 @@ public class ViewWindow extends javax.swing.JFrame {
     private javax.swing.JButton btnAddTable;
     private javax.swing.JButton btnShowDlgTable;
     private javax.swing.JDialog dlgAddTable;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList lstTables;
     private javax.swing.JPanel pnButtons;
@@ -509,7 +563,7 @@ public class ViewWindow extends javax.swing.JFrame {
                             selectElementOnStage(hasColision(mouseElement));
                             return;
                         case RELATION:
-                            addRelationship(hasColision(mouseElement));
+                            createRelationship(hasColision(mouseElement));
                             return;
                         case HAND:
                             return;
@@ -652,7 +706,7 @@ public class ViewWindow extends javax.swing.JFrame {
 
     }
 
-    private void addRelationship(ElementModel el) {
+    private void createRelationship(ElementModel el) {
         if (el == null) {
             return;
         }
@@ -664,8 +718,17 @@ public class ViewWindow extends javax.swing.JFrame {
         }
 
         if (relLeft != null && relRight != null) {
-            final RelationEntity rEnt = em.getEntity(RelationEntity.class);
-            rEnt.addNewRelationship(relType, relLeft, relRight);
+
+            if (AUTO_CREATE_RELATIONSHIP) {
+                TableElement fTbLeft = dbEntity.findByTableName(relLeft.getDataBase(), relLeft.getName());
+                TableElement fTbRight = dbEntity.findByTableName(relRight.getDataBase(), relRight.getName());
+
+                relEntity.addNewRelationship(relType, fTbLeft, fTbRight);
+            }
+
+            RelationshipElement relCopy = new RelationshipElement(relType, relLeft, relRight);
+            relCopy.setCam(cam);
+            relations.add(relCopy);
 
             relType = null;
             relRight = relLeft = null;
@@ -684,6 +747,25 @@ public class ViewWindow extends javax.swing.JFrame {
     }
 
     private void updateSelectedProperties(ElementModel el) {
+    }
+
+    private void addFoundTable() {
+        int idx = lstTables.getSelectedIndex();
+        if (idx == -1) {
+            return;
+        }
+        Option o = (Option) myListModel.getElementAt(idx);
+        addCopyTable(o);
+        myListModel.remove(o);
+    }
+
+    private void addCopyTable(Option o) {
+        TableElement copy = EntityUtil.copy((TableElement) o.getValue());
+        ViewTable v = new ViewTable(copy.getDataBase().getName(), copy.getName());
+        if (addTable(copy)) {
+            addViewTable(v);
+            loadRelations(relEntity.findRelationship(copy), false);
+        }
     }
 
     private boolean isValidSelecion(ElementModel element) {
@@ -734,29 +816,59 @@ public class ViewWindow extends javax.swing.JFrame {
         cam.rollY(mousePos.y - e.getY());
     }
 
-    public void addTable(TableElement tb) {
+    private boolean addTable(TableElement tb) {
 
         if (tables.contains(tb)) {
-            return;
+            return false;
         }
 
         tables.add(tb);
+        return true;
     }
 
     public void addViewTable(ViewTable v) {
-        selected.getTables().add(v);
-    }
-
-    private List<TableElement> getTables() {
-        return tables;
+        selectedView.getTables().add(v);
     }
 
     public List<RelationshipElement> getRelations() {
         return relations;
     }
 
-    private void addRelations(Set<RelationshipElement> relationship) {
-        relations.clear();
+    private int pos;
+
+    public void init(View selected, List<View> views) {
+        this.views = views;
+        this.pos = views.indexOf(selected);
+
+        changeView(selected);
+    }
+
+    private void changeView(View view) {
+        selectedView = view;
+
+        singleSelection(null);
+        setTitle("View: ".concat(selectedView.getName()));
+
+        tables = selectedView.getTempTables();
+        if (tables.size() != selectedView.getTables().size()) {
+
+            tables.clear();
+            for (ViewTable vt : selectedView.getTables()) {
+
+                TableElement te = dbEntity.findByTableName(vt.getDataBaseName(), vt.getTableName());
+                TableElement copy = EntityUtil.convert(te, vt);
+                tables.add(copy);
+            }
+        }
+
+        loadRelations(relEntity.findRelationship(tables), true);
+    }
+
+    private void loadRelations(Set<RelationshipElement> relationship, boolean replace) {
+        if (replace) {
+            relations.clear();
+        }
+
         for (RelationshipElement r : relationship) {
             TableElement parent = tables.get(tables.indexOf(r.getParent()));
             TableElement child = tables.get(tables.indexOf(r.getChild()));
@@ -768,30 +880,47 @@ public class ViewWindow extends javax.swing.JFrame {
         }
     }
 
-    public void init(View selected, List<View> views) {
-        this.selected = selected;
-        this.views = views;
+    private void go(boolean foward) {
+        if (foward) {
+            pos++;
+        } else {
+            pos--;
+        }
 
-        RelationEntity rEntity = em.getEntity(RelationEntity.class);
-        addRelations(rEntity.findRelationship(getTables()));
+        if (pos < 0) {
+            pos = views.size() - 1;
+        } else if (pos == views.size()) {
+            pos = 0;
+        }
+
+        changeView(views.get(pos));
     }
 
     private void removeSelTables() {
         if (selectedElements[0] != null) {
-            if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(this, "Discart table " + selectedElements[0].getName() + " ?", "Do you want to discart this table from the view?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
 
                 TableElement t = (TableElement) selectedElements[0];
 
                 ViewTable toRemove = null;
-                for (ViewTable v : selected.getTables()) {
+                for (ViewTable v : selectedView.getTables()) {
                     if (EntityUtil.compare(t, v)) {
                         toRemove = v;
                         break;
                     }
                 }
 
+                List<RelationshipElement> remRel = new ArrayList<>(relations.size());
+                for (RelationshipElement r : relations) {
+                    if (r.isPart(t)) {
+                        remRel.add(r);
+                    }
+                }
+
+                relations.removeAll(remRel);
+
                 tables.remove(t);
-                selected.getTables().remove(toRemove);
+                selectedView.getTables().remove(toRemove);
                 singleSelection(null);
             }
         }
