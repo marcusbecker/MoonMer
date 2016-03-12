@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.table.GenericTableModel;
 import br.com.mvbos.mymer.table.FieldTableModel;
 import br.com.mvbos.jeg.element.ElementModel;
@@ -20,6 +21,11 @@ import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.IElementEntity;
+import br.com.mvbos.mymer.entity.IndexEntity;
+import br.com.mvbos.mymer.entity.RelationEntity;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
@@ -108,6 +114,12 @@ public class Window extends javax.swing.JFrame {
     private EditTool mode = EditTool.SELECTOR;
 
     private final WindowSerializable ws;
+
+    private final EntityManager em = EntityManager.e();
+    private final RelationEntity rEntity = em.getEntity(RelationEntity.class);
+    private final DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
+
+    private final int BD_SP = 5; //Border space
 
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
@@ -264,15 +276,15 @@ public class Window extends javax.swing.JFrame {
 
         timer.start();
 
-        XMLUtil.addActionListern(new ActionListener() {
+        dbEntity.addActionListern(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
 
                 if (e.getSource() instanceof TableElement) {
-                    if (e.getID() == XMLUtil.EVT_ADD) {
+                    if (e.getID() == IElementEntity.EVT_ADD) {
                         addNewTableOnTree((TableElement) e.getSource());
-                    } else if (e.getID() == XMLUtil.EVT_REMOVE) {
+                    } else if (e.getID() == IElementEntity.EVT_REMOVE) {
                         populeTreeNodes();
                     }
 
@@ -295,9 +307,9 @@ public class Window extends javax.swing.JFrame {
             cbEditDataBase.removeAllItems();
         }
 
-        cbEditDataBase.addItem(XMLUtil.DEFAULT_DATA_BASE.getName());
+        cbEditDataBase.addItem(DataBaseEntity.DEFAULT_DATA_BASE.getName());
 
-        for (DataBaseElement d : XMLUtil.dataBases) {
+        for (DataBaseElement d : dbEntity.getList()) {
             cbBases.addItem(d.getName());
             cbEditDataBase.addItem(d.getName());
         }
@@ -310,7 +322,7 @@ public class Window extends javax.swing.JFrame {
             root.removeAllChildren();
         }
 
-        for (DataBaseElement d : XMLUtil.dataBases) {
+        for (DataBaseElement d : dbEntity.getList()) {
             DefaultMutableTreeNode db = new DataTreeNode(d);
 
             for (TableElement t : d.getTables()) {
@@ -332,11 +344,11 @@ public class Window extends javax.swing.JFrame {
 
         filterRoot = (DefaultMutableTreeNode) root.clone();
 
-        for (DataBaseElement d : XMLUtil.dataBases) {
+        for (DataBaseElement d : dbEntity.getList()) {
             DefaultMutableTreeNode db = new DataTreeNode(d);
 
             for (TableElement t : d.getTables()) {
-                if (t.getName().toLowerCase().contains(filter.toLowerCase())) {
+                if (EntityUtil.maths(filter, t)) {
                     db.add(new TableTreeNode(t));
                 }
             }
@@ -354,7 +366,7 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void save() {
-        if (XMLUtil.saveAll()) {
+        if (em.save()) {
             lblInfo.setText("Save sucess at " + Calendar.getInstance().getTime());
 
         } else {
@@ -456,6 +468,7 @@ public class Window extends javax.swing.JFrame {
         btnSQLTempTable = new javax.swing.JButton();
         btnSearchField = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
+        tfTableDesc = new javax.swing.JTextField();
         tabIndex = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tbIndex = new javax.swing.JTable();
@@ -536,20 +549,18 @@ public class Window extends javax.swing.JFrame {
                             .addGroup(dlgDataBaseLayout.createSequentialGroup()
                                 .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(dlgDataBaseLayout.createSequentialGroup()
-                                .addComponent(cbEditDataBase, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSaveDataBase)))))
+                                .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnSaveDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbEditDataBase, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         dlgDataBaseLayout.setVerticalGroup(
             dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
-                .addGap(8, 8, 8)
-                .addGroup(dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cbEditDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSaveDataBase))
+                .addGap(9, 9, 9)
+                .addComponent(cbEditDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -561,7 +572,9 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ccDBColor, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
+                .addComponent(ccDBColor, javax.swing.GroupLayout.PREFERRED_SIZE, 281, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnSaveDataBase)
                 .addContainerGap())
         );
 
@@ -582,7 +595,8 @@ public class Window extends javax.swing.JFrame {
             .addComponent(tfSearchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        jLabel3.setText("Canvas size:");
+        jLabel3.setText("Canvas size (in pixels):");
+        jLabel3.setToolTipText("The value must be bigger than the window");
 
         btnSaveCanvas.setText("Save");
         btnSaveCanvas.addActionListener(new java.awt.event.ActionListener() {
@@ -596,16 +610,21 @@ public class Window extends javax.swing.JFrame {
         dlgCanvasLayout.setHorizontalGroup(
             dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jSeparator5)
-            .addGroup(dlgCanvasLayout.createSequentialGroup()
-                .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ccCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(dlgCanvasLayout.createSequentialGroup()
-                        .addContainerGap(562, Short.MAX_VALUE)
-                        .addComponent(btnSaveCanvas))
+                        .addContainerGap()
+                        .addComponent(ccCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
                     .addGroup(dlgCanvasLayout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfCanvasSize, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(10, 10, 10)
+                        .addGroup(dlgCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tfCanvasSize, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgCanvasLayout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnSaveCanvas, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         dlgCanvasLayout.setVerticalGroup(
@@ -660,7 +679,7 @@ public class Window extends javax.swing.JFrame {
         pnMenu.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         btnCanvasColor.setBackground(new java.awt.Color(255, 255, 255));
-        btnCanvasColor.setText(" ");
+        btnCanvasColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/canvas.png"))); // NOI18N
         btnCanvasColor.setToolTipText("Change background color");
         btnCanvasColor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -757,7 +776,7 @@ public class Window extends javax.swing.JFrame {
                 .addComponent(btnView)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCrop)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
@@ -841,7 +860,7 @@ public class Window extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(pnMiniMap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jsZoom, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
                     .addComponent(jScrollPane2))
                 .addContainerGap())
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -906,6 +925,7 @@ public class Window extends javax.swing.JFrame {
         spTbFields.setViewportView(tbFields);
         configureTable();
 
+        tfTableName.setToolTipText("Name");
         tfTableName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 tfTableNameKeyReleased(evt);
@@ -983,6 +1003,8 @@ public class Window extends javax.swing.JFrame {
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
+        tfTableDesc.setToolTipText("Description");
+
         javax.swing.GroupLayout tabTableFieldLayout = new javax.swing.GroupLayout(tabTableField);
         tabTableField.setLayout(tabTableFieldLayout);
         tabTableFieldLayout.setHorizontalGroup(
@@ -998,8 +1020,10 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSearchField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(84, 84, 84)
+                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfTableDesc)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1013,7 +1037,7 @@ public class Window extends javax.swing.JFrame {
                                 .addComponent(btnSQLColNames))
                             .addComponent(btnSQLTempTable))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)))
+                        .addComponent(spTbFields, javax.swing.GroupLayout.DEFAULT_SIZE, 877, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -1030,7 +1054,8 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnAddFieldTable)
                         .addComponent(btnRemFieldTable)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnSearchField)))
+                        .addComponent(btnSearchField)
+                        .addComponent(tfTableDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(tabTableFieldLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(tabTableFieldLayout.createSequentialGroup()
@@ -1043,7 +1068,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnSQLColNames)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSQLTempTable)
-                        .addGap(0, 151, Short.MAX_VALUE))
+                        .addGap(0, 157, Short.MAX_VALUE))
                     .addComponent(spTbFields, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1102,10 +1127,10 @@ public class Window extends javax.swing.JFrame {
                             .addComponent(btnAddIndexFieldTable)
                             .addComponent(btnRemIndex))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
                             .addGroup(tabIndexLayout.createSequentialGroup()
                                 .addComponent(cbIndexAvailField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1127,7 +1152,7 @@ public class Window extends javax.swing.JFrame {
                         .addComponent(btnRemIndex)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(tabIndexLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(cbIndexAvailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1200,7 +1225,7 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
 
@@ -1221,10 +1246,10 @@ public class Window extends javax.swing.JFrame {
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 938, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnBuildSctruct)
+                .addComponent(btnBuildSctruct, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         tabStructLayout.setVerticalGroup(
@@ -1232,7 +1257,7 @@ public class Window extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addComponent(btnBuildSctruct)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
@@ -1408,7 +1433,6 @@ public class Window extends javax.swing.JFrame {
 
         save();
 
-
     }//GEN-LAST:event_miSaveActionPerformed
 
     private void miOrderByRowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miOrderByRowActionPerformed
@@ -1422,10 +1446,10 @@ public class Window extends javax.swing.JFrame {
         final ElementModel temp = new ElementModel();
         temp.setSize(10, 10);
 
-        //List<ElementModel> inStage = new ArrayList<>(XMLUtil.getFilterTable().size());
-        final IMemory mem = new MemoryImpl(XMLUtil.getFilterTable().size());
+        //List<ElementModel> inStage = new ArrayList<>(dbEntity.getTableList().size());
+        final IMemory mem = new MemoryImpl(dbEntity.getTableList().size());
 
-        for (TableElement e : XMLUtil.getFilterTable()) {
+        for (TableElement e : dbEntity.getTableList()) {
 
             ElementModel elCol = GraphicTool.g().collide(temp, mem);
 
@@ -1479,7 +1503,7 @@ public class Window extends javax.swing.JFrame {
         int maxWidth = 0;
         int sumWidth = 0;
 
-        for (TableElement filter : XMLUtil.getFilterTable()) {
+        for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
 
             maxWidth = e.getWidth() > maxWidth ? e.getWidth() : maxWidth;
@@ -1512,7 +1536,7 @@ public class Window extends javax.swing.JFrame {
         int maxHeight = 0;
         int sumHeight = 0;
 
-        for (TableElement filter : XMLUtil.getFilterTable()) {
+        for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
             maxHeight = e.getHeight() > maxHeight ? e.getHeight() : maxHeight;
             if (px + e.getWidth() > Common.camSize) {
@@ -1544,7 +1568,7 @@ public class Window extends javax.swing.JFrame {
         TableElement sel = getTableSeletected();
         if (sel != null) {
             if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
-                XMLUtil.removeTable(sel);
+                dbEntity.removeTable(sel);
                 singleSelection(null);
             }
         }
@@ -1552,17 +1576,15 @@ public class Window extends javax.swing.JFrame {
 
     private void btnAddTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTableActionPerformed
 
-        addNewTable();
+        addNewTable(null);
 
     }//GEN-LAST:event_btnAddTableActionPerformed
 
-    private void addNewTable() {
-        addNewTable(null);
-    }
+    private short lastAdd;
 
     private void addNewTable(TableElement te) {
 
-        DataBaseElement db = XMLUtil.DEFAULT_DATA_BASE;
+        DataBaseElement db = dataBaseSelected != null ? dataBaseSelected : DataBaseEntity.DEFAULT_DATA_BASE;
 
         if (te != null && te.getDataBase() != null) {
             db = te.getDataBase();
@@ -1572,16 +1594,15 @@ public class Window extends javax.swing.JFrame {
         }
 
         if (te == null) {
-            te = new TableElement(50, 50, db, "New Table " + ++XMLUtil.tableCount);
+            te = new TableElement(50, 50, db, "New Table " + ++DataBaseEntity.tableCount);
+            te.setPxy(Camera.c().getCpx() + lastAdd, Camera.c().getCpy() + lastAdd);
 
-            db.addTable(te);
-
-            te.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+            lastAdd += 10;
         }
 
         te.update();
 
-        XMLUtil.addFilterTable(te);
+        dbEntity.addTable(te);
 
     }
 
@@ -1633,9 +1654,15 @@ public class Window extends javax.swing.JFrame {
 
         if (selectedElements[0] != null) {
             TableElement e = (TableElement) selectedElements[0];
+
+            if (!tfTableName.getText().trim().isEmpty()) {
+                e.setName(tfTableName.getText());
+            }
+
+            e.setDescription(tfTableDesc.getText());
             e.update();
 
-            DataBaseElement db = XMLUtil.getDataBase().get(cbBases.getSelectedIndex());
+            DataBaseElement db = dbEntity.getList().get(cbBases.getSelectedIndex());
 
             if (!e.getDataBase().equals(db)) {
 
@@ -1654,13 +1681,13 @@ public class Window extends javax.swing.JFrame {
 
     private void miBasesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miBasesActionPerformed
 
-        if (getTableSeletected() == null || getTableSeletected().getDataBase() == XMLUtil.DEFAULT_DATA_BASE) {
+        if (getTableSeletected() == null || getTableSeletected().getDataBase() == DataBaseEntity.DEFAULT_DATA_BASE) {
             dataBaseSelected = null;
 
             tfDBName.setText(null);
             tfDBTablesCounter.setText("0");
             cbEditDataBase.setSelectedIndex(0);
-            ccDBColor.setColor(XMLUtil.DEFAULT_DATA_BASE.getColor());
+            ccDBColor.setColor(DataBaseEntity.DEFAULT_DATA_BASE.getColor());
 
         } else {
             dataBaseSelected = getTableSeletected().getDataBase();
@@ -1685,12 +1712,12 @@ public class Window extends javax.swing.JFrame {
             if (cb.getSelectedIndex() <= 0) {
                 tfDBName.setText(null);
                 tfDBTablesCounter.setText("0");
-                ccDBColor.setColor(XMLUtil.DEFAULT_DATA_BASE.getColor());
+                ccDBColor.setColor(DataBaseEntity.DEFAULT_DATA_BASE.getColor());
 
                 dataBaseSelected = null;
 
             } else {
-                DataBaseElement db = XMLUtil.getDataBase().get(cb.getSelectedIndex() - 1);
+                DataBaseElement db = dbEntity.getList().get(cb.getSelectedIndex() - 1);
 
                 tfDBName.setText(db.getName());
                 tfDBTablesCounter.setText(Integer.toString(db.getTables().size()));
@@ -1714,8 +1741,7 @@ public class Window extends javax.swing.JFrame {
 
         if (dataBaseSelected == null) {
             db = new DataBaseElement();
-            XMLUtil.addDataBase(db);
-
+            dataBaseSelected = db;
         } else {
             db = dataBaseSelected;
         }
@@ -1723,8 +1749,10 @@ public class Window extends javax.swing.JFrame {
         db.setName(tfDBName.getText());
         db.setColor(ccDBColor.getColor());
 
+        dbEntity.add(db);
+
         for (TableElement el : db.getTables()) {
-            el.setDataBase(db);
+            //el.setDataBase(db);
             el.setColor(db.getColor());
             el.update();
         }
@@ -1740,7 +1768,7 @@ public class Window extends javax.swing.JFrame {
         if (!tfFilter.getText().isEmpty()) {
 
             /*String s = tfFilter.getText().toLowerCase();
-             for (TableElement t : XMLUtil.getFilterTable()) {
+             for (TableElement t : dbEntity.getTableList()) {
              if (t.getName().toLowerCase().startsWith(s)) {
              positionCam(t.getPx(), t.getPy());
              break;
@@ -1751,9 +1779,7 @@ public class Window extends javax.swing.JFrame {
     }//GEN-LAST:event_tfFilterKeyReleased
 
     private void miExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExitActionPerformed
-
         exit();
-
     }//GEN-LAST:event_miExitActionPerformed
 
 
@@ -1806,20 +1832,31 @@ public class Window extends javax.swing.JFrame {
 
     private void formWindowStateChanged(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowStateChanged
 
-        Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
-
+        try {
+            Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
 
     }//GEN-LAST:event_formWindowStateChanged
 
     private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
 
-        Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        try {
+            Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
 
     }//GEN-LAST:event_formComponentResized
 
     private void splitHorPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_splitHorPropertyChange
 
-        Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        try {
+            Camera.c().config(Camera.c().getSceneWidth(), Camera.c().getSceneHeight(), canvas.getWidth(), canvas.getHeight());
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
 
     }//GEN-LAST:event_splitHorPropertyChange
 
@@ -1961,7 +1998,7 @@ public class Window extends javax.swing.JFrame {
 
     private void tfTableNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfTableNameKeyReleased
 
-        if (selectedElements[0] != null) {
+        if (Common.enableFastUpdate && selectedElements[0] != null) {
             selectedElements[0].setName(tfTableName.getText());
             selectedElements[0].update();
         }
@@ -1973,7 +2010,7 @@ public class Window extends javax.swing.JFrame {
         TableElement e = Undo.get();
         if (e != null) {
             e.getDataBase().getTables().add(e);
-            XMLUtil.addFilterTable(e);
+            dbEntity.addTable(e);
         }
 
     }//GEN-LAST:event_miUndoActionPerformed
@@ -2020,7 +2057,7 @@ public class Window extends javax.swing.JFrame {
             ie.setFields(new ArrayList<Field>(5));
 
             m.getData().add(ie);
-            XMLUtil.indices.add(ie);
+            em.getEntity(IndexEntity.class).add(ie);
 
             tbIndex.updateUI();
         }
@@ -2038,7 +2075,7 @@ public class Window extends javax.swing.JFrame {
 
             IndexElement ie = m.getData().get(tbIndex.getSelectedRow());
 
-            XMLUtil.indices.remove(ie);
+            em.getEntity(IndexEntity.class).remove(ie);
             m.getData().remove(tbIndex.getSelectedRow());
 
             lstModel.removeAllElements();
@@ -2058,7 +2095,7 @@ public class Window extends javax.swing.JFrame {
 
         if (tbIndex.getSelectedRow() > -1 && cbIndexAvailField.getSelectedIndex() > -1) {
             IndexElement ind = tableModel.getData().get(tbIndex.getSelectedRow());
-            Field org = Find.findByName(ind.getTable().getFields(), cbIndexAvailField.getSelectedItem().toString());
+            Field org = EntityUtil.findFieldByName(ind.getTable().getFields(), cbIndexAvailField.getSelectedItem().toString());
             if (org != null) {
                 ind.getFields().add(org);
                 lstModel.addElement(cbIndexAvailField.getSelectedItem());
@@ -2076,7 +2113,7 @@ public class Window extends javax.swing.JFrame {
 
             if (tbIndex.getSelectedRow() > -1 && lstIndexFields.getSelectedIndex() > -1) {
                 IndexElement ind = tableModel.getData().get(tbIndex.getSelectedRow());
-                Field org = Find.findByName(ind.getTable().getFields(), lstIndexFields.getSelectedValue().toString());
+                Field org = EntityUtil.findFieldByName(ind.getTable().getFields(), lstIndexFields.getSelectedValue().toString());
 
                 if (org != null) {
                     ind.getFields().remove(org);
@@ -2090,7 +2127,7 @@ public class Window extends javax.swing.JFrame {
     private void btnRemoveRelationshipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveRelationshipActionPerformed
 
         Option opt = (Option) cbRelationship.getSelectedItem();
-        XMLUtil.relations.remove((RelationshipElement) opt.getValue());
+        rEntity.remove((RelationshipElement) opt.getValue());
         cbRelationship.removeItemAt(cbRelationship.getSelectedIndex());
 
     }//GEN-LAST:event_btnRemoveRelationshipActionPerformed
@@ -2117,7 +2154,7 @@ public class Window extends javax.swing.JFrame {
 
     private void miNewTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miNewTableActionPerformed
 
-        addNewTable();
+        addNewTable(null);
 
     }//GEN-LAST:event_miNewTableActionPerformed
 
@@ -2154,7 +2191,7 @@ public class Window extends javax.swing.JFrame {
                 ct++;
             }
 
-            for (IndexElement ie : XMLUtil.indices) {
+            for (IndexElement ie : em.getEntity(IndexEntity.class).getList()) {
                 if (!te.equals(ie.getTable())) {
                     continue;
                 }
@@ -2186,7 +2223,7 @@ public class Window extends javax.swing.JFrame {
         TableElement te = getTableSeletected();
         if (te != null) {
             TableElement nte = EntityUtil.clone(te);
-            XMLUtil.addFilterTable(nte);
+            dbEntity.addTable(nte);
         }
 
     }//GEN-LAST:event_miCloneTableActionPerformed
@@ -2249,16 +2286,20 @@ public class Window extends javax.swing.JFrame {
     private void btnSaveCanvasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveCanvasActionPerformed
 
         try {
-            Common.camSize = Integer.parseInt(tfCanvasSize.getText());
-            Common.backgroundColor = ccCanvas.getColor().getRGB();
+            int newSize = Integer.parseInt(tfCanvasSize.getText());
 
+            Camera.c().config(newSize, newSize, canvas.getWidth(), canvas.getHeight());
+            Common.camSize = newSize;
+
+            Common.backgroundColor = ccCanvas.getColor().getRGB();
             btnCanvasColor.setBackground(ccCanvas.getColor());
             dlgCanvas.setVisible(false);
 
             MMProperties.save();
-
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, "Error: The canvas size is very small.");
         } catch (Exception e) {
-
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, null, e.getMessage());
         }
 
 
@@ -2384,6 +2425,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JTextField tfInfoIndexFields;
     private javax.swing.JTextField tfSearchField;
     private javax.swing.JTextArea tfStruct;
+    private javax.swing.JTextField tfTableDesc;
     private javax.swing.JTextField tfTableName;
     private javax.swing.JTree treeBases;
     // End of variables declaration//GEN-END:variables
@@ -2571,7 +2613,7 @@ public class Window extends javax.swing.JFrame {
                 }
 
                 g.scale(w, h);
-                for (ElementModel el : XMLUtil.getFilterTable()) {
+                for (ElementModel el : dbEntity.getTableList()) {
                     g.setColor(el.getColor());
                     g.fillRect(el.getPx(), el.getPy(), el.getWidth(), el.getHeight());
                 }
@@ -2651,16 +2693,7 @@ public class Window extends javax.swing.JFrame {
                 stageEl.setColor(btnCanvasColor.getBackground());
                 Camera.c().draw(g, stageEl);
 
-                int sp = 5;
                 g.setColor(Color.BLACK);
-
-                for (ElementModel el : selectedElements) {
-                    if (el == null) {
-                        break;
-                    }
-
-                    g.drawRect(Camera.c().fx(el.getPx() - sp), Camera.c().fy(el.getPy() - sp), el.getWidth() + sp * 2, el.getHeight() + sp * 2);
-                }
 
                 if (startDrag != null) {
                     int npx = mousePos.x - startDrag.x;
@@ -2675,7 +2708,7 @@ public class Window extends javax.swing.JFrame {
                 }
 
                 if (Common.updateAll) {
-                    for (ElementModel el : XMLUtil.getFilterTable()) {
+                    for (ElementModel el : dbEntity.getTableList()) {
                         el.update();
                     }
 
@@ -2683,16 +2716,27 @@ public class Window extends javax.swing.JFrame {
 
                 } else {
 
-                    for (RelationshipElement rl : XMLUtil.relations) {
+                    for (RelationshipElement rl : rEntity.getList()) {
                         rl.drawMe(g);
                     }
 
-                    for (ElementModel el : XMLUtil.getFilterTable()) {
+                    for (ElementModel el : dbEntity.getTableList()) {
                         Camera.c().draw(g, el);
                     }
 
                     selector.drawMe(g);
                     drawRelationPointer(g);
+                }
+
+                for (ElementModel el : selectedElements) {
+                    if (el == null) {
+                        break;
+                    }
+
+                    Camera.c().draw(g, el);
+
+                    g.setColor(BACKGROUND_COLOR);
+                    g.drawRect(Camera.c().fx(el.getPx() - BD_SP), Camera.c().fy(el.getPy() - BD_SP), el.getWidth() + BD_SP * 2, el.getHeight() + BD_SP * 2);
                 }
 
             }
@@ -2764,7 +2808,7 @@ public class Window extends javax.swing.JFrame {
 
                         singleSelection(null);
 
-                        for (ElementModel el : XMLUtil.getFilterTable()) {
+                        for (ElementModel el : dbEntity.getTableList()) {
 
                             if (GraphicTool.g().bcollide(el, selector)) {
                                 multiSelect(el);
@@ -2861,6 +2905,7 @@ public class Window extends javax.swing.JFrame {
 
         if (el == null) {
             tfTableName.setText("");
+            tfTableDesc.setText("");
 
             loadRelationship(null);
             tbIndexModel.setData(Collections.EMPTY_LIST);
@@ -2869,13 +2914,15 @@ public class Window extends javax.swing.JFrame {
         } else if (el instanceof TableElement) {
             //System.out.println("el " + el);
             tfTableName.setText(el.getName());
+            tfTableDesc.setText(((TableElement) el).getDescription());
 
             TableElement e = (TableElement) el;
 
             loadRelationship(e);
             cbBases.setSelectedItem(e.getDataBase().getName());
-            tbIndexModel.setData(XMLUtil.findIndex(e));
+            tbIndexModel.setData(em.getEntity(IndexEntity.class).findIndexByTable(e));
             tbTableModel.setData(e.getFields());
+
         }
 
         updateIndexSelection();
@@ -2890,7 +2937,7 @@ public class Window extends javax.swing.JFrame {
         tbRelationshipRight.removeAll();
 
         if (e != null) {
-            Set<RelationshipElement> lst = XMLUtil.findRelationship(e);
+            Set<RelationshipElement> lst = rEntity.findRelationship(e);
 
             short i = 0;
 
@@ -3010,7 +3057,7 @@ public class Window extends javax.swing.JFrame {
         }
 
         if (relLeft != null && relRight != null) {
-            XMLUtil.addNewRelationship(relType, relLeft, relRight);
+            rEntity.addNewRelationship(relType, relLeft, relRight);
             relType = null;
             relRight = relLeft = null;
             mode = EditTool.SELECTOR;
@@ -3027,7 +3074,7 @@ public class Window extends javax.swing.JFrame {
     private ElementModel hasColision(ElementModel element) {
         ElementModel e = selectedElements[0];
 
-        for (ElementModel el : XMLUtil.getFilterTable()) {
+        for (ElementModel el : dbEntity.getTableList()) {
             if (EditTool.SELECTOR == mode && selectedElements[0] == el) {
                 continue;
             }
@@ -3055,19 +3102,23 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void exit() {
+
         int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
         if (r == JOptionPane.CANCEL_OPTION) {
             return;
         }
 
-        if (r == JOptionPane.OK_OPTION) {
-            save();
+        try {
+            if (r == JOptionPane.OK_OPTION) {
+                save();
+            }
+
+            timer.stop();
+            this.dispose();
+
+        } finally {
+            System.exit(0);
         }
-
-        timer.stop();
-        this.dispose();
-
-        System.exit(0);
     }
 
     private void selectLast(JComboBox cb) {

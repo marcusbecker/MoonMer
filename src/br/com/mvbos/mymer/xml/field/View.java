@@ -5,10 +5,12 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import br.com.mvbos.mymer.el.TableElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -19,6 +21,8 @@ public class View {
 
     private String name;
     private List<ViewTable> tables = new ArrayList<>(20);
+
+    private List<TableElement> tempTables = new ArrayList<>(tables.size());
 
     public View() {
     }
@@ -43,6 +47,15 @@ public class View {
         this.tables = tables;
     }
 
+    @XmlTransient
+    public List<TableElement> getTempTables() {
+        return tempTables;
+    }
+
+    public void setTempTables(List<TableElement> tempTables) {
+        this.tempTables = tempTables;
+    }
+
     @Override
     public int hashCode() {
         int hash = 5;
@@ -60,6 +73,10 @@ public class View {
         }
         final View other = (View) obj;
         return Objects.equals(this.name, other.name);
+    }
+
+    public void addTempTable(TableElement t) {
+        tempTables.add(t);
     }
 
 }

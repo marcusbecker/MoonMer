@@ -5,11 +5,15 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.el.TableElement;
-import br.com.mvbos.mymer.xml.XMLUtil;
+import br.com.mvbos.mymer.entity.DataBaseEntity;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.ViewEntity;
 import br.com.mvbos.mymer.xml.field.View;
 import br.com.mvbos.mymer.xml.field.ViewTable;
+import java.awt.HeadlessException;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +29,8 @@ public class NewViewWindow extends javax.swing.JFrame {
     private int px;
     private short ct;
 
-    private View selected;
-    private List<View> views;
+    private View viewSelected;
+    private List<View> viewsList;
     private ElementModel[] selectedTables = new ElementModel[0];
 
     public ElementModel[] getSelectedTables() {
@@ -45,7 +49,6 @@ public class NewViewWindow extends javax.swing.JFrame {
             temp.append(selectedTables[ct].getName()).append(", ");
         }
 
-        setTitle(temp.toString());
         lblInfo.setText(String.format("%d tables selecteds.", ct));
     }
 
@@ -56,14 +59,16 @@ public class NewViewWindow extends javax.swing.JFrame {
         initComponents();
 
         DefaultListModel<String> def = (DefaultListModel<String>) lstViews.getModel();
-        views = XMLUtil.loadViews();
-        if (views != null) {
-            for (View v : views) {
+
+        viewsList = EntityManager.e().getEntity(ViewEntity.class).getList();
+
+        if (viewsList != null) {
+            for (View v : viewsList) {
                 def.addElement(v.getName());
             }
 
         } else {
-            views = new ArrayList<>(5);
+            viewsList = new ArrayList<>(5);
         }
 
     }
@@ -87,6 +92,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         cbIgnore = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Management Views");
 
         lbl.setText("Name:");
 
@@ -101,6 +107,12 @@ public class NewViewWindow extends javax.swing.JFrame {
 
         lstViews.setModel(new DefaultListModel<String>());
         lstViews.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstViews.setToolTipText("Press delete to exclude the View");
+        lstViews.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lstViewsMouseClicked(evt);
+            }
+        });
         lstViews.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 lstViewsValueChanged(evt);
@@ -137,7 +149,7 @@ public class NewViewWindow extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbIgnore)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnNext))
+                        .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(tfLabelTables))
                 .addContainerGap())
         );
@@ -165,11 +177,16 @@ public class NewViewWindow extends javax.swing.JFrame {
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
 
+        openView();
+
+    }//GEN-LAST:event_btnNextActionPerformed
+
+    private void openView() throws HeadlessException {
         ViewWindow vw = new ViewWindow();
 
-        if (selected == null) {
+        if (viewSelected == null) {
 
-            selected = new View(tfName.getText());
+            viewSelected = new View(tfName.getText());
             //List<TableElement> lst = new ArrayList<>(selectedTables.length);
 
             if (!cbIgnore.isSelected()) {
@@ -179,35 +196,39 @@ public class NewViewWindow extends javax.swing.JFrame {
 
                         //lst.add(t);
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
-                        final TableElement tableCopy = copy(t, v);
-                        vw.addTable(tableCopy);
-                        selected.getTables().add(v);
+                        //vw.addTable(copy(t, v));
+                        viewSelected.addTempTable(copy(t, v));
+                        viewSelected.getTables().add(v);
                     }
                 }
             }
 
-            views.add(selected);
+            viewsList.add(viewSelected);
 
         } else {
-            selected.setName(tfName.getText());
+            viewSelected.setName(tfName.getText());
+
+            EntityManager em = EntityManager.e();
+            DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
 
             //Validate if tables in view selected still exist
-            List<ViewTable> selTemp = new ArrayList<>(selected.getTables());
+            List<ViewTable> selTemp = new ArrayList<>(viewSelected.getTables());
             for (ViewTable v : selTemp) {
 
-                TableElement t = XMLUtil.findByName(v.getDataBaseName(), v.getTableName());
+                TableElement t = dbEntity.findByTableName(v.getDataBaseName(), v.getTableName());
 
                 if (t == null) {
                     String msg = String.format("Apparently the table %s from %s don't exist more. Do you like do remove this?", v.getTableName(), v.getDataBaseName());
                     int res = JOptionPane.showConfirmDialog(this, msg);
                     if (res == JOptionPane.OK_OPTION) {
-                        selected.getTables().remove(v);
+                        viewSelected.getTables().remove(v);
                     }
                     //Logger.getLogger(NewViewWindow.class.getName()).log(Level.INFO, "erro to find {0} {1}", new String[]{v.getDataBaseName(), v.getTableName()});
                     continue;
                 }
 
-                vw.addTable(copy(t, v));
+                //vw.addTable(copy(t, v));
+                viewSelected.addTempTable(copy(t, v));
 
                 /*if (!selected.getTables().contains(v)) {
                  selected.getTables().add(new ViewTable(t.getDataBase().getName(), t.getName()));
@@ -221,9 +242,10 @@ public class NewViewWindow extends javax.swing.JFrame {
 
                         ViewTable v = new ViewTable(t.getDataBase().getName(), t.getName());
 
-                        if (!selected.getTables().contains(v)) {
-                            vw.addTable(copy(t, v));
-                            selected.getTables().add(v);
+                        if (!viewSelected.getTables().contains(v)) {
+                            //vw.addTable(copy(t, v));
+                            viewSelected.addTempTable(copy(t, v));
+                            viewSelected.getTables().add(v);
                         }
                     }
                 }
@@ -231,12 +253,11 @@ public class NewViewWindow extends javax.swing.JFrame {
         }
 
         //Send all views do save
-        vw.init(selected, views);
+        vw.init(viewSelected, viewsList);
         vw.setVisible(true);
 
         this.dispose();
-
-    }//GEN-LAST:event_btnNextActionPerformed
+    }
 
     private final StringBuilder temp = new StringBuilder(100);
 
@@ -245,32 +266,48 @@ public class NewViewWindow extends javax.swing.JFrame {
         if (evt.getValueIsAdjusting()) {
             temp.delete(0, temp.length());
 
-            selected = views.get(lstViews.getSelectedIndex());
-            tfName.setText(selected.getName());
+            viewSelected = viewsList.get(lstViews.getSelectedIndex());
+            tfName.setText(viewSelected.getName());
 
-            for (ViewTable v : selected.getTables()) {
+            for (ViewTable v : viewSelected.getTables()) {
                 temp.append(v.getTableName()).append(", ");
             }
 
             tfLabelTables.setText(temp.toString());
+
+            lbl.setText("Change name to:");
         }
 
     }//GEN-LAST:event_lstViewsValueChanged
 
     private void lstViewsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lstViewsKeyReleased
 
-        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
-            int idx = lstViews.getSelectedIndex();
-            if (idx > -1) {
-                views.remove(idx);
-                ((DefaultListModel) lstViews.getModel()).removeElementAt(idx);
+        int idx = lstViews.getSelectedIndex();
+        if (idx == -1) {
+            return;
+        }
 
-                selected = null;
-                tfLabelTables.setText(null);
-            }
+        if (evt.getKeyCode() == KeyEvent.VK_DELETE) {
+
+            viewsList.remove(idx);
+            ((DefaultListModel) lstViews.getModel()).removeElementAt(idx);
+
+            viewSelected = null;
+            tfLabelTables.setText(null);
+
+        } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            openView();
         }
 
     }//GEN-LAST:event_lstViewsKeyReleased
+
+    private void lstViewsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstViewsMouseClicked
+
+        if (evt.getClickCount() == 2 && lstViews.getSelectedIndex() > -1) {
+            openView();
+        }
+
+    }//GEN-LAST:event_lstViewsMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -287,7 +324,7 @@ public class NewViewWindow extends javax.swing.JFrame {
     private TableElement copy(TableElement t, ViewTable v) {
         TableElement copy = EntityUtil.copy(t);
         int ppx = v.getPx() == 0 ? px : v.getPx();
-        
+
         copy.setPxy(ppx, v.getPy());
 
         return copy;
