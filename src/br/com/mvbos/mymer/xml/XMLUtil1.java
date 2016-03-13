@@ -696,7 +696,7 @@ public class XMLUtil1 {
         db.getTables().remove(e);
         filter.remove(e);
 
-        Undo.add(e);
+        //Undo.add(e);
 
         ActionEvent evt = new ActionEvent(e, EVT_REMOVE, "REMOVE_TABLE");
         for (ActionListener a : listern) {

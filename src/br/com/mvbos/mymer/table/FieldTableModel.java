@@ -141,4 +141,30 @@ public class FieldTableModel extends AbstractTableModel {
         return true;
     }
 
+    public void addField(int index, Field field) {
+        if (index > -1) {
+            data.add(index, field);
+        } else {
+            data.add(field);
+        }
+
+        fireTableDataChanged();
+    }
+
+    public void addField(Field field) {
+        addField(-1, field);
+    }
+
+    public void removeField(int position) {
+        data.remove(position);
+        fireTableRowsDeleted(position, position);
+    }
+
+    public void removeField(Field field) {
+        int index = data.indexOf(field);
+        if (index > - 1) {
+            removeField(index);
+        }
+    }
+
 }

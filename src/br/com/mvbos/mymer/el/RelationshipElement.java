@@ -123,7 +123,7 @@ public class RelationshipElement extends ElementModel {
     @Override
     public void drawMe(Graphics2D g) {
 
-        if (parent == null || child == null) {
+        if (parent == null || child == null || !isVisible()) {
             return;
         }
 

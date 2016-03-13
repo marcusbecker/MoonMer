@@ -16,7 +16,11 @@ import br.com.mvbos.jeg.window.IMemory;
 import br.com.mvbos.jeg.window.impl.MemoryImpl;
 import br.com.mvbos.mm.MMProperties;
 import br.com.mvbos.mymer.combo.Option;
+import br.com.mvbos.mymer.edit.AddTableEdit;
+import br.com.mvbos.mymer.edit.EditControl;
+import br.com.mvbos.mymer.edit.RemoveTableEdit;
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.FindAnimationElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.StageElement;
@@ -32,7 +36,6 @@ import br.com.mvbos.mymer.sync.ImportBases;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
 import br.com.mvbos.mymer.table.RowItemSelection;
 import br.com.mvbos.mymer.xml.DataBaseStore;
-import br.com.mvbos.mymer.xml.Undo;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import java.awt.Color;
@@ -121,6 +124,8 @@ public class Window extends javax.swing.JFrame {
     private final DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
 
     private final int BD_SP = 5; //Border space
+
+    private final ElementModel findElement = new FindAnimationElement();
 
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
@@ -497,6 +502,7 @@ public class Window extends javax.swing.JFrame {
         miExit = new javax.swing.JMenuItem();
         menuEditDataBase = new javax.swing.JMenu();
         miUndo = new javax.swing.JMenuItem();
+        miRedo = new javax.swing.JMenuItem();
         miCloneTable = new javax.swing.JMenuItem();
         miCopyXml = new javax.swing.JMenuItem();
         miPasteXML = new javax.swing.JMenuItem();
@@ -1307,6 +1313,15 @@ public class Window extends javax.swing.JFrame {
         });
         menuEditDataBase.add(miUndo);
 
+        miRedo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        miRedo.setText("Redo");
+        miRedo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miRedoActionPerformed(evt);
+            }
+        });
+        menuEditDataBase.add(miRedo);
+
         miCloneTable.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
         miCloneTable.setText("Clone Table");
         miCloneTable.addActionListener(new java.awt.event.ActionListener() {
@@ -1559,6 +1574,11 @@ public class Window extends javax.swing.JFrame {
             if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
                 dbEntity.removeTable(sel);
                 singleSelection(null);
+                EditControl.u().addEdit(new RemoveTableEdit(sel));
+
+                for (RelationshipElement r : rEntity.getList()) {
+                    r.setVisible(false);
+                }
             }
         }
     }
@@ -1592,7 +1612,7 @@ public class Window extends javax.swing.JFrame {
         te.update();
 
         dbEntity.addTable(te);
-
+        EditControl.u().addEdit(new AddTableEdit(te));
     }
 
     private void btnCropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCropActionPerformed
@@ -1606,11 +1626,11 @@ public class Window extends javax.swing.JFrame {
 
         TableElement e = getTableSeletected();
         if (e != null) {
-            e.getFields().add(new Field("New", Common.comboTypes[0]));
-            e.update();
-            FieldTableModel m = (FieldTableModel) tbFields.getModel();
-            m.fireTableDataChanged();
+            ((FieldTableModel) tbFields.getModel()).addField(new Field("New", Common.comboTypes[0]));
 
+            e.update();
+
+            //select and roll to the last row
             final int start = e.getFields().size() - 1;
             tbFields.setRowSelectionInterval(start, start);
             tbFields.scrollRectToVisible(tbFields.getCellRect(start, 0, true));
@@ -1622,12 +1642,8 @@ public class Window extends javax.swing.JFrame {
 
         TableElement e = getTableSeletected();
         if (e != null && tbFields.getSelectedRow() != -1) {
-            e.getFields().remove(tbFields.getSelectedRow());
-
+            ((FieldTableModel) tbFields.getModel()).removeField(tbFields.getSelectedRow());
             e.update();
-
-            FieldTableModel m = (FieldTableModel) tbFields.getModel();
-            m.fireTableRowsDeleted(tbFields.getSelectedRow(), tbFields.getSelectedRow());
         }
 
     }//GEN-LAST:event_btnRemFieldTableActionPerformed
@@ -1790,6 +1806,8 @@ public class Window extends javax.swing.JFrame {
         if (nodeInfo instanceof TableElement) {
             TableElement t = (TableElement) nodeInfo;
             positionCam(t);
+            GraphicTool.g().centerElement(t, findElement);
+            findElement.setVisible(true);
 
             singleSelection(t);
         }
@@ -2005,10 +2023,9 @@ public class Window extends javax.swing.JFrame {
 
     private void miUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miUndoActionPerformed
 
-        TableElement e = Undo.get();
-        if (e != null) {
-            e.getDataBase().getTables().add(e);
-            dbEntity.addTable(e);
+        if (EditControl.u().canUndo()) {
+            singleSelection(null);
+            EditControl.u().undo();
         }
 
     }//GEN-LAST:event_miUndoActionPerformed
@@ -2327,6 +2344,12 @@ public class Window extends javax.swing.JFrame {
 
     }//GEN-LAST:event_tbFieldsKeyReleased
 
+    private void miRedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRedoActionPerformed
+        if (EditControl.u().canRedo()) {
+            EditControl.u().redo();
+        }
+    }//GEN-LAST:event_miRedoActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2396,6 +2419,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JMenuItem miOrderByCol;
     private javax.swing.JMenuItem miOrderByRow;
     private javax.swing.JMenuItem miPasteXML;
+    private javax.swing.JMenuItem miRedo;
     private javax.swing.JMenuItem miSave;
     private javax.swing.JMenuItem miUndo;
     private javax.swing.JPanel pnBottom;
@@ -2733,6 +2757,8 @@ public class Window extends javax.swing.JFrame {
                     g.setColor(BACKGROUND_COLOR);
                     g.drawRect(Camera.c().fx(el.getPx() - BD_SP), Camera.c().fy(el.getPy() - BD_SP), el.getWidth() + BD_SP * 2, el.getHeight() + BD_SP * 2);
                 }
+
+                Camera.c().draw(g, findElement);
 
             }
 

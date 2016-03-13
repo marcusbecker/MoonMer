@@ -5,6 +5,9 @@
  */
 package br.com.mvbos.mymer.entity;
 
+import br.com.mvbos.mymer.edit.AddTableEdit;
+import br.com.mvbos.mymer.edit.EditControl;
+import br.com.mvbos.mymer.edit.RemoveTableEdit;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.DataBaseStore;
