@@ -45,3 +45,8 @@ Temporary Items
 /dist/
 /nbproject/
 build.xml
+*.7z
+/index/
+/relations/
+/config/*.xml
+/dbs/

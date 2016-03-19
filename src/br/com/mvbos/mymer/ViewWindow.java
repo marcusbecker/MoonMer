@@ -821,6 +821,7 @@ public class ViewWindow extends javax.swing.JFrame {
 
     private void addCopyTable(Option o) {
         TableElement copy = EntityUtil.copy((TableElement) o.getValue());
+        copy.setState(TableElement.State.ALLWAYS_VISIBLE);
         ViewTable v = new ViewTable(copy.getDataBase().getName(), copy.getName());
         if (addTable(copy)) {
             addViewTable(v);

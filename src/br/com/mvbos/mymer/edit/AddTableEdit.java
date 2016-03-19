@@ -19,21 +19,35 @@ import javax.swing.undo.CannotUndoException;
 public class AddTableEdit extends AbstractUndoableEdit {
 
     private final TableElement t;
+    private final EditWindowInterface source;
 
     public AddTableEdit(final TableElement t) {
+        this(t, null);
+    }
+
+    public AddTableEdit(final TableElement t, final EditWindowInterface source) {
         this.t = t;
+        this.source = source;
     }
 
     @Override
     public void undo() throws CannotUndoException {
         EntityManager.e().getEntity(DataBaseEntity.class).removeTable(t);
         DataBaseEntity.tableCount--;
+
+        if (source != null) {
+            source.changeSelection(null);
+        }
     }
 
     @Override
     public void redo() throws CannotRedoException {
         EntityManager.e().getEntity(DataBaseEntity.class).addTable(t);
         DataBaseEntity.tableCount++;
+
+        if (source != null) {
+            source.changeSelection(t);
+        }
     }
 
     @Override

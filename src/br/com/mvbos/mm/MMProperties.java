@@ -49,7 +49,9 @@ public class MMProperties {
     }
 
     public static void save() {
-        prop.setProperty("camSize", String.valueOf(Common.camSize));
+        prop.setProperty("camWidth", String.valueOf(Common.camWidth));
+        prop.setProperty("camHeight", String.valueOf(Common.camHeight));
+        
         prop.setProperty("backgroundColor", String.valueOf(Common.backgroundColor));
 
         try {

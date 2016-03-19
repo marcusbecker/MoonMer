@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.table.DataChangeListener;
 import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.table.GenericTableModel;
 import br.com.mvbos.mymer.table.FieldTableModel;
@@ -16,8 +17,11 @@ import br.com.mvbos.jeg.window.IMemory;
 import br.com.mvbos.jeg.window.impl.MemoryImpl;
 import br.com.mvbos.mm.MMProperties;
 import br.com.mvbos.mymer.combo.Option;
+import br.com.mvbos.mymer.edit.AddRemoveTableFieldEdit;
 import br.com.mvbos.mymer.edit.AddTableEdit;
+import br.com.mvbos.mymer.edit.ChangeTableFieldEdit;
 import br.com.mvbos.mymer.edit.EditControl;
+import br.com.mvbos.mymer.edit.EditWindowInterface;
 import br.com.mvbos.mymer.edit.RemoveTableEdit;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.FindAnimationElement;
@@ -33,6 +37,7 @@ import br.com.mvbos.mymer.entity.RelationEntity;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
+import br.com.mvbos.mymer.table.DataChange;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
 import br.com.mvbos.mymer.table.RowItemSelection;
 import br.com.mvbos.mymer.xml.DataBaseStore;
@@ -99,7 +104,7 @@ import javax.swing.tree.TreePath;
  *
  * @author MarcusS
  */
-public class Window extends javax.swing.JFrame {
+public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private JPanel canvas;
     private final Timer timer;
@@ -140,6 +145,52 @@ public class Window extends javax.swing.JFrame {
         }
     }
 
+    @Override
+    public void changeSelection(ElementModel e) {
+        singleSelection(e);
+
+        if (e != null) {
+            highlights(e);
+            positionCam(e);
+        }
+        //fireTableCellUpdated(row, col);
+    }
+
+    private void highlights(ElementModel e) {
+        GraphicTool.g().centerElement(e, findElement);
+        findElement.setVisible(true);
+    }
+
+    private void autoResizeCanvas() {
+
+        int w = 0;
+        int h = 0;
+
+        for (TableElement t : dbEntity.getTableList()) {
+            if (w < t.getAllWidth()) {
+                w = t.getAllWidth();
+            }
+
+            if (h < t.getAllHeight()) {
+                h = t.getAllHeight();
+            }
+        }
+
+        try {
+            Camera.c().config(w + 10, h + 10, canvas.getWidth(), canvas.getHeight());
+
+        } catch (IllegalArgumentException e) {
+            Camera.c().config(canvas.getWidth() + 10, canvas.getHeight() + 10, canvas.getWidth(), canvas.getHeight());
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
+
+        stageEl.setSize(Camera.c().getSceneWidth(), Camera.c().getSceneHeight());
+        Common.camWidth = stageEl.getWidth();
+        Common.camHeight = stageEl.getHeight();
+        MMProperties.save();
+
+    }
+
     private class MyDispatcher implements KeyEventDispatcher {
 
         @Override
@@ -157,6 +208,9 @@ public class Window extends javax.swing.JFrame {
             } else {
                 setCursor(Cursor.getDefaultCursor());
             }
+
+            FieldTableModel model = (FieldTableModel) tbFields.getModel();
+            model.disableEdition(isControlDown);
 
             //Ignore keys if table or textfield editions
             if (ignoreKey()) {
@@ -233,11 +287,14 @@ public class Window extends javax.swing.JFrame {
         //createTest();
         populeComboBoxes();
 
-        if (Common.camSize < canvas.getWidth() || Common.camSize < canvas.getHeight()) {
-            Common.camSize = canvas.getWidth() + canvas.getHeight();
-            Camera.c().config(Common.camSize, Common.camSize, canvas.getWidth(), canvas.getHeight());
+        if (Common.camWidth < canvas.getWidth() || Common.camHeight < canvas.getHeight()) {
+            Common.camWidth = canvas.getWidth();
+            Common.camHeight = canvas.getHeight();
+
+            Camera.c().config(Common.camWidth, Common.camHeight, canvas.getWidth(), canvas.getHeight());
         }
         //Camera.c().offSet(100, 100);
+        Camera.c().setAutoFit(Common.autoFitCam);
         Camera.c().setAllowOffset(true);
 
         ws = WindowSerializable.load();
@@ -263,7 +320,7 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        stageEl.setSize(Common.camSize, Common.camSize);
+        stageEl.setSize(Common.camWidth, Common.camHeight);
 
         timer = new Timer(60, new ActionListener() {
 
@@ -300,6 +357,7 @@ public class Window extends javax.swing.JFrame {
                 }
             }
         });
+
     }
 
     private void applyZoom(int val) {
@@ -926,6 +984,9 @@ public class Window extends javax.swing.JFrame {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 tbFieldsKeyReleased(evt);
             }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tbFieldsKeyTyped(evt);
+            }
         });
         spTbFields.setViewportView(tbFields);
         configureTable();
@@ -1472,7 +1533,7 @@ public class Window extends javax.swing.JFrame {
 
                     temp.incPx(last.getAllWidth() + 10);
 
-                    if (temp.getPx() + e.getWidth() > Common.camSize) {
+                    if (temp.getPx() + e.getWidth() > Common.camWidth) {
                         temp.setPx(0);
                         temp.incPy(10);
                     }
@@ -1481,7 +1542,7 @@ public class Window extends javax.swing.JFrame {
                 }
             }
 
-            if (temp.getPx() + 100 > Common.camSize) {
+            if (temp.getPx() + 100 > Common.camWidth) {
                 temp.setPx(0);
                 temp.incPy(10);
             }
@@ -1505,18 +1566,16 @@ public class Window extends javax.swing.JFrame {
 
         int lastHeight = 0;
         int maxWidth = 0;
-        int sumWidth = 0;
 
         for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
 
             maxWidth = e.getWidth() > maxWidth ? e.getWidth() : maxWidth;
 
-            if (py + 15 + lastHeight > Common.camSize) {
+            if (py + 15 + lastHeight > Common.camHeight) {
                 px += maxWidth + 15;
                 py = 5;
 
-                sumWidth += maxWidth;
                 maxWidth = 0;
 
             } else {
@@ -1527,9 +1586,7 @@ public class Window extends javax.swing.JFrame {
             lastHeight = e.getHeight();
         }
 
-        if (sumWidth > canvas.getWidth()) {
-            //Camera.c().config(camSize, sumWidth + 60, canvas.getWidth(), canvas.getHeight());
-        }
+        autoResizeCanvas();
     }
 
     private void orderByRow() {
@@ -1538,16 +1595,14 @@ public class Window extends javax.swing.JFrame {
 
         int lastWidth = 0;
         int maxHeight = 0;
-        int sumHeight = 0;
 
         for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
             maxHeight = e.getHeight() > maxHeight ? e.getHeight() : maxHeight;
-            if (px + e.getWidth() > Common.camSize) {
+            if (px + e.getWidth() > Common.camWidth) {
                 px = 5;
                 py += maxHeight + 15;
 
-                sumHeight += maxHeight;
                 maxHeight = 0;
 
             } else {
@@ -1557,9 +1612,7 @@ public class Window extends javax.swing.JFrame {
             lastWidth = e.getWidth();
         }
 
-        if (sumHeight > canvas.getHeight()) {
-            //Camera.c().config(camSize, sumHeight + 60, canvas.getWidth(), canvas.getHeight());
-        }
+        autoResizeCanvas();
     }
 
     private void btnRemoveTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveTableActionPerformed
@@ -1574,7 +1627,7 @@ public class Window extends javax.swing.JFrame {
             if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
                 dbEntity.removeTable(sel);
                 singleSelection(null);
-                EditControl.u().addEdit(new RemoveTableEdit(sel));
+                EditControl.u().addEdit(new RemoveTableEdit(sel, this));
 
                 for (RelationshipElement r : rEntity.getList()) {
                     r.setVisible(false);
@@ -1612,7 +1665,7 @@ public class Window extends javax.swing.JFrame {
         te.update();
 
         dbEntity.addTable(te);
-        EditControl.u().addEdit(new AddTableEdit(te));
+        EditControl.u().addEdit(new AddTableEdit(te, this));
     }
 
     private void btnCropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCropActionPerformed
@@ -1626,7 +1679,11 @@ public class Window extends javax.swing.JFrame {
 
         TableElement e = getTableSeletected();
         if (e != null) {
-            ((FieldTableModel) tbFields.getModel()).addField(new Field("New", Common.comboTypes[0]));
+            FieldTableModel model = (FieldTableModel) tbFields.getModel();
+            Field field = new Field("New", Common.comboTypes[0]);
+
+            model.addField(field);
+            EditControl.u().addEdit(new AddRemoveTableFieldEdit(e, field, true, this));
 
             e.update();
 
@@ -1642,8 +1699,13 @@ public class Window extends javax.swing.JFrame {
 
         TableElement e = getTableSeletected();
         if (e != null && tbFields.getSelectedRow() != -1) {
-            ((FieldTableModel) tbFields.getModel()).removeField(tbFields.getSelectedRow());
+            int idx = tbFields.getSelectedRow();
+            FieldTableModel model = (FieldTableModel) tbFields.getModel();
+            Field f = model.getData().get(idx);
+            model.removeField(idx);
             e.update();
+
+            EditControl.u().addEdit(new AddRemoveTableFieldEdit(e, f, idx, false, this));
         }
 
     }//GEN-LAST:event_btnRemFieldTableActionPerformed
@@ -1806,9 +1868,7 @@ public class Window extends javax.swing.JFrame {
         if (nodeInfo instanceof TableElement) {
             TableElement t = (TableElement) nodeInfo;
             positionCam(t);
-            GraphicTool.g().centerElement(t, findElement);
-            findElement.setVisible(true);
-
+            highlights(t);
             singleSelection(t);
         }
 
@@ -2024,7 +2084,6 @@ public class Window extends javax.swing.JFrame {
     private void miUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miUndoActionPerformed
 
         if (EditControl.u().canUndo()) {
-            singleSelection(null);
             EditControl.u().undo();
         }
 
@@ -2304,11 +2363,12 @@ public class Window extends javax.swing.JFrame {
             int newSize = Integer.parseInt(tfCanvasSize.getText());
 
             Camera.c().config(newSize, newSize, canvas.getWidth(), canvas.getHeight());
-            Common.camSize = newSize;
+            Common.camWidth = newSize;
+            Common.camHeight = newSize;
 
             Common.backgroundColor = ccCanvas.getColor().getRGB();
             btnCanvasColor.setBackground(ccCanvas.getColor());
-            stageEl.setSize(Common.camSize, Common.camSize);
+            stageEl.setSize(Common.camWidth, Common.camHeight);
             dlgCanvas.setVisible(false);
 
             MMProperties.save();
@@ -2323,7 +2383,7 @@ public class Window extends javax.swing.JFrame {
 
     private void btnCanvasColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCanvasColorActionPerformed
 
-        tfCanvasSize.setText(String.valueOf(Common.camSize));
+        tfCanvasSize.setText(String.valueOf(Common.camWidth));
         ccCanvas.setBackground(btnCanvasColor.getBackground());
 
         dlgCanvas.pack();
@@ -2349,6 +2409,10 @@ public class Window extends javax.swing.JFrame {
             EditControl.u().redo();
         }
     }//GEN-LAST:event_miRedoActionPerformed
+
+    private void tbFieldsKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbFieldsKeyTyped
+
+    }//GEN-LAST:event_tbFieldsKeyTyped
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2452,7 +2516,25 @@ public class Window extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private TableModel createFieldTableModel() {
-        return new FieldTableModel();
+        FieldTableModel fieldTableModel = new FieldTableModel();
+        /*fieldTableModel.addTableModelListener(new TableModelListener() {
+         @Override
+         public void tableChanged(TableModelEvent e) {
+         EditControl.u().addEdit(new ChangeTableFieldEdit(e));
+         }
+         });*/
+
+        fieldTableModel.addDataChangeListener(new DataChangeListener() {
+            @Override
+            public void dataChange(DataChange data) {
+                TableElement te = getTableSeletected();
+                if (te != null) {
+                    EditControl.u().addEdit(new ChangeTableFieldEdit(te, data, Window.this));
+                }
+            }
+        });
+
+        return fieldTableModel;
     }
 
     private GenericTableModel createIndexTableModel() {
@@ -2619,14 +2701,14 @@ public class Window extends javax.swing.JFrame {
                 float w;
                 float h;
 
-                if (Common.camSize > miniMap.getWidth()) {
-                    w = (100f / (Common.camSize / (float) miniMap.getWidth())) / 100f;
+                if (Common.camWidth > miniMap.getWidth()) {
+                    w = (100f / (Common.camWidth / (float) miniMap.getWidth())) / 100f;
                 } else {
                     w = miniMap.getWidth();
                 }
 
-                if (Common.camSize > miniMap.getHeight()) {
-                    h = (100f / (Common.camSize / (float) miniMap.getHeight())) / 100f;
+                if (Common.camHeight > miniMap.getHeight()) {
+                    h = (100f / (Common.camHeight / (float) miniMap.getHeight())) / 100f;
                 } else {
                     h = miniMap.getHeight();
                 }
@@ -2663,8 +2745,8 @@ public class Window extends javax.swing.JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                float w = Common.camSize > miniMap.getWidth() ? Common.camSize / miniMap.getWidth() : miniMap.getWidth();
-                float h = Common.camSize > miniMap.getHeight() ? Common.camSize / miniMap.getHeight() : miniMap.getHeight();
+                float w = Common.camWidth > miniMap.getWidth() ? Common.camWidth / miniMap.getWidth() : miniMap.getWidth();
+                float h = Common.camHeight > miniMap.getHeight() ? Common.camHeight / miniMap.getHeight() : miniMap.getHeight();
 
                 Camera.c().move(e.getX() * w, e.getY() * h);
 
@@ -2689,7 +2771,7 @@ public class Window extends javax.swing.JFrame {
 
         });
 
-        miniMap.setToolTipText(String.format("Cam size: %dx%d", Common.camSize, Common.camSize));
+        miniMap.setToolTipText(String.format("Cam size: %dx%d", Common.camWidth, Common.camHeight));
 
         return miniMap;
     }
@@ -2913,6 +2995,11 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void singleSelection(ElementModel el) {
+        /*if (el != null && (selectedElements[0] == el)) {
+         //TODO compare fields size
+         return;
+         }*/
+
         for (int i = 1; i < selectedElements.length; i++) {
             selectedElements[i] = null;
         }
@@ -2934,16 +3021,16 @@ public class Window extends javax.swing.JFrame {
 
         } else if (el instanceof TableElement) {
             //System.out.println("el " + el);
-            tfTableName.setText(el.getName());
-            tfTableDesc.setText(((TableElement) el).getDescription());
 
             TableElement e = (TableElement) el;
+
+            tfTableName.setText(e.getName());
+            tfTableDesc.setText(e.getDescription());
 
             loadRelationship(e);
             cbBases.setSelectedItem(e.getDataBase().getName());
             tbIndexModel.setData(em.getEntity(IndexEntity.class).findIndexByTable(e));
             tbTableModel.setData(e.getFields());
-
         }
 
         updateIndexSelection();
@@ -3096,6 +3183,7 @@ public class Window extends javax.swing.JFrame {
 
     private void positionCam(ElementModel el) {
         Camera.c().move(el.getPx() - canvas.getWidth() / 2, el.getPy() - canvas.getHeight() / 2);
+
     }
 
     private void positionCam(int px, int py) {

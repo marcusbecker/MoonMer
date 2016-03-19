@@ -22,9 +22,15 @@ import javax.swing.undo.CannotUndoException;
 public class RemoveTableEdit extends AbstractUndoableEdit {
 
     private final TableElement t;
+    private final EditWindowInterface source;
 
     public RemoveTableEdit(final TableElement t) {
+        this(t, null);
+    }
+
+    public RemoveTableEdit(final TableElement t, final EditWindowInterface source) {
         this.t = t;
+        this.source = source;
     }
 
     @Override
@@ -32,10 +38,14 @@ public class RemoveTableEdit extends AbstractUndoableEdit {
         EntityManager.e().getEntity(DataBaseEntity.class).addTable(t);
         DataBaseEntity.tableCount++;
 
-        for (RelationshipElement r : EntityManager.e().getEntity(RelationEntity.class).getList()) {
-            if (r.isPart(t)) {
-                r.setVisible(true);
-            }
+        Set<RelationshipElement> find = EntityManager.e().getEntity(RelationEntity.class).findRelationship(t);
+
+        for (RelationshipElement r : find) {
+            r.setVisible(true);
+        }
+
+        if (source != null) {
+            source.changeSelection(t);
         }
     }
 
@@ -44,10 +54,14 @@ public class RemoveTableEdit extends AbstractUndoableEdit {
         EntityManager.e().getEntity(DataBaseEntity.class).removeTable(t);
         DataBaseEntity.tableCount--;
 
-        for (RelationshipElement r : EntityManager.e().getEntity(RelationEntity.class).getList()) {
-            if (r.isPart(t)) {
-                r.setVisible(false);
-            }
+        Set<RelationshipElement> find = EntityManager.e().getEntity(RelationEntity.class).findRelationship(t);
+
+        for (RelationshipElement r : find) {
+            r.setVisible(false);
+        }
+
+        if (source != null) {
+            source.changeSelection(null);
         }
     }
 

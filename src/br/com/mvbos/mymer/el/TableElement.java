@@ -22,6 +22,11 @@ import java.util.Objects;
  */
 public class TableElement extends ElementModel {
 
+    public enum State {
+
+        NONE, ALLWAYS_VISIBLE
+    }
+
     //public static final Font headerFont = new Font("Helvetica Neue,Helvetica,Arial,sans-serif", Font.BOLD, 14);
     public static final Font headerFont = new Font("Consolas", Font.BOLD, 14);
     public static final Font textFont = new Font("Arial", Font.PLAIN, 14);
@@ -36,6 +41,8 @@ public class TableElement extends ElementModel {
     private boolean autoWidth = true;
     private boolean autoHeight = true;
     private Color headerColor = Color.DARK_GRAY;
+
+    private State state = State.NONE;
 
     public TableElement(DataBaseElement dataBase, Table tb) {
         this(0, 0, 50, 50, dataBase, tb.getName(), tb.getDescription());
@@ -110,7 +117,7 @@ public class TableElement extends ElementModel {
                 headerSize = (short) g.getFontMetrics(headerFont).getHeight();
                 fieldSize = (short) (g.getFontMetrics(textFont).getHeight() + 5);
 
-                if (Common.crop) {
+                if (isCrop()) {
                     setHeight(fieldSize * (fields.size() > Common.maxRow ? Common.maxRow + 1 : fields.size()) + headerSize + 20);
                 } else {
                     setHeight(fieldSize * fields.size() + headerSize + 20);
@@ -127,7 +134,7 @@ public class TableElement extends ElementModel {
                         maxWidth = f.getName();
                     }
 
-                    if (Common.crop) {
+                    if (isCrop()) {
                         Common.ct++;
                         if (Common.ct == Common.maxRow) {
                             break;
@@ -167,7 +174,7 @@ public class TableElement extends ElementModel {
             g.setFont(textFont);
             g.setColor(Color.DARK_GRAY);
 
-            if (Common.crop && i == Common.maxRow) {
+            if (isCrop() && i == Common.maxRow) {
                 g.setFont(textFont.deriveFont(Font.ITALIC));
                 g.drawString(String.format("... %d more", fields.size() - Common.maxRow), getPx() + 5, getPy() + fieldSize * (i + 2));
                 break;
@@ -220,6 +227,18 @@ public class TableElement extends ElementModel {
 
         return Objects.equals(this.name, other.name) && Objects.equals(this.getDataBase(), other.getDataBase());
 
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    private boolean isCrop() {
+        return state != State.ALLWAYS_VISIBLE && Common.crop;
     }
 
 }

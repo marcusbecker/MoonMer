@@ -23,6 +23,17 @@ public class FieldTableModel extends AbstractTableModel {
     private List<Field> data = Collections.EMPTY_LIST;
     private final java.lang.reflect.Field[] fields = Field.class.getDeclaredFields();
 
+    private DataChangeListener dataChangeListener;
+    private boolean disable;
+
+    public void addDataChangeListener(DataChangeListener dataChangeListener) {
+        this.dataChangeListener = dataChangeListener;
+    }
+
+    public void disableEdition(boolean disable) {
+        this.disable = disable;
+    }
+
     private class ColType {
 
         String name;
@@ -48,7 +59,7 @@ public class FieldTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return colTypes.get(columnIndex).edit;
+        return !disable && colTypes.get(columnIndex).edit;
     }
 
     @Override
@@ -68,11 +79,18 @@ public class FieldTableModel extends AbstractTableModel {
         Field f = data.get(row);
 
         try {
+            Object old;
+
             java.lang.reflect.Field ff = fields[classCol];
             ff.setAccessible(true);
+            old = ff.get(f);
             ff.set(f, value);
 
             fireTableCellUpdated(row, col);
+
+            if (dataChangeListener != null) {
+                dataChangeListener.dataChange(new DataChange(row, classCol, f, old, value));
+            }
 
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             Logger.getLogger(FieldTableModel.class.getName()).log(Level.SEVERE, null, ex);
@@ -141,6 +159,10 @@ public class FieldTableModel extends AbstractTableModel {
         return true;
     }
 
+    public void addField(Field field) {
+        addField(-1, field);
+    }
+
     public void addField(int index, Field field) {
         if (index > -1) {
             data.add(index, field);
@@ -148,11 +170,8 @@ public class FieldTableModel extends AbstractTableModel {
             data.add(field);
         }
 
-        fireTableDataChanged();
-    }
-
-    public void addField(Field field) {
-        addField(-1, field);
+        fireTableRowsInserted(index == -1 ? data.size() : index, index == -1 ? data.size() : index);
+        //fireTableDataChanged();
     }
 
     public void removeField(int position) {

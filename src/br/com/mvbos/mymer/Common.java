@@ -29,7 +29,9 @@ public class Common {
 
     public static byte typeCharLength = Byte.valueOf(MMProperties.get("typeCharLength", 4)); //counter
 
-    public static int camSize = Integer.valueOf(MMProperties.get("camSize", 9000));
+    public static int camWidth = Integer.valueOf(MMProperties.get("camWidth", 9000));
+    public static int camHeight = Integer.valueOf(MMProperties.get("camHeight", 9000));
+    
     public static int backgroundColor = Integer.valueOf(MMProperties.get("backgroundColor", Color.WHITE.getRGB()));
 
     public static final String[] comboTypes = MMProperties.get("comboTypes", "character,date,decimal,integer,logical,rowid,handle").split(",");
@@ -38,5 +40,6 @@ public class Common {
     public static final Charset charset = Charset.forName(MMProperties.get("charset", "UTF-8"));
     public static final Charset importCharset = Charset.forName(MMProperties.get("importCharset", "UTF-8"));
     public static boolean enableFastUpdate;
+    public static boolean autoFitCam = Boolean.valueOf(MMProperties.get("autoFitCam", true));
 
 }
