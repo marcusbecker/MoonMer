@@ -34,6 +34,7 @@ import br.com.mvbos.mymer.entity.EntityManager;
 import br.com.mvbos.mymer.entity.IElementEntity;
 import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.entity.RelationEntity;
+import br.com.mvbos.mymer.sync.DiffWindow;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
@@ -553,6 +554,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         jScrollPane1 = new javax.swing.JScrollPane();
         tfStruct = new javax.swing.JTextArea();
         btnBuildSctruct = new javax.swing.JButton();
+        btnShowDiff = new javax.swing.JButton();
         lblInfo = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
@@ -1298,6 +1300,13 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        btnShowDiff.setText("Diff");
+        btnShowDiff.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowDiffActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout tabStructLayout = new javax.swing.GroupLayout(tabStruct);
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
@@ -1305,13 +1314,20 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnShowDiff)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnBuildSctruct, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        tabStructLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnBuildSctruct, btnShowDiff});
+
         tabStructLayout.setVerticalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
-                .addComponent(btnBuildSctruct)
+                .addGroup(tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnBuildSctruct)
+                    .addComponent(btnShowDiff))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
         );
@@ -1680,7 +1696,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableElement e = getTableSeletected();
         if (e != null) {
             FieldTableModel model = (FieldTableModel) tbFields.getModel();
-            Field field = new Field("New", Common.comboTypes[0]);
+
+            String name = String.format("New %d", model.getRowCount());
+            Field field = new Field(name, Common.comboTypes[0]);
 
             model.addField(field);
             EditControl.u().addEdit(new AddRemoveTableFieldEdit(e, field, true, this));
@@ -2091,13 +2109,11 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void miImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miImportActionPerformed
 
-        final Window w = this;
-
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 ImportBases importBases = new ImportBases();
-                importBases.setLocationRelativeTo(w);
+                importBases.setLocationRelativeTo(Window.this);
                 importBases.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 importBases.setVisible(true);
             }
@@ -2414,6 +2430,25 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_tbFieldsKeyTyped
 
+    private void btnShowDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowDiffActionPerformed
+
+        final TableElement sel = getTableSeletected();
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                DiffWindow diff = new DiffWindow();
+                diff.setLeft(sel);
+
+                diff.setVisible(true);
+                diff.setLocationRelativeTo(Window.this);
+            }
+        });
+
+
+    }//GEN-LAST:event_btnShowDiffActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2439,6 +2474,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JButton btnSaveCanvas;
     private javax.swing.JButton btnSaveDataBase;
     private javax.swing.JButton btnSearchField;
+    private javax.swing.JButton btnShowDiff;
     private javax.swing.JButton btnView;
     private javax.swing.JComboBox cbBases;
     private javax.swing.JComboBox cbEditDataBase;
@@ -2836,7 +2872,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
                     Camera.c().draw(g, el);
 
-                    g.setColor(BACKGROUND_COLOR);
+                    //g.setColor(BACKGROUND_COLOR);
+                    g.setColor(Color.BLACK);
                     g.drawRect(Camera.c().fx(el.getPx() - BD_SP), Camera.c().fy(el.getPy() - BD_SP), el.getWidth() + BD_SP * 2, el.getHeight() + BD_SP * 2);
                 }
 

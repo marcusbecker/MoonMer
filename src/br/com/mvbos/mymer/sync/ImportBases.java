@@ -16,6 +16,7 @@ import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.tree.FieldTreeNode;
 import br.com.mvbos.mymer.tree.IndexTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
+import br.com.mvbos.mymer.util.FileUtil;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
@@ -185,6 +186,13 @@ public class ImportBases extends javax.swing.JFrame {
         }
     }
 
+    private void createCache(DataBaseStore db) {
+
+        if (db != null && db.hasBases()) {
+            FileUtil.store(FileUtil.IMPORT_DATA, db);
+        }
+    }
+
     private void nextDataBase() {
         populeListOrg(dbStore.getBases().get(dbStart));
         dbStart++;
@@ -267,7 +275,7 @@ public class ImportBases extends javax.swing.JFrame {
                 fr.setAccessible(true);
 
                 if (fl.get(fa) == null || fr.get(fb) == null) {
-                    //continue;
+                    continue;
                 }
 
                 if (!fl.get(fa).equals(fr.get(fb))) {
@@ -499,6 +507,7 @@ public class ImportBases extends javax.swing.JFrame {
             }
         });
 
+        tfLog.setEditable(false);
         tfLog.setContentType("text/html"); // NOI18N
         jScrollPane7.setViewportView(tfLog);
 
@@ -550,6 +559,7 @@ public class ImportBases extends javax.swing.JFrame {
             }
         });
 
+        tfLogIndex.setEditable(false);
         tfLogIndex.setContentType("text/html"); // NOI18N
         jScrollPane8.setViewportView(tfLogIndex);
 
@@ -641,6 +651,7 @@ public class ImportBases extends javax.swing.JFrame {
             DataBaseStore db;
             try (InputStreamReader stream = new InputStreamReader(url.openStream(), Common.importCharset)) {
                 db = XMLUtil.parseToDataBase(stream);
+                createCache(db);
                 startImport(db);
             }
 
@@ -687,6 +698,7 @@ public class ImportBases extends javax.swing.JFrame {
                 try (InputStreamReader stream = new InputStreamReader(new FileInputStream(f), Common.charset)) {
                     db = XMLUtil.parseToDataBase(stream);
                     tfOrigin.setText(f.getAbsolutePath());
+                    createCache(db);
                     startImport(db);
                 }
 
@@ -971,7 +983,7 @@ public class ImportBases extends javax.swing.JFrame {
                 model.addElement(name);
 
             } else {
-                //TODO improve better fix
+                //TODO auto replace on local table description, need to improve better fix
                 Table rTb = remoteTables.get(name);
                 TableElement lTb = localTalbles.get(name);
                 lTb.setDescription(rTb.getDescription());
@@ -1244,6 +1256,7 @@ public class ImportBases extends javax.swing.JFrame {
     }
 
     private void finish() {
+        Common.updateAll = true;
         this.dispose();
     }
 
@@ -1270,6 +1283,11 @@ public class ImportBases extends javax.swing.JFrame {
         for (Table tb : newRemoteTables) {
             TableElement tbe = new TableElement(db, tb);
 
+            //Rename field controll
+            for (Field f : tbe.getFields()) {
+                //f.setOrgId(f.getName());
+            }
+
             if (tb.getIndices() != null) {
                 for (Index i : tb.getIndices()) {
                     indexEntity.add(new IndexElement(i, tbe));
@@ -1288,6 +1306,7 @@ public class ImportBases extends javax.swing.JFrame {
 
             for (FieldChange f : fchg) {
                 int idx = tb.getFields().indexOf(f.field);
+                //f.field.setOrgId(f.field.getName());
 
                 if (idx == -1) {
                     if (FieldTreeNode.Diff.NEW == f.diff) {

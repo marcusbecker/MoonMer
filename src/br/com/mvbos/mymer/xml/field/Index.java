@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,7 +13,7 @@ import java.util.Objects;
  *
  * @author marcuss
  */
-public class Index {
+public class Index implements Serializable {
 
     private String tableName;
     private String dataBaseName;
@@ -122,8 +123,6 @@ public class Index {
         }
         return Objects.equals(this.name, other.name);
     }
-
-    
 
     @Override
     public String toString() {

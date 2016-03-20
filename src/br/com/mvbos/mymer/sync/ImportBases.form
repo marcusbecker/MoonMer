@@ -368,6 +368,7 @@
               <SubComponents>
                 <Component class="javax.swing.JEditorPane" name="tfLog">
                   <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
                   </Properties>
                 </Component>
@@ -453,6 +454,7 @@
               <SubComponents>
                 <Component class="javax.swing.JEditorPane" name="tfLogIndex">
                   <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
                   </Properties>
                 </Component>

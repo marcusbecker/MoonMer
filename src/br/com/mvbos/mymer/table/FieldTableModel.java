@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.table;
 
+import br.com.mvbos.mymer.table.annotation.TableField;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,8 +21,8 @@ import javax.swing.table.AbstractTableModel;
 public class FieldTableModel extends AbstractTableModel {
 
     private final List<ColType> colTypes;
-    private List<Field> data = Collections.EMPTY_LIST;
-    private final java.lang.reflect.Field[] fields = Field.class.getDeclaredFields();
+    private List<Field> data;
+    private final java.lang.reflect.Field[] fields;
 
     private DataChangeListener dataChangeListener;
     private boolean disable;
@@ -49,6 +50,20 @@ public class FieldTableModel extends AbstractTableModel {
     }
 
     public FieldTableModel() {
+        data = Collections.EMPTY_LIST;
+        java.lang.reflect.Field[] temp = Field.class.getDeclaredFields();
+        List<java.lang.reflect.Field> lst = new ArrayList<>(temp.length);
+
+        for (java.lang.reflect.Field t : temp) {
+            TableField a = t.getAnnotation(TableField.class);
+
+            if (a == null || !a.ignore()) {
+                lst.add(t);
+            }
+        }
+
+        fields = lst.toArray(new java.lang.reflect.Field[0]);
+
         colTypes = new ArrayList<>(fields.length + 1);
         colTypes.add(new ColType("#", Integer.class, false));
 

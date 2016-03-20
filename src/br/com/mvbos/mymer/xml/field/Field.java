@@ -6,6 +6,7 @@
 package br.com.mvbos.mymer.xml.field;
 
 import br.com.mvbos.mymer.Common;
+import br.com.mvbos.mymer.table.annotation.TableField;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author MarcusS
  */
 @XmlRootElement
-public class Field implements Serializable{
+public class Field implements Serializable {
 
     //public static Map<Short, Field> internalIndex = new HashMap<>(500);
     private String name;
@@ -26,11 +27,15 @@ public class Field implements Serializable{
     private Integer decimals;
     private String description;
 
+    @TableField(ignore = true)
+    private String orgId;
+
     public Field() {
     }
 
     public Field(String name, String type) {
         this.name = name;
+        this.orgId = name;
         this.type = type;
     }
 
@@ -39,6 +44,10 @@ public class Field implements Serializable{
     }
 
     public void setName(String name) {
+        if (this.orgId == null) {
+            this.orgId = this.name != null ? this.name : name;
+        }
+
         this.name = name;
     }
 
@@ -88,6 +97,14 @@ public class Field implements Serializable{
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
     }
 
     public String getShortType() {

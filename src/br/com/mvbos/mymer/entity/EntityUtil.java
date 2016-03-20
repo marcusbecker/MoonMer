@@ -9,7 +9,10 @@ import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.xml.DataBaseStore;
+import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -101,7 +104,7 @@ public class EntityUtil {
     }
 
     public static TableElement findTableByName(List<DataBaseElement> dataBases, String baseName, String tableName) {
-        DataBaseElement dbe = findBaseByName(dataBases, baseName);
+        DataBaseElement dbe = EntityUtil.findBaseByName(dataBases, baseName);
 
         if (dbe == null) {
             return null;
@@ -178,6 +181,7 @@ public class EntityUtil {
 
     /**
      * Convert ViewTable in TableElement
+     *
      * @param tableElement
      * @param viewTable
      * @return tableElement
@@ -189,6 +193,28 @@ public class EntityUtil {
 
         return copy;
 
+    }
+
+    public static DataBase findBaseByName(DataBaseStore dbs, String baseName) {
+        if (dbs != null && dbs.hasBases()) {
+            for (DataBase db : dbs.getBases()) {
+                if (db.getName().equals(baseName)) {
+                    return db;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static Table findTableByName(DataBase db, String tableName) {
+        for (Table t : db.getTables()) {
+            if (t.getName().equals(tableName)) {
+                return t;
+            }
+        }
+
+        return null;
     }
 
 }
