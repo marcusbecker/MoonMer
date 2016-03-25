@@ -190,6 +190,16 @@ public class ImportBases extends javax.swing.JFrame {
 
         if (db != null && db.hasBases()) {
             FileUtil.store(FileUtil.IMPORT_DATA, db);
+
+            /*int total = EntityUtil.sumTables(db);
+             Map<String, Table> map = new HashMap<>(total);
+             for (DataBase d : db.getBases()) {
+             for (Table t : d.getTables()) {
+             map.put(String.format("%s.%s", d.getName(), t.getName()), t);
+             }
+             }
+            
+             FileUtil.store(FileUtil.IMPORT_DATA, map);*/
         }
     }
 
@@ -493,7 +503,7 @@ public class ImportBases extends javax.swing.JFrame {
         });
         jScrollPane4.setViewportView(treeFieldImport);
 
-        btnUpdateAll.setText("Update al fields");
+        btnUpdateAll.setText("Update all fields");
         btnUpdateAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateAllActionPerformed(evt);

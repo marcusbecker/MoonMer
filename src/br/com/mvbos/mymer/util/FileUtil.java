@@ -14,9 +14,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,12 +43,25 @@ public class FileUtil {
         }
     }
 
-    private static DataBaseStore load(File file) {
-        DataBaseStore d = null;
+    public static void store(File dir, final Map<String, Table> map) {
+        try {
+            ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(dir));
+            o.writeObject(map);
+            o.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(FileUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(FileUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static Object load(File file) {
+        Object o = null;
+
         try {
             if (file.exists()) {
                 ObjectInputStream i = new ObjectInputStream(new FileInputStream(file));
-                d = (DataBaseStore) i.readObject();
+                o = i.readObject();
                 i.close();
             }
 
@@ -56,19 +71,49 @@ public class FileUtil {
             Logger.getLogger(FileUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return d;
+        return o;
+    }
+
+    public static DataBaseStore open() {
+        final DataBaseStore dbs = (DataBaseStore) load(IMPORT_DATA);
+        return dbs;
     }
 
     public static Table open(String baseName, String tableName) {
-        DataBaseStore dbs = load(IMPORT_DATA);
+        Table tb = null;
+        final DataBaseStore dbs = (DataBaseStore) load(IMPORT_DATA);
 
         DataBase db = EntityUtil.findBaseByName(dbs, baseName);
 
         if (db != null) {
-            return EntityUtil.findTableByName(db, tableName);
+            tb = EntityUtil.findTableByName(db, tableName);
+        }
+
+        return tb;
+    }
+
+    public static Table open(String key) {
+        Map<String, Table> map = (Map<String, Table>) load(IMPORT_DATA);
+
+        if (map != null) {
+            return map.get(key);
         }
 
         return null;
+    }
+
+    public static void write(String dir, String name, StringBuilder sb) {
+        File f = new File(dir, name);
+        FileWriter fw;
+        try {
+            fw = new FileWriter(f);
+            fw.write(sb.toString());
+
+            fw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(FileUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
 }

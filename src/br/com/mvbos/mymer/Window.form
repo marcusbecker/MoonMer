@@ -347,6 +347,14 @@
             <Property name="text" type="java.lang.String" value="Tools"/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="miDiffExport">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Export differ"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="miDiffExportActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="miOrderByRow">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Order by row"/>
@@ -1318,7 +1326,7 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="btnShowDiff">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Diff"/>
+                        <Property name="text" type="java.lang.String" value="Differ"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnShowDiffActionPerformed"/>

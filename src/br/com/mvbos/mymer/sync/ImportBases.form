@@ -345,7 +345,7 @@
             </Container>
             <Component class="javax.swing.JButton" name="btnUpdateAll">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Update al fields"/>
+                <Property name="text" type="java.lang.String" value="Update all fields"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUpdateAllActionPerformed"/>

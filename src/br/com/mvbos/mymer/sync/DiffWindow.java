@@ -7,7 +7,12 @@ package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.util.FileUtil;
+import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -36,20 +41,25 @@ public class DiffWindow extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         lblLefBase = new javax.swing.JLabel();
         lblLefTable = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        lblOrgLeft = new javax.swing.JLabel();
         pnLeftBase = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        textDiffLeft = new javax.swing.JTextArea();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        textDiffLeft = new javax.swing.JEditorPane();
         pnRightTop = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         lblRigBase = new javax.swing.JLabel();
         lblRigTable = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        lblOrgRight = new javax.swing.JLabel();
         pnRightBase = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        textDiffRight = new javax.swing.JTextArea();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        textDiffRight = new javax.swing.JEditorPane();
+        bar = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Diff");
+        setTitle("Differ");
 
         pnLeftTop.setBackground(new java.awt.Color(240, 224, 223));
 
@@ -61,19 +71,25 @@ public class DiffWindow extends javax.swing.JFrame {
 
         lblLefTable.setText(" ");
 
+        jLabel5.setText("Origin:");
+
+        lblOrgLeft.setText(" ");
+
         javax.swing.GroupLayout pnLeftTopLayout = new javax.swing.GroupLayout(pnLeftTop);
         pnLeftTop.setLayout(pnLeftTopLayout);
         pnLeftTopLayout.setHorizontalGroup(
             pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnLeftTopLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
+                .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblLefBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblLefTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(lblLefBase, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(lblLefTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblOrgLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -90,14 +106,17 @@ public class DiffWindow extends javax.swing.JFrame {
                 .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(lblLefTable))
-                .addContainerGap(45, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(lblOrgLeft))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         pnLeftBase.setBackground(new java.awt.Color(240, 224, 223));
 
-        textDiffLeft.setColumns(20);
-        textDiffLeft.setRows(5);
-        jScrollPane1.setViewportView(textDiffLeft);
+        textDiffLeft.setContentType("text/html"); // NOI18N
+        jScrollPane3.setViewportView(textDiffLeft);
 
         javax.swing.GroupLayout pnLeftBaseLayout = new javax.swing.GroupLayout(pnLeftBase);
         pnLeftBase.setLayout(pnLeftBaseLayout);
@@ -105,14 +124,14 @@ public class DiffWindow extends javax.swing.JFrame {
             pnLeftBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnLeftBaseLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+                .addComponent(jScrollPane3)
                 .addContainerGap())
         );
         pnLeftBaseLayout.setVerticalGroup(
             pnLeftBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnLeftBaseLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 370, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -126,6 +145,10 @@ public class DiffWindow extends javax.swing.JFrame {
 
         lblRigTable.setText(" ");
 
+        jLabel6.setText("Origin:");
+
+        lblOrgRight.setText(" ");
+
         javax.swing.GroupLayout pnRightTopLayout = new javax.swing.GroupLayout(pnRightTop);
         pnRightTop.setLayout(pnRightTopLayout);
         pnRightTopLayout.setHorizontalGroup(
@@ -134,13 +157,17 @@ public class DiffWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnRightTopLayout.createSequentialGroup()
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblRigTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(pnRightTopLayout.createSequentialGroup()
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblRigBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(lblRigBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(pnRightTopLayout.createSequentialGroup()
+                        .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblRigTable, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                            .addComponent(lblOrgRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -157,14 +184,17 @@ public class DiffWindow extends javax.swing.JFrame {
                 .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(lblRigTable))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(lblOrgRight))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pnRightBase.setBackground(new java.awt.Color(226, 226, 226));
 
-        textDiffRight.setColumns(20);
-        textDiffRight.setRows(5);
-        jScrollPane2.setViewportView(textDiffRight);
+        textDiffRight.setContentType("text/html"); // NOI18N
+        jScrollPane4.setViewportView(textDiffRight);
 
         javax.swing.GroupLayout pnRightBaseLayout = new javax.swing.GroupLayout(pnRightBase);
         pnRightBase.setLayout(pnRightBaseLayout);
@@ -172,14 +202,14 @@ public class DiffWindow extends javax.swing.JFrame {
             pnRightBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnRightBaseLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                .addComponent(jScrollPane4)
                 .addContainerGap())
         );
         pnRightBaseLayout.setVerticalGroup(
             pnRightBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnRightBaseLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2)
+                .addComponent(jScrollPane4)
                 .addContainerGap())
         );
 
@@ -197,6 +227,7 @@ public class DiffWindow extends javax.swing.JFrame {
                     .addComponent(pnRightTop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnRightBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(4, 4, 4))
+            .addComponent(bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -209,87 +240,139 @@ public class DiffWindow extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(pnLeftBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnRightBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(bar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DiffWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DiffWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DiffWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DiffWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new DiffWindow().setVisible(true);
-            }
-        });
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JProgressBar bar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel lblLefBase;
     private javax.swing.JLabel lblLefTable;
+    private javax.swing.JLabel lblOrgLeft;
+    private javax.swing.JLabel lblOrgRight;
     private javax.swing.JLabel lblRigBase;
     private javax.swing.JLabel lblRigTable;
     private javax.swing.JPanel pnLeftBase;
     private javax.swing.JPanel pnLeftTop;
     private javax.swing.JPanel pnRightBase;
     private javax.swing.JPanel pnRightTop;
-    private javax.swing.JTextArea textDiffLeft;
-    private javax.swing.JTextArea textDiffRight;
+    private javax.swing.JEditorPane textDiffLeft;
+    private javax.swing.JEditorPane textDiffRight;
     // End of variables declaration//GEN-END:variables
 
-    public void setLeft(String base, Table sel) {
+    private final List<Field> leftField = new ArrayList<>();
+    private final List<Field> rightField = new ArrayList<>();
 
+    public void setLeft(String base, Table sel) {
     }
 
     public void setLeft(TableElement sel) {
         if (sel != null) {
             lblLefBase.setText(sel.getDataBase().getName());
             lblLefTable.setText(sel.getName());
-            Table tb = FileUtil.open(sel.getDataBase().getName(), sel.getName());
-            setRight(sel.getDataBase().getName(), tb);
+
+            leftField.clear();
+            leftField.addAll(sel.getFields());
         }
+
+        textDiffLeft.setText(Differ.compare(lblLefTable.getText(), leftField, rightField));
+        textDiffRight.setText(Differ.compare(lblRigTable.getText(), rightField, leftField));
     }
 
     public void setRight(String base, Table sel) {
+
         if (sel != null) {
             lblRigBase.setText(base);
             lblRigTable.setText(sel.getName());
+
+            rightField.clear();
+            rightField.addAll(sel.getFields());
         }
+
+        textDiffLeft.setText(Differ.compare(lblLefTable.getText(), leftField, rightField));
+        textDiffRight.setText(Differ.compare(lblRigTable.getText(), rightField, leftField));
     }
 
     public void setRight(TableElement sel) {
+    }
 
+    private void clear() {
+        leftField.clear();
+        rightField.clear();
+    }
+
+    private boolean hasChange(Field fa, Field fb) {
+        if (!fa.equals(fb)) {
+            return false;
+        }
+
+        java.lang.reflect.Field[] fields = fa.getClass().getDeclaredFields();
+
+        for (java.lang.reflect.Field fl : fields) {
+            try {
+                java.lang.reflect.Field fr = fb.getClass().getDeclaredField(fl.getName());
+                fl.setAccessible(true);
+                fr.setAccessible(true);
+
+                if (fl.get(fa) == null || fr.get(fb) == null) {
+                    continue;
+                }
+
+                if (!fl.get(fa).equals(fr.get(fb))) {
+                    return true;
+                }
+
+            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                Logger.getLogger(DiffWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return false;
+    }
+
+    public void loadFormHistory(final TableElement sel) {
+        new Thread() {
+
+            @Override
+            public void run() {
+                resetView();
+
+                setLeft(sel);
+                bar.setValue(50);
+
+                Table tb = FileUtil.open(sel.getDataBase().getName(), sel.getName());
+                //Table tb = FileUtil.open(String.format("%s.%s", sel.getDataBase().getName(), sel.getName()));
+                bar.setValue(75);
+
+                setRight(sel.getDataBase().getName(), tb);
+                bar.setValue(100);
+
+                lblOrgLeft.setText("Local");
+                lblOrgRight.setText("Local History");
+            }
+
+        }.start();
+    }
+
+    private void resetView() {
+        bar.setValue(0);
+        lblRigBase.setText("Loading...");
+        lblRigTable.setText("Loading...");
+        lblRigBase.setText("Loading...");
+        lblRigTable.setText("Loading...");
+
+        lblOrgLeft.setText("");
+        lblOrgRight.setText("");
     }
 }

@@ -15,9 +15,12 @@ import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -71,6 +74,16 @@ public class EntityUtil {
         copy.update();
 
         return copy;
+    }
+
+    public static int findIndexFieldByName(List<Field> fields, String name) {
+        for (Field f : fields) {
+            if (f.getName().equals(name)) {
+                return fields.indexOf(f);
+            }
+        }
+
+        return -1;
     }
 
     public static Field findFieldByName(List<Field> fields, String name) {
@@ -209,12 +222,66 @@ public class EntityUtil {
 
     public static Table findTableByName(DataBase db, String tableName) {
         for (Table t : db.getTables()) {
-            if (t.getName().equals(tableName)) {
+            if (t.getName().equalsIgnoreCase(tableName)) {
                 return t;
             }
         }
 
         return null;
+    }
+
+    public static TableElement findTableByName(DataBaseElement db, String tableName) {
+        for (TableElement t : db.getTables()) {
+            if (t.getName().equalsIgnoreCase(tableName)) {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    public static int sumTables(DataBaseStore db) {
+        int sum = 0;
+        for (DataBase d : db.getBases()) {
+            sum += d.getTables().size();
+        }
+
+        return sum;
+    }
+
+    public static int query(List<Field> lst, String fieldName, String value) {
+
+        if (lst == null || lst.isEmpty() || fieldName == null || value == null) {
+            throw new IllegalArgumentException();
+        }
+
+        java.lang.reflect.Field[] fields = lst.get(0).getClass().getDeclaredFields();
+
+        try {
+            for (int i = 0; i < lst.size(); i++) {
+                Field f = lst.get(i);
+
+                for (java.lang.reflect.Field fl : fields) {
+                    if (!fl.getName().equals(fieldName)) {
+                        continue;
+                    }
+
+                    fl.setAccessible(true);
+
+                    if (value.equals(fl.get(f))) {
+                        return i;
+                    }
+                }
+            }
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+            Logger.getLogger(EntityUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return -1;
+    }
+
+    public static boolean compareName(String name, String other) {
+        return name == null ? other == null : name.equalsIgnoreCase(other);
     }
 
 }

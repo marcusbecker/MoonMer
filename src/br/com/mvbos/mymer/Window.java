@@ -34,7 +34,9 @@ import br.com.mvbos.mymer.entity.EntityManager;
 import br.com.mvbos.mymer.entity.IElementEntity;
 import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.entity.RelationEntity;
+import br.com.mvbos.mymer.sync.DiffExportWindow;
 import br.com.mvbos.mymer.sync.DiffWindow;
+import br.com.mvbos.mymer.sync.Differ;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
@@ -574,6 +576,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         menuView = new javax.swing.JMenu();
         miEditView = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
+        miDiffExport = new javax.swing.JMenuItem();
         miOrderByRow = new javax.swing.JMenuItem();
         miOrderByCol = new javax.swing.JMenuItem();
 
@@ -1300,7 +1303,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
-        btnShowDiff.setText("Diff");
+        btnShowDiff.setText("Differ");
         btnShowDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnShowDiffActionPerformed(evt);
@@ -1473,6 +1476,14 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         jMenuBar1.add(menuView);
 
         menuTools.setText("Tools");
+
+        miDiffExport.setText("Export differ");
+        miDiffExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miDiffExportActionPerformed(evt);
+            }
+        });
+        menuTools.add(miDiffExport);
 
         miOrderByRow.setText("Order by row");
         miOrderByRow.setToolTipText("Order by row");
@@ -2257,50 +2268,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
 
             TableElement te = (TableElement) e;
-
-            sb.append("ADD TABLE \"").append(te.getName()).append("\"\n");
-            sb.append("  AREA \"Dados\"\n");
-            sb.append("  DESCRIPTION \"\"\n");
-            sb.append("  DUMP-NAME \"").append(te.getName()).append("\"\n");
-            sb.append("\n");
-
-            int ct = 1;
-            for (Field f : te.getFields()) {
-                sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(te.getName()).append("\" AS ").append(f.getType()).append("\n");
-                sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
-                sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
-                sb.append("  INITIAL \"\"\n");
-                sb.append("  LABEL \"").append(f.getName()).append("\"\n");
-                //sb.append("  POSITION ").append(ct).append("\n");
-                //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
-                sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
-                sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
-                sb.append("  ORDER ").append(ct * 10).append("\n");
-
-                sb.append("\n");
-                ct++;
-            }
-
-            for (IndexElement ie : em.getEntity(IndexEntity.class).getList()) {
-                if (!te.equals(ie.getTable())) {
-                    continue;
-                }
-
-                sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(te.getName()).append("\"\n");
-                sb.append("  AREA \"Indices\"\n");
-                if (ie.getPrimary()) {
-                    sb.append("  UNIQUE\n");
-                }
-                if (ie.getUnique()) {
-                    sb.append("  PRIMARY\n");
-                }
-
-                for (Field f : ie.getFields()) {
-                    sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
-                }
-
-                sb.append("\n");
-            }
+            Differ.addTable(te, sb);
+            Differ.addTableIndex(te, sb);
 
         }
 
@@ -2439,15 +2408,24 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             @Override
             public void run() {
                 DiffWindow diff = new DiffWindow();
-                diff.setLeft(sel);
+                //diff.setLeft(sel);
 
                 diff.setVisible(true);
                 diff.setLocationRelativeTo(Window.this);
+
+                diff.loadFormHistory(sel);
             }
         });
 
 
     }//GEN-LAST:event_btnShowDiffActionPerformed
+
+    private void miDiffExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDiffExportActionPerformed
+        DiffExportWindow diff = new DiffExportWindow();
+        diff.setLocationRelativeTo(this);
+        diff.setVisible(true);
+
+    }//GEN-LAST:event_miDiffExportActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2512,6 +2490,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JMenuItem miBases;
     private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
+    private javax.swing.JMenuItem miDiffExport;
     private javax.swing.JMenuItem miEditView;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miImport;
