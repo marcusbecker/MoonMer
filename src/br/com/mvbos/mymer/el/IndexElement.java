@@ -44,7 +44,7 @@ public class IndexElement extends ElementModel {
     }
 
     public Boolean getPrimary() {
-        return primary == null ? false : primary;
+        return primary == null ? Boolean.FALSE : primary;
     }
 
     public void setPrimary(Boolean primary) {
@@ -52,7 +52,7 @@ public class IndexElement extends ElementModel {
     }
 
     public Boolean getUnique() {
-        return unique == null ? false : unique;
+        return unique == null ? Boolean.FALSE : unique;
     }
 
     public void setUnique(Boolean unique) {
@@ -60,7 +60,7 @@ public class IndexElement extends ElementModel {
     }
 
     public Boolean getActive() {
-        return active == null ? false : active;
+        return active == null ? Boolean.FALSE : active;
     }
 
     public void setActive(Boolean active) {

@@ -6,7 +6,9 @@
 package br.com.mvbos.mymer.table;
 
 import br.com.mvbos.mymer.el.RelationshipElement;
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.FieldGroup;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -57,14 +59,22 @@ public class RelationshipTableModel extends AbstractTableModel {
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         Field f = parentFields.get(rowIndex);
 
-        if (value == null) {
-            relationShip.getGroup().remove(f);
-        } else {
-            for (Field ff : relationShip.getChildFields()) {
-                if (ff.getName().equals(value)) {
-                    relationShip.getGroup().put(f, ff);
+        if (value == null || "".equals(value)) {
+            FieldGroup toRemove = null;
+            for (FieldGroup fg : relationShip.getGroup()) {
+                if (fg.getParent().equals(f)) {
+                    toRemove = fg;
                     break;
                 }
+            }
+            relationShip.getGroup().remove(toRemove);
+
+        } else {
+            //re.getChild().getFields().size();
+
+            Field ff = EntityUtil.findRelationshipByName(relationShip.getChild().getFields(), value.toString());
+            if (ff != null) {
+                relationShip.getGroup().add(new FieldGroup(f, ff));
             }
         }
 
@@ -88,6 +98,8 @@ public class RelationshipTableModel extends AbstractTableModel {
                 this.parentFields = relationShip.getParent().getFields();
             }
         }
+
+        fireTableStructureChanged();
     }
 
     private String getParentTitle() {
@@ -111,7 +123,14 @@ public class RelationshipTableModel extends AbstractTableModel {
             return "";
         }
 
-        Field child = relationShip.getGroup().get(f);
+        Field child = null;
+        for (FieldGroup fg : relationShip.getGroup()) {
+            if (f.equals(fg.getParent())) {
+                child = fg.getChild();
+                break;
+            }
+        }
+
         return child == null ? "" : child.getName();
 
     }

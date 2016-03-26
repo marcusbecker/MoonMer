@@ -5,10 +5,12 @@
  */
 package br.com.mvbos.mymer.sync;
 
+import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.util.FileUtil;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -274,10 +276,15 @@ public class DiffWindow extends javax.swing.JFrame {
     private final List<Field> leftField = new ArrayList<>();
     private final List<Field> rightField = new ArrayList<>();
 
+    private TableElement lSel;
+    private TableElement rSel;
+
     public void setLeft(String base, Table sel) {
     }
 
     public void setLeft(TableElement sel) {
+        this.lSel = sel;
+
         if (sel != null) {
             lblLefBase.setText(sel.getDataBase().getName());
             lblLefTable.setText(sel.getName());
@@ -286,11 +293,12 @@ public class DiffWindow extends javax.swing.JFrame {
             leftField.addAll(sel.getFields());
         }
 
-        textDiffLeft.setText(Differ.compare(lblLefTable.getText(), leftField, rightField));
-        textDiffRight.setText(Differ.compare(lblRigTable.getText(), rightField, leftField));
+        textDiffLeft.setText(Differ.compare(lSel, leftField, rightField).toString());
+        textDiffRight.setText(Differ.compare(rSel, rightField, leftField).toString());
     }
 
     public void setRight(String base, Table sel) {
+        this.rSel = new TableElement(new DataBaseElement(base, Color.BLUE), sel);
 
         if (sel != null) {
             lblRigBase.setText(base);
@@ -300,8 +308,8 @@ public class DiffWindow extends javax.swing.JFrame {
             rightField.addAll(sel.getFields());
         }
 
-        textDiffLeft.setText(Differ.compare(lblLefTable.getText(), leftField, rightField));
-        textDiffRight.setText(Differ.compare(lblRigTable.getText(), rightField, leftField));
+        textDiffLeft.setText(Differ.compare(lSel, leftField, rightField).toString());
+        textDiffRight.setText(Differ.compare(rSel, rightField, leftField).toString());
     }
 
     public void setRight(TableElement sel) {

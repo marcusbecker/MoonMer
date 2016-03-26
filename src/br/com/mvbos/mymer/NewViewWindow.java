@@ -37,7 +37,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         return selectedTables;
     }
 
-    public void setSelectedTables(ElementModel[] selectedTables) {
+    public void setSelectedTables(final ElementModel[] selectedTables) {
         this.selectedTables = selectedTables;
         temp.delete(0, temp.length());
 

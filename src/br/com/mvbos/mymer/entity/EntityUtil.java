@@ -284,4 +284,15 @@ public class EntityUtil {
         return name == null ? other == null : name.equalsIgnoreCase(other);
     }
 
+    public static Field findRelationshipByName(List<Field> fields, String name) {
+        for (Field f : fields) {
+
+            if (EntityUtil.compareName(f.getName(), name)) {
+                return f;
+            }
+        }
+
+        return null;
+    }
+
 }

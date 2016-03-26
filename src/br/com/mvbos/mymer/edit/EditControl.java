@@ -21,7 +21,7 @@ public class EditControl {
         undoManager.setLimit(25);
     }
 
-    public static EditControl e() {
+    public synchronized static EditControl e() {
         if (e == null) {
             e = new EditControl();
         }

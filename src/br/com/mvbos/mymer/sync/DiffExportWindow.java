@@ -134,29 +134,33 @@ public class DiffExportWindow extends javax.swing.JFrame {
                             DataBase remote = EntityUtil.findBaseByName(dbs, localBase.getName());
 
                             if (remote == null) {
-                                progressBar.setValue(progressBar.getValue() + Math.round(percent));
-                                continue;
-                            }
-
-                            //float pp = percent / d.getTables().size();
-                            for (TableElement t : localBase.getTables()) {
-                                Table remoteTable = EntityUtil.findTableByName(remote, t.getName());
-
-                                if (remoteTable == null) {
+                                Differ.addBase(localBase, sb);
+                                for(TableElement t : localBase.getTables()){
                                     Differ.addTable(t, sb);
-                                } else {
-                                    sb.append(Differ.compare(t, remoteTable));
+                                }
+                                
+                            } else {
+
+                                //float pp = percent / d.getTables().size();
+                                for (TableElement t : localBase.getTables()) {
+                                    Table remoteTable = EntityUtil.findTableByName(remote, t.getName());
+
+                                    if (remoteTable == null) {
+                                        Differ.addTable(t, sb);
+                                    } else {
+                                        sb.append(Differ.compare(t, remoteTable));
+                                    }
+
+                                    //pp += pp;
+                                    //progressBar.setValue(progressBar.getValue() + Math.round(pp));
                                 }
 
-                                //pp += pp;
-                                //progressBar.setValue(progressBar.getValue() + Math.round(pp));
-                            }
-
-                            for (Table t : remote.getTables()) {
-                                TableElement temp = EntityUtil.findTableByName(localBase, t.getName());
-                                if (temp == null) {
-                                    temp = new TableElement(localBase, t);
-                                    Differ.removeTable(temp, sb);
+                                for (Table t : remote.getTables()) {
+                                    TableElement temp = EntityUtil.findTableByName(localBase, t.getName());
+                                    if (temp == null) {
+                                        temp = new TableElement(localBase, t);
+                                        Differ.removeTable(temp, sb);
+                                    }
                                 }
                             }
 

@@ -7,14 +7,12 @@ package br.com.mvbos.mymer.el;
 
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.jeg.window.Camera;
-import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.FieldGroup;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  *
@@ -42,10 +40,7 @@ public class RelationshipElement extends ElementModel {
     private TableElement parent;
     private TableElement child;
 
-    private List<Field> parentFields;
-    private List<Field> childFields;
-
-    private Map<Field, Field> group = new HashMap<>(5);
+    private Set<FieldGroup> group = new HashSet<>(5);
 
     public RelationshipElement() {
     }
@@ -80,30 +75,6 @@ public class RelationshipElement extends ElementModel {
         this.child = child;
     }
 
-    public List<Field> getParentFields() {
-        if (parentFields == null) {
-            parentFields = new ArrayList<>(5);
-        }
-
-        return parentFields;
-    }
-
-    public void setParentFields(List<Field> parentField) {
-        this.parentFields = parentField;
-    }
-
-    public List<Field> getChildFields() {
-        if (childFields == null) {
-            childFields = new ArrayList<>(5);
-        }
-
-        return childFields;
-    }
-
-    public void setChildFields(List<Field> childField) {
-        this.childFields = childField;
-    }
-
     public Camera getCam() {
         return cam == null ? Camera.c() : cam;
     }
@@ -112,11 +83,11 @@ public class RelationshipElement extends ElementModel {
         this.cam = cam;
     }
 
-    public Map<Field, Field> getGroup() {
+    public Set<FieldGroup> getGroup() {
         return group;
     }
 
-    public void setGroup(Map<Field, Field> group) {
+    public void setGroup(Set<FieldGroup> group) {
         this.group = group;
     }
 

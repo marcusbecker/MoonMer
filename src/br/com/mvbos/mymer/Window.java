@@ -42,7 +42,6 @@ import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
 import br.com.mvbos.mymer.table.DataChange;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
-import br.com.mvbos.mymer.table.RowItemSelection;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
@@ -94,8 +93,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
@@ -2575,48 +2572,15 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private RelationshipTableModel createRelationshipTableModel(final JTable tb) {
         RelationshipTableModel rtm = new RelationshipTableModel();
 
-        rtm.addTableModelListener(new TableModelListener() {
+        /*rtm.addTableModelListener(new TableModelListener() {
 
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                changeIndexFields(tb);
-            }
+         @Override
+         public void tableChanged(TableModelEvent e) {
+                
+         }
 
-        });
-
+         });*/
         return rtm;
-    }
-
-    private void changeIndexFields(JTable tb) {
-
-        if (cbRelationship.getSelectedItem() == null) {
-            return;
-        }
-
-        Option opt = (Option) cbRelationship.getSelectedItem();
-        RelationshipElement re = (RelationshipElement) opt.getValue();
-
-        GenericTableModel<RowItemSelection> m = (GenericTableModel<RowItemSelection>) tb.getModel();
-
-        if (tb.equals(tbRelationship)) {
-            re.getParentFields().clear();
-
-            for (RowItemSelection r : m.getData()) {
-                if (r.getSelected()) {
-                    re.getParentFields().add((Field) r.getValue());
-                }
-            }
-
-        } else {
-            re.getChildFields().clear();
-
-            for (RowItemSelection r : m.getData()) {
-                if (r.getSelected()) {
-                    re.getChildFields().add((Field) r.getValue());
-                }
-            }
-        }
-
     }
 
     private void updateIndexSelection() {
@@ -2885,9 +2849,10 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                             return;
                         case RELATION:
                             addRelationship(hasColision(mouseElement));
-                            return;
+                        //return;
                         case HAND:
-                            return;
+                        //return;
+                        default:;
                     }
 
                 } else {
@@ -3087,12 +3052,15 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableColumn comboColumn = tbRelationship.getColumnModel().getColumn(2);
 
         if (re != null) {
-            List<String> lst = new ArrayList<>(re.getChild().getFields().size());
-            for (Field f : re.getChild().getFields()) {
-                lst.add(f.getName());
+            String[] arr = new String[re.getChild().getFields().size() + 1];
+            arr[0] = "";
+            for (int i = 1; i < arr.length; i++) {
+                Field f = re.getChild().getFields().get(i - 1);
+                arr[i] = f.getName();
             }
 
-            comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(lst.toArray(new String[0]))));
+            comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(arr)));
+
         } else {
             comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(new String[0])));
         }

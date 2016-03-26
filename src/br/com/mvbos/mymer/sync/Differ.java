@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.sync;
 
+import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.entity.EntityManager;
@@ -26,8 +27,11 @@ public class Differ {
 
     private static final StringBuilder log;
 
+    private static final Progress4GLEntityToScript entityToScript;
+
     static {
         log = new StringBuilder();
+        entityToScript = new Progress4GLEntityToScript();
     }
 
     private static void compare(Map<String, String> map, Field fa, Field fb) {
@@ -55,15 +59,16 @@ public class Differ {
         }
     }
 
-    public static String compare(String name, List<Field> left, List<Field> right) {
-
-        if (left.isEmpty() || right.isEmpty()) {
-            return "";
-        }
+    public static StringBuilder compare(TableElement tb, List<Field> left, List<Field> right) {
 
         log.delete(0, log.length());
 
+        if (tb == null || left.isEmpty() || right.isEmpty()) {
+            return log;
+        }
+
         int ct = 1;
+        entityToScript.setMode(IEntityToScript.Mode.DECORED);
 
         for (int i = 0; i < left.size(); i++) {
             Field fl = left.get(i);
@@ -79,10 +84,7 @@ public class Differ {
 
                     if (id != -1) {
                         Field fr = right.get(id);
-
-                        log.append("RENAME FIELD <b>\"").append(fr.getName());
-                        log.append("\"</b> OF <b>\"").append(name);
-                        log.append("\"</b> TO <b>\"").append(fr.getOrgId()).append("\"</b><br><br>\n");
+                        entityToScript.renameField(tb, fr.getName(), fr.getOrgId(), log);
                     }
                 }
 
@@ -90,28 +92,12 @@ public class Differ {
                 id = EntityUtil.findIndexFieldByName(right, fl.getOrgId());
 
                 if (id != -1) {
-                    log.append("RENAME FIELD <b>\"").append(fl.getOrgId());
-                    log.append("\"</b> OF <b>\"").append(name);
-                    log.append("\"</b> TO <b>\"").append(fl.getName()).append("\"</b><br><br>\n");
+                    entityToScript.renameField(tb, fl.getOrgId(), fl.getName(), log);
                 }
             }
 
             if (id == -1) {
-                //log.append("ADD <b>").append(f.getName()).append("</i><br />");
-                log.append("ADD FIELD <b>\"").append(fl.getName()).append("\"</b> OF <b>\"").append(name);
-                log.append("\"</b> AS ").append(fl.getType()).append("<br>\n");
-                log.append("  DESCRIPTION \"").append(fl.getDescription()).append("\"<br>\n");
-                log.append("  FORMAT \"").append(fl.getFormat()).append("\"<br>\n");
-                log.append("  INITIAL \"\"<br>\n");
-                log.append("  LABEL \"").append(fl.getName()).append("\"<br>\n");
-                //log.append("  POSITION ").append(ct).append("<br>");
-                //log.append("  MAX-WIDTH 4").append(te.getName()).append("\"<br>");
-                log.append("  COLUMN-LABEL \"").append(fl.getLabel()).append("\"<br>\n");
-                log.append("  HELP \"").append(fl.getHelp()).append("\"<br>\n");
-                log.append("  ORDER ").append(ct * 10).append("<br>\n");
-
-                log.append("<br>");
-                ct++;
+                entityToScript.addField(tb, fl, ct++, log);
 
             } else {
                 Field fr = right.get(id);
@@ -126,15 +112,7 @@ public class Differ {
                 map.remove("orgId");
 
                 if (!map.isEmpty()) {
-                    log.append("UPDATE FIELD <b>\"");
-                    log.append(fl.getName()).append("\"</b> OF <b>\"");
-                    log.append(name).append("\"</b><br>\n");
-
-                    for (String k : map.keySet()) {
-                        log.append(map.get(k)).append("<br>\n");
-                    }
-
-                    log.append("<br>\n");
+                    entityToScript.updateField(tb, fl, map.values(), log);
                 }
             }
         }
@@ -154,68 +132,46 @@ public class Differ {
             }
 
             if (drop) {
-                log.append("DROP FIELD <b>\"").append(f.getName()).append("\"</b> OF <b>\"");
-                log.append(name).append("\"</b> <br><br>");
+                entityToScript.dropField(tb, f, log);
             }
         }
 
-        return log.toString();
+        return log;
     }
 
     public static StringBuilder compare(TableElement t, Table temp) {
-        return new StringBuilder(compare(t.getName(), t.getFields(), temp.getFields()));
+        return new StringBuilder(compare(t, t.getFields(), temp.getFields()));
     }
 
     public static void removeTable(TableElement te, StringBuilder sb) {
-        sb.append("DROP TABLE \"").append(te.getName()).append("\"\n");
+        entityToScript.dropTable(te, sb);
     }
 
     public static void addTable(TableElement te, StringBuilder sb) {
-        sb.append("ADD TABLE \"").append(te.getName()).append("\"\n");
-        sb.append("  AREA \"Dados\"\n");
-        sb.append("  DESCRIPTION \"").append(te.getDescription()).append("\"\n");
-        sb.append("  DUMP-NAME \"").append(te.getName()).append("\"\n");
-        sb.append("\n");
+        entityToScript.setMode(IEntityToScript.Mode.PLAIN);
+        entityToScript.addTable(te, sb);
 
         int ct = 1;
-        for (Field f : te.getFields()) {
-            sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(te.getName()).append("\" AS ").append(f.getType()).append("\n");
-            sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
-            sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
-            sb.append("  INITIAL \"\"\n");
-            sb.append("  LABEL \"").append(f.getName()).append("\"\n");
-            //sb.append("  POSITION ").append(ct).append("\n");
-            //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
-            sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
-            sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
-            sb.append("  ORDER ").append(ct * 10).append("\n");
 
-            sb.append("\n");
-            ct++;
+        for (Field f : te.getFields()) {
+            entityToScript.addField(te, f, ct++, sb);
         }
     }
 
     public static void addTableIndex(TableElement te, StringBuilder sb) {
+        entityToScript.setMode(IEntityToScript.Mode.PLAIN);
+
         for (IndexElement ie : EntityManager.e().getEntity(IndexEntity.class).getList()) {
             if (!te.equals(ie.getTable())) {
                 continue;
             }
 
-            sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(te.getName()).append("\"\n");
-            sb.append("  AREA \"Indices\"\n");
-            if (ie.getPrimary()) {
-                sb.append("  UNIQUE\n");
-            }
-            if (ie.getUnique()) {
-                sb.append("  PRIMARY\n");
-            }
-
-            for (Field f : ie.getFields()) {
-                sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
-            }
-
-            sb.append("\n");
+            entityToScript.addIndex(te, ie, sb);
         }
+    }
+
+    public static void addBase(DataBaseElement localBase, StringBuilder sb) {
+        //sb.append("CREATE DATABASE ").append(localBase.getName());
     }
 
     private void compare(Field fa, Field fb) {

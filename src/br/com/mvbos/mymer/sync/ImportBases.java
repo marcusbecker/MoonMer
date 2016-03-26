@@ -125,7 +125,6 @@ public class ImportBases extends javax.swing.JFrame {
         public String toString() {
             return "FieldChange{" + "field=" + field + ", diff=" + diff + '}';
         }
-
     }
 
     class IndexChange {

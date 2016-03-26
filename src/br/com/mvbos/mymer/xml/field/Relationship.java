@@ -6,7 +6,7 @@
 package br.com.mvbos.mymer.xml.field;
 
 import br.com.mvbos.mymer.el.RelationshipElement;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -25,8 +25,7 @@ public class Relationship {
     private String dbParente;
     private String dbChild;
 
-    private Set<Field> parentFields = new LinkedHashSet<>(5);
-    private Set<Field> childFields = new LinkedHashSet<>(5);
+    private Set<FieldGroup> fieldGroup = new HashSet<>(5);
 
     public Relationship() {
     }
@@ -87,20 +86,12 @@ public class Relationship {
         this.dbChild = dbChild;
     }
 
-    public Set<Field> getParentFields() {
-        return parentFields;
+    public Set<FieldGroup> getFieldGroup() {
+        return fieldGroup;
     }
 
-    public void setParentFields(Set<Field> parentFields) {
-        this.parentFields = parentFields;
-    }
-
-    public Set<Field> getChildFields() {
-        return childFields;
-    }
-
-    public void setChildFields(Set<Field> childFields) {
-        this.childFields = childFields;
+    public void setFieldGroup(Set<FieldGroup> fieldGroup) {
+        this.fieldGroup = fieldGroup;
     }
 
     @Override

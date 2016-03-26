@@ -40,6 +40,6 @@ public class Common {
     public static final Charset charset = Charset.forName(MMProperties.get("charset", "UTF-8"));
     public static final Charset importCharset = Charset.forName(MMProperties.get("importCharset", "UTF-8"));
     public static boolean enableFastUpdate;
-    public static boolean autoFitCam = Boolean.valueOf(MMProperties.get("autoFitCam", true));
+    public static final boolean autoFitCam = Boolean.valueOf(MMProperties.get("autoFitCam", true));
 
 }
