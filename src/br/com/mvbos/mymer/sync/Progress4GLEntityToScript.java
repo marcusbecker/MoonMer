@@ -16,6 +16,9 @@ import java.util.Collection;
  */
 public class Progress4GLEntityToScript extends EntityToScriptAbstract {
 
+    /*
+     First improve: use text string in Java code
+     */
     @Override
     public void addTable(TableElement tb, StringBuilder sb) {
         if (IEntityToScript.Mode.PLAIN == mode) {
@@ -25,7 +28,6 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
             sb.append(String.format("  DUMP-NAME \"%s\"\n", tb.getName()));
             sb.append("\n");
         } else {
-
         }
     }
 
@@ -82,7 +84,6 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
 
             sb.append("\n");
         } else {
-
         }
     }
 
