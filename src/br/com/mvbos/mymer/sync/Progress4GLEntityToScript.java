@@ -118,4 +118,8 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append("DROP TABLE \"").append(tb.getName()).append("\"\n");
     }
 
+    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> values, StringBuilder log) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

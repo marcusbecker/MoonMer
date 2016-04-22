@@ -76,9 +76,9 @@ public class EntityUtil {
         return copy;
     }
 
-    public static int findIndexFieldByName(List<Field> fields, String name) {
+    public static int indexOfFieldByName(List<Field> fields, String name) {
         for (Field f : fields) {
-            if (f.getName().equals(name)) {
+            if (compareName(f.getName(), name)) {
                 return fields.indexOf(f);
             }
         }
@@ -249,7 +249,7 @@ public class EntityUtil {
         return sum;
     }
 
-    public static int query(List<Field> lst, String fieldName, String value) {
+    public static <T> int query(List<T> lst, String fieldName, String value) {
 
         if (lst == null || lst.isEmpty() || fieldName == null || value == null) {
             throw new IllegalArgumentException();
@@ -259,7 +259,7 @@ public class EntityUtil {
 
         try {
             for (int i = 0; i < lst.size(); i++) {
-                Field f = lst.get(i);
+                T f = lst.get(i);
 
                 for (java.lang.reflect.Field fl : fields) {
                     if (!fl.getName().equals(fieldName)) {
@@ -293,6 +293,16 @@ public class EntityUtil {
         }
 
         return null;
+    }
+
+    public static int indexOfIndexByName(List<IndexElement> lst, String name) {
+        for (int i = 0; i < lst.size(); i++) {
+            if (compareName(lst.get(i).getName(), name)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
 }

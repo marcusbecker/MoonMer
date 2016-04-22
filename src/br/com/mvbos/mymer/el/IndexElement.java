@@ -120,4 +120,8 @@ public class IndexElement extends ElementModel {
         return "Index{" + "name=" + name + ", primary=" + primary + ", unique=" + unique + ", active=" + active + ", fields=" + fields + ", table=" + table.getName() + '}';
     }
 
+    public String getOrgId() {
+       return getName();
+    }
+
 }
