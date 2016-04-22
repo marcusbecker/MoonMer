@@ -9,12 +9,18 @@ import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.xml.DataBaseStore;
+import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -70,6 +76,16 @@ public class EntityUtil {
         return copy;
     }
 
+    public static int indexOfFieldByName(List<Field> fields, String name) {
+        for (Field f : fields) {
+            if (compareName(f.getName(), name)) {
+                return fields.indexOf(f);
+            }
+        }
+
+        return -1;
+    }
+
     public static Field findFieldByName(List<Field> fields, String name) {
         for (Field f : fields) {
             if (f.getName().equals(name)) {
@@ -101,7 +117,7 @@ public class EntityUtil {
     }
 
     public static TableElement findTableByName(List<DataBaseElement> dataBases, String baseName, String tableName) {
-        DataBaseElement dbe = findBaseByName(dataBases, baseName);
+        DataBaseElement dbe = EntityUtil.findBaseByName(dataBases, baseName);
 
         if (dbe == null) {
             return null;
@@ -178,6 +194,7 @@ public class EntityUtil {
 
     /**
      * Convert ViewTable in TableElement
+     *
      * @param tableElement
      * @param viewTable
      * @return tableElement
@@ -189,6 +206,103 @@ public class EntityUtil {
 
         return copy;
 
+    }
+
+    public static DataBase findBaseByName(DataBaseStore dbs, String baseName) {
+        if (dbs != null && dbs.hasBases()) {
+            for (DataBase db : dbs.getBases()) {
+                if (db.getName().equals(baseName)) {
+                    return db;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static Table findTableByName(DataBase db, String tableName) {
+        for (Table t : db.getTables()) {
+            if (t.getName().equalsIgnoreCase(tableName)) {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    public static TableElement findTableByName(DataBaseElement db, String tableName) {
+        for (TableElement t : db.getTables()) {
+            if (t.getName().equalsIgnoreCase(tableName)) {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    public static int sumTables(DataBaseStore db) {
+        int sum = 0;
+        for (DataBase d : db.getBases()) {
+            sum += d.getTables().size();
+        }
+
+        return sum;
+    }
+
+    public static <T> int query(List<T> lst, String fieldName, String value) {
+
+        if (lst == null || lst.isEmpty() || fieldName == null || value == null) {
+            throw new IllegalArgumentException();
+        }
+
+        java.lang.reflect.Field[] fields = lst.get(0).getClass().getDeclaredFields();
+
+        try {
+            for (int i = 0; i < lst.size(); i++) {
+                T f = lst.get(i);
+
+                for (java.lang.reflect.Field fl : fields) {
+                    if (!fl.getName().equals(fieldName)) {
+                        continue;
+                    }
+
+                    fl.setAccessible(true);
+
+                    if (value.equals(fl.get(f))) {
+                        return i;
+                    }
+                }
+            }
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+            Logger.getLogger(EntityUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return -1;
+    }
+
+    public static boolean compareName(String name, String other) {
+        return name == null ? other == null : name.equalsIgnoreCase(other);
+    }
+
+    public static Field findRelationshipByName(List<Field> fields, String name) {
+        for (Field f : fields) {
+
+            if (EntityUtil.compareName(f.getName(), name)) {
+                return f;
+            }
+        }
+
+        return null;
+    }
+
+    public static int indexOfIndexByName(List<IndexElement> lst, String name) {
+        for (int i = 0; i < lst.size(); i++) {
+            if (compareName(lst.get(i).getName(), name)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
 }

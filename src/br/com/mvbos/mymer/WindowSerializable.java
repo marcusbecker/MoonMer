@@ -45,8 +45,9 @@ public class WindowSerializable implements Serializable {
         if (FILE_CONFIG.exists()) {
 
             try {
-                ObjectInputStream oi = new ObjectInputStream(new FileInputStream(FILE_CONFIG));
-                ws = (WindowSerializable) oi.readObject();
+                try (ObjectInputStream oi = new ObjectInputStream(new FileInputStream(FILE_CONFIG))) {
+                    ws = (WindowSerializable) oi.readObject();
+                }
             } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(WindowSerializable.class.getName()).log(Level.SEVERE, null, ex);
             }

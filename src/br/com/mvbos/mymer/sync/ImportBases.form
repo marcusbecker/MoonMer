@@ -345,7 +345,7 @@
             </Container>
             <Component class="javax.swing.JButton" name="btnUpdateAll">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Update al fields"/>
+                <Property name="text" type="java.lang.String" value="Update all fields"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUpdateAllActionPerformed"/>
@@ -368,6 +368,7 @@
               <SubComponents>
                 <Component class="javax.swing.JEditorPane" name="tfLog">
                   <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
                   </Properties>
                 </Component>
@@ -453,6 +454,7 @@
               <SubComponents>
                 <Component class="javax.swing.JEditorPane" name="tfLogIndex">
                   <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
                     <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
                   </Properties>
                 </Component>

@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.el;
 
+import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -15,10 +16,8 @@ import java.util.Objects;
  *
  * @author MarcusS
  */
-public class DataBaseElement {
+public class DataBaseElement extends ElementModel {
 
-    private String name;
-    private Color color;
     private List<TableElement> tables = new ArrayList<>(20);
 
     public DataBaseElement() {
@@ -31,22 +30,6 @@ public class DataBaseElement {
 
     public DataBaseElement(DataBase db) {
         this.name = db.getName();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
     }
 
     public List<TableElement> getTables() {

@@ -94,7 +94,6 @@ public class GenericTableModel<T> extends AbstractTableModel {
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             Logger.getLogger(GenericTableModel.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     @Override

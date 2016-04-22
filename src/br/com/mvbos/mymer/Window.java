@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer;
 
+import br.com.mvbos.mymer.table.DataChangeListener;
 import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.table.GenericTableModel;
 import br.com.mvbos.mymer.table.FieldTableModel;
@@ -16,7 +17,14 @@ import br.com.mvbos.jeg.window.IMemory;
 import br.com.mvbos.jeg.window.impl.MemoryImpl;
 import br.com.mvbos.mm.MMProperties;
 import br.com.mvbos.mymer.combo.Option;
+import br.com.mvbos.mymer.edit.AddRemoveTableFieldEdit;
+import br.com.mvbos.mymer.edit.AddTableEdit;
+import br.com.mvbos.mymer.edit.ChangeTableFieldEdit;
+import br.com.mvbos.mymer.edit.EditControl;
+import br.com.mvbos.mymer.edit.EditWindowInterface;
+import br.com.mvbos.mymer.edit.RemoveTableEdit;
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.FindAnimationElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.StageElement;
@@ -26,12 +34,15 @@ import br.com.mvbos.mymer.entity.EntityManager;
 import br.com.mvbos.mymer.entity.IElementEntity;
 import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.entity.RelationEntity;
+import br.com.mvbos.mymer.sync.DiffExportWindow;
+import br.com.mvbos.mymer.sync.DiffWindow;
+import br.com.mvbos.mymer.sync.Differ;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
-import br.com.mvbos.mymer.table.RowItemSelection;
+import br.com.mvbos.mymer.table.DataChange;
+import br.com.mvbos.mymer.table.RelationshipTableModel;
 import br.com.mvbos.mymer.xml.DataBaseStore;
-import br.com.mvbos.mymer.xml.Undo;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import java.awt.Color;
@@ -82,8 +93,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
@@ -95,7 +104,7 @@ import javax.swing.tree.TreePath;
  *
  * @author MarcusS
  */
-public class Window extends javax.swing.JFrame {
+public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private JPanel canvas;
     private final Timer timer;
@@ -121,6 +130,8 @@ public class Window extends javax.swing.JFrame {
 
     private final int BD_SP = 5; //Border space
 
+    private final ElementModel findElement = new FindAnimationElement();
+
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
         FieldTableModel model = (FieldTableModel) table.getModel();
@@ -132,6 +143,52 @@ public class Window extends javax.swing.JFrame {
                 table.setRowSelectionInterval(sel + 1, sel + 1);
             }
         }
+    }
+
+    @Override
+    public void changeSelection(ElementModel e) {
+        singleSelection(e);
+
+        if (e != null) {
+            highlights(e);
+            positionCam(e);
+        }
+        //fireTableCellUpdated(row, col);
+    }
+
+    private void highlights(ElementModel e) {
+        GraphicTool.g().centerElement(e, findElement);
+        findElement.setVisible(true);
+    }
+
+    private void autoResizeCanvas() {
+
+        int w = 0;
+        int h = 0;
+
+        for (TableElement t : dbEntity.getTableList()) {
+            if (w < t.getAllWidth()) {
+                w = t.getAllWidth();
+            }
+
+            if (h < t.getAllHeight()) {
+                h = t.getAllHeight();
+            }
+        }
+
+        try {
+            Camera.c().config(w + 10, h + 10, canvas.getWidth(), canvas.getHeight());
+
+        } catch (IllegalArgumentException e) {
+            Camera.c().config(canvas.getWidth() + 10, canvas.getHeight() + 10, canvas.getWidth(), canvas.getHeight());
+            Logger.getLogger(Window.class.getName()).log(Level.WARNING, e.getMessage());
+        }
+
+        stageEl.setSize(Camera.c().getSceneWidth(), Camera.c().getSceneHeight());
+        Common.camWidth = stageEl.getWidth();
+        Common.camHeight = stageEl.getHeight();
+        MMProperties.save();
+
     }
 
     private class MyDispatcher implements KeyEventDispatcher {
@@ -151,6 +208,9 @@ public class Window extends javax.swing.JFrame {
             } else {
                 setCursor(Cursor.getDefaultCursor());
             }
+
+            FieldTableModel model = (FieldTableModel) tbFields.getModel();
+            model.disableEdition(isControlDown);
 
             //Ignore keys if table or textfield editions
             if (ignoreKey()) {
@@ -227,11 +287,14 @@ public class Window extends javax.swing.JFrame {
         //createTest();
         populeComboBoxes();
 
-        if (Common.camSize < canvas.getWidth() || Common.camSize < canvas.getHeight()) {
-            Common.camSize = canvas.getWidth() + canvas.getHeight();
-            Camera.c().config(Common.camSize, Common.camSize, canvas.getWidth(), canvas.getHeight());
+        if (Common.camWidth < canvas.getWidth() || Common.camHeight < canvas.getHeight()) {
+            Common.camWidth = canvas.getWidth();
+            Common.camHeight = canvas.getHeight();
+
+            Camera.c().config(Common.camWidth, Common.camHeight, canvas.getWidth(), canvas.getHeight());
         }
         //Camera.c().offSet(100, 100);
+        Camera.c().setAutoFit(Common.autoFitCam);
         Camera.c().setAllowOffset(true);
 
         ws = WindowSerializable.load();
@@ -257,7 +320,7 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        stageEl.setSize(Common.camSize, Common.camSize);
+        stageEl.setSize(Common.camWidth, Common.camHeight);
 
         timer = new Timer(60, new ActionListener() {
 
@@ -294,6 +357,7 @@ public class Window extends javax.swing.JFrame {
                 }
             }
         });
+
     }
 
     private void applyZoom(int val) {
@@ -480,17 +544,16 @@ public class Window extends javax.swing.JFrame {
         btnAddFieldIndexList = new javax.swing.JButton();
         tfInfoIndexFields = new javax.swing.JTextField();
         tabRelation = new javax.swing.JPanel();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        tbRelationshipRight = new javax.swing.JTable();
         cbRelationship = new javax.swing.JComboBox();
         btnRemoveRelationship = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
-        tbRelationshipLeft = new javax.swing.JTable();
+        tbRelationship = new javax.swing.JTable();
         cbRelationshipType = new javax.swing.JComboBox();
         tabStruct = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tfStruct = new javax.swing.JTextArea();
         btnBuildSctruct = new javax.swing.JButton();
+        btnShowDiff = new javax.swing.JButton();
         lblInfo = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
@@ -498,6 +561,7 @@ public class Window extends javax.swing.JFrame {
         miExit = new javax.swing.JMenuItem();
         menuEditDataBase = new javax.swing.JMenu();
         miUndo = new javax.swing.JMenuItem();
+        miRedo = new javax.swing.JMenuItem();
         miCloneTable = new javax.swing.JMenuItem();
         miCopyXml = new javax.swing.JMenuItem();
         miPasteXML = new javax.swing.JMenuItem();
@@ -509,6 +573,7 @@ public class Window extends javax.swing.JFrame {
         menuView = new javax.swing.JMenu();
         miEditView = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
+        miDiffExport = new javax.swing.JMenuItem();
         miOrderByRow = new javax.swing.JMenuItem();
         miOrderByCol = new javax.swing.JMenuItem();
 
@@ -921,6 +986,9 @@ public class Window extends javax.swing.JFrame {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 tbFieldsKeyReleased(evt);
             }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tbFieldsKeyTyped(evt);
+            }
         });
         spTbFields.setViewportView(tbFields);
         configureTable();
@@ -1166,11 +1234,6 @@ public class Window extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Index", tabIndex);
 
-        tbRelationshipRight.setModel(createRelationshipTableModel(tbRelationshipRight));
-        tbRelationshipRight.setName("tbRelationshipRight"); // NOI18N
-        jScrollPane5.setViewportView(tbRelationshipRight);
-        preConfig(tbRelationshipRight);
-
         cbRelationship.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbRelationshipItemStateChanged(evt);
@@ -1184,10 +1247,10 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        tbRelationshipLeft.setModel(createRelationshipTableModel(tbRelationshipLeft));
-        tbRelationshipLeft.setName("tbRelationshipLeft"); // NOI18N
-        jScrollPane6.setViewportView(tbRelationshipLeft);
-        preConfig(tbRelationshipLeft);
+        tbRelationship.setModel(createRelationshipTableModel(tbRelationship));
+        tbRelationship.setName("tbRelationship"); // NOI18N
+        jScrollPane6.setViewportView(tbRelationship);
+        preConfig(tbRelationship);
 
         cbRelationshipType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1 .. 1", "1 .. *" }));
         cbRelationshipType.addActionListener(new java.awt.event.ActionListener() {
@@ -1203,16 +1266,13 @@ public class Window extends javax.swing.JFrame {
             .addGroup(tabRelationLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane6)
                     .addGroup(tabRelationLayout.createSequentialGroup()
                         .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbRelationship, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(cbRelationship, 0, 673, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemoveRelationship))
-                    .addGroup(tabRelationLayout.createSequentialGroup()
-                        .addComponent(jScrollPane6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane5)))
+                        .addComponent(btnRemoveRelationship)))
                 .addContainerGap())
         );
         tabRelationLayout.setVerticalGroup(
@@ -1224,9 +1284,7 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(btnRemoveRelationship)
                     .addComponent(cbRelationshipType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(tabRelationLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Relationship", tabRelation);
@@ -1242,6 +1300,13 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
+        btnShowDiff.setText("Differ");
+        btnShowDiff.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowDiffActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout tabStructLayout = new javax.swing.GroupLayout(tabStruct);
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
@@ -1249,13 +1314,20 @@ public class Window extends javax.swing.JFrame {
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnShowDiff)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnBuildSctruct, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        tabStructLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnBuildSctruct, btnShowDiff});
+
         tabStructLayout.setVerticalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
-                .addComponent(btnBuildSctruct)
+                .addGroup(tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnBuildSctruct)
+                    .addComponent(btnShowDiff))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
         );
@@ -1317,6 +1389,15 @@ public class Window extends javax.swing.JFrame {
             }
         });
         menuEditDataBase.add(miUndo);
+
+        miRedo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        miRedo.setText("Redo");
+        miRedo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miRedoActionPerformed(evt);
+            }
+        });
+        menuEditDataBase.add(miRedo);
 
         miCloneTable.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
         miCloneTable.setText("Clone Table");
@@ -1393,6 +1474,14 @@ public class Window extends javax.swing.JFrame {
 
         menuTools.setText("Tools");
 
+        miDiffExport.setText("Export differ");
+        miDiffExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miDiffExportActionPerformed(evt);
+            }
+        });
+        menuTools.add(miDiffExport);
+
         miOrderByRow.setText("Order by row");
         miOrderByRow.setToolTipText("Order by row");
         miOrderByRow.addActionListener(new java.awt.event.ActionListener() {
@@ -1468,7 +1557,7 @@ public class Window extends javax.swing.JFrame {
 
                     temp.incPx(last.getAllWidth() + 10);
 
-                    if (temp.getPx() + e.getWidth() > Common.camSize) {
+                    if (temp.getPx() + e.getWidth() > Common.camWidth) {
                         temp.setPx(0);
                         temp.incPy(10);
                     }
@@ -1477,7 +1566,7 @@ public class Window extends javax.swing.JFrame {
                 }
             }
 
-            if (temp.getPx() + 100 > Common.camSize) {
+            if (temp.getPx() + 100 > Common.camWidth) {
                 temp.setPx(0);
                 temp.incPy(10);
             }
@@ -1501,18 +1590,16 @@ public class Window extends javax.swing.JFrame {
 
         int lastHeight = 0;
         int maxWidth = 0;
-        int sumWidth = 0;
 
         for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
 
             maxWidth = e.getWidth() > maxWidth ? e.getWidth() : maxWidth;
 
-            if (py + 15 + lastHeight > Common.camSize) {
+            if (py + 15 + lastHeight > Common.camHeight) {
                 px += maxWidth + 15;
                 py = 5;
 
-                sumWidth += maxWidth;
                 maxWidth = 0;
 
             } else {
@@ -1523,9 +1610,7 @@ public class Window extends javax.swing.JFrame {
             lastHeight = e.getHeight();
         }
 
-        if (sumWidth > canvas.getWidth()) {
-            //Camera.c().config(camSize, sumWidth + 60, canvas.getWidth(), canvas.getHeight());
-        }
+        autoResizeCanvas();
     }
 
     private void orderByRow() {
@@ -1534,16 +1619,14 @@ public class Window extends javax.swing.JFrame {
 
         int lastWidth = 0;
         int maxHeight = 0;
-        int sumHeight = 0;
 
         for (TableElement filter : dbEntity.getTableList()) {
             ElementModel e = filter;
             maxHeight = e.getHeight() > maxHeight ? e.getHeight() : maxHeight;
-            if (px + e.getWidth() > Common.camSize) {
+            if (px + e.getWidth() > Common.camWidth) {
                 px = 5;
                 py += maxHeight + 15;
 
-                sumHeight += maxHeight;
                 maxHeight = 0;
 
             } else {
@@ -1553,9 +1636,7 @@ public class Window extends javax.swing.JFrame {
             lastWidth = e.getWidth();
         }
 
-        if (sumHeight > canvas.getHeight()) {
-            //Camera.c().config(camSize, sumHeight + 60, canvas.getWidth(), canvas.getHeight());
-        }
+        autoResizeCanvas();
     }
 
     private void btnRemoveTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveTableActionPerformed
@@ -1570,6 +1651,11 @@ public class Window extends javax.swing.JFrame {
             if (JOptionPane.showConfirmDialog(this, "Remove table " + selectedElements[0].getName() + " ?", "Do you want to remove the selected table?", JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
                 dbEntity.removeTable(sel);
                 singleSelection(null);
+                EditControl.u().addEdit(new RemoveTableEdit(sel, this));
+
+                for (RelationshipElement r : rEntity.getList()) {
+                    r.setVisible(false);
+                }
             }
         }
     }
@@ -1603,7 +1689,7 @@ public class Window extends javax.swing.JFrame {
         te.update();
 
         dbEntity.addTable(te);
-
+        EditControl.u().addEdit(new AddTableEdit(te, this));
     }
 
     private void btnCropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCropActionPerformed
@@ -1617,11 +1703,17 @@ public class Window extends javax.swing.JFrame {
 
         TableElement e = getTableSeletected();
         if (e != null) {
-            e.getFields().add(new Field("New", Common.comboTypes[0]));
+            FieldTableModel model = (FieldTableModel) tbFields.getModel();
+
+            String name = String.format("New %d", model.getRowCount());
+            Field field = new Field(name, Common.comboTypes[0]);
+
+            model.addField(field);
+            EditControl.u().addEdit(new AddRemoveTableFieldEdit(e, field, true, this));
+
             e.update();
-            FieldTableModel m = (FieldTableModel) tbFields.getModel();
-            m.fireTableDataChanged();
-            
+
+            //select and roll to the last row
             final int start = e.getFields().size() - 1;
             tbFields.setRowSelectionInterval(start, start);
             tbFields.scrollRectToVisible(tbFields.getCellRect(start, 0, true));
@@ -1633,12 +1725,13 @@ public class Window extends javax.swing.JFrame {
 
         TableElement e = getTableSeletected();
         if (e != null && tbFields.getSelectedRow() != -1) {
-            e.getFields().remove(tbFields.getSelectedRow());
-
+            int idx = tbFields.getSelectedRow();
+            FieldTableModel model = (FieldTableModel) tbFields.getModel();
+            Field f = model.getData().get(idx);
+            model.removeField(idx);
             e.update();
 
-            FieldTableModel m = (FieldTableModel) tbFields.getModel();
-            m.fireTableRowsDeleted(tbFields.getSelectedRow(), tbFields.getSelectedRow());
+            EditControl.u().addEdit(new AddRemoveTableFieldEdit(e, f, idx, false, this));
         }
 
     }//GEN-LAST:event_btnRemFieldTableActionPerformed
@@ -1801,7 +1894,7 @@ public class Window extends javax.swing.JFrame {
         if (nodeInfo instanceof TableElement) {
             TableElement t = (TableElement) nodeInfo;
             positionCam(t);
-
+            highlights(t);
             singleSelection(t);
         }
 
@@ -2016,23 +2109,19 @@ public class Window extends javax.swing.JFrame {
 
     private void miUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miUndoActionPerformed
 
-        TableElement e = Undo.get();
-        if (e != null) {
-            e.getDataBase().getTables().add(e);
-            dbEntity.addTable(e);
+        if (EditControl.u().canUndo()) {
+            EditControl.u().undo();
         }
 
     }//GEN-LAST:event_miUndoActionPerformed
 
     private void miImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miImportActionPerformed
 
-        final Window w = this;
-
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 ImportBases importBases = new ImportBases();
-                importBases.setLocationRelativeTo(w);
+                importBases.setLocationRelativeTo(Window.this);
                 importBases.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 importBases.setVisible(true);
             }
@@ -2176,50 +2265,8 @@ public class Window extends javax.swing.JFrame {
             }
 
             TableElement te = (TableElement) e;
-
-            sb.append("ADD TABLE \"").append(te.getName()).append("\"\n");
-            sb.append("  AREA \"Dados\"\n");
-            sb.append("  DESCRIPTION \"\"\n");
-            sb.append("  DUMP-NAME \"").append(te.getName()).append("\"\n");
-            sb.append("\n");
-
-            int ct = 1;
-            for (Field f : te.getFields()) {
-                sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(te.getName()).append("\" AS ").append(f.getType()).append("\n");
-                sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
-                sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
-                sb.append("  INITIAL \"\"\n");
-                sb.append("  LABEL \"").append(f.getName()).append("\"\n");
-                //sb.append("  POSITION ").append(ct).append("\n");
-                //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
-                sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
-                sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
-                sb.append("  ORDER ").append(ct * 10).append("\n");
-
-                sb.append("\n");
-                ct++;
-            }
-
-            for (IndexElement ie : em.getEntity(IndexEntity.class).getList()) {
-                if (!te.equals(ie.getTable())) {
-                    continue;
-                }
-
-                sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(te.getName()).append("\"\n");
-                sb.append("  AREA \"Indices\"\n");
-                if (ie.getPrimary()) {
-                    sb.append("  UNIQUE\n");
-                }
-                if (ie.getUnique()) {
-                    sb.append("  PRIMARY\n");
-                }
-
-                for (Field f : ie.getFields()) {
-                    sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
-                }
-
-                sb.append("\n");
-            }
+            Differ.addTable(te, sb);
+            Differ.addTableIndex(te, sb);
 
         }
 
@@ -2298,11 +2345,12 @@ public class Window extends javax.swing.JFrame {
             int newSize = Integer.parseInt(tfCanvasSize.getText());
 
             Camera.c().config(newSize, newSize, canvas.getWidth(), canvas.getHeight());
-            Common.camSize = newSize;
+            Common.camWidth = newSize;
+            Common.camHeight = newSize;
 
             Common.backgroundColor = ccCanvas.getColor().getRGB();
             btnCanvasColor.setBackground(ccCanvas.getColor());
-            stageEl.setSize(Common.camSize, Common.camSize);
+            stageEl.setSize(Common.camWidth, Common.camHeight);
             dlgCanvas.setVisible(false);
 
             MMProperties.save();
@@ -2317,7 +2365,7 @@ public class Window extends javax.swing.JFrame {
 
     private void btnCanvasColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCanvasColorActionPerformed
 
-        tfCanvasSize.setText(String.valueOf(Common.camSize));
+        tfCanvasSize.setText(String.valueOf(Common.camWidth));
         ccCanvas.setBackground(btnCanvasColor.getBackground());
 
         dlgCanvas.pack();
@@ -2337,6 +2385,44 @@ public class Window extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_tbFieldsKeyReleased
+
+    private void miRedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miRedoActionPerformed
+        if (EditControl.u().canRedo()) {
+            EditControl.u().redo();
+        }
+    }//GEN-LAST:event_miRedoActionPerformed
+
+    private void tbFieldsKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbFieldsKeyTyped
+
+    }//GEN-LAST:event_tbFieldsKeyTyped
+
+    private void btnShowDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowDiffActionPerformed
+
+        final TableElement sel = getTableSeletected();
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                DiffWindow diff = new DiffWindow();
+                //diff.setLeft(sel);
+
+                diff.setVisible(true);
+                diff.setLocationRelativeTo(Window.this);
+
+                diff.loadFormHistory(sel);
+            }
+        });
+
+
+    }//GEN-LAST:event_btnShowDiffActionPerformed
+
+    private void miDiffExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDiffExportActionPerformed
+        DiffExportWindow diff = new DiffExportWindow();
+        diff.setLocationRelativeTo(this);
+        diff.setVisible(true);
+
+    }//GEN-LAST:event_miDiffExportActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -2363,6 +2449,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JButton btnSaveCanvas;
     private javax.swing.JButton btnSaveDataBase;
     private javax.swing.JButton btnSearchField;
+    private javax.swing.JButton btnShowDiff;
     private javax.swing.JButton btnView;
     private javax.swing.JComboBox cbBases;
     private javax.swing.JComboBox cbEditDataBase;
@@ -2383,7 +2470,6 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
@@ -2401,6 +2487,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JMenuItem miBases;
     private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
+    private javax.swing.JMenuItem miDiffExport;
     private javax.swing.JMenuItem miEditView;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miImport;
@@ -2408,6 +2495,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JMenuItem miOrderByCol;
     private javax.swing.JMenuItem miOrderByRow;
     private javax.swing.JMenuItem miPasteXML;
+    private javax.swing.JMenuItem miRedo;
     private javax.swing.JMenuItem miSave;
     private javax.swing.JMenuItem miUndo;
     private javax.swing.JPanel pnBottom;
@@ -2426,8 +2514,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JPanel tabTableField;
     private javax.swing.JTable tbFields;
     private javax.swing.JTable tbIndex;
-    private javax.swing.JTable tbRelationshipLeft;
-    private javax.swing.JTable tbRelationshipRight;
+    private javax.swing.JTable tbRelationship;
     private javax.swing.JTextField tfCanvasSize;
     private javax.swing.JTextField tfDBName;
     private javax.swing.JTextField tfDBTablesCounter;
@@ -2441,7 +2528,25 @@ public class Window extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private TableModel createFieldTableModel() {
-        return new FieldTableModel();
+        FieldTableModel fieldTableModel = new FieldTableModel();
+        /*fieldTableModel.addTableModelListener(new TableModelListener() {
+         @Override
+         public void tableChanged(TableModelEvent e) {
+         EditControl.u().addEdit(new ChangeTableFieldEdit(e));
+         }
+         });*/
+
+        fieldTableModel.addDataChangeListener(new DataChangeListener() {
+            @Override
+            public void dataChange(DataChange data) {
+                TableElement te = getTableSeletected();
+                if (te != null) {
+                    EditControl.u().addEdit(new ChangeTableFieldEdit(te, data, Window.this));
+                }
+            }
+        });
+
+        return fieldTableModel;
     }
 
     private GenericTableModel createIndexTableModel() {
@@ -2464,53 +2569,18 @@ public class Window extends javax.swing.JFrame {
         return ind;
     }
 
-    private GenericTableModel createRelationshipTableModel(final JTable tb) {
-        final Set<String> ignore = new HashSet<>(Arrays.asList("value"));
+    private RelationshipTableModel createRelationshipTableModel(final JTable tb) {
+        RelationshipTableModel rtm = new RelationshipTableModel();
 
-        GenericTableModel<RowItemSelection> ris = new GenericTableModel<>(RowItemSelection.class, ignore);
+        /*rtm.addTableModelListener(new TableModelListener() {
 
-        ris.addTableModelListener(new TableModelListener() {
+         @Override
+         public void tableChanged(TableModelEvent e) {
+                
+         }
 
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                changeIndexFields(tb);
-            }
-
-        });
-
-        return ris;
-    }
-
-    private void changeIndexFields(JTable tb) {
-
-        if (cbRelationship.getSelectedItem() == null) {
-            return;
-        }
-
-        Option opt = (Option) cbRelationship.getSelectedItem();
-        RelationshipElement re = (RelationshipElement) opt.getValue();
-
-        GenericTableModel<RowItemSelection> m = (GenericTableModel<RowItemSelection>) tb.getModel();
-
-        if (tb.equals(tbRelationshipLeft)) {
-            re.getParentFields().clear();
-
-            for (RowItemSelection r : m.getData()) {
-                if (r.getSelected()) {
-                    re.getParentFields().add((Field) r.getValue());
-                }
-            }
-
-        } else {
-            re.getChildFields().clear();
-
-            for (RowItemSelection r : m.getData()) {
-                if (r.getSelected()) {
-                    re.getChildFields().add((Field) r.getValue());
-                }
-            }
-        }
-
+         });*/
+        return rtm;
     }
 
     private void updateIndexSelection() {
@@ -2610,14 +2680,14 @@ public class Window extends javax.swing.JFrame {
                 float w;
                 float h;
 
-                if (Common.camSize > miniMap.getWidth()) {
-                    w = (100f / (Common.camSize / (float) miniMap.getWidth())) / 100f;
+                if (Common.camWidth > miniMap.getWidth()) {
+                    w = (100f / (Common.camWidth / (float) miniMap.getWidth())) / 100f;
                 } else {
                     w = miniMap.getWidth();
                 }
 
-                if (Common.camSize > miniMap.getHeight()) {
-                    h = (100f / (Common.camSize / (float) miniMap.getHeight())) / 100f;
+                if (Common.camHeight > miniMap.getHeight()) {
+                    h = (100f / (Common.camHeight / (float) miniMap.getHeight())) / 100f;
                 } else {
                     h = miniMap.getHeight();
                 }
@@ -2654,8 +2724,8 @@ public class Window extends javax.swing.JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                float w = Common.camSize > miniMap.getWidth() ? Common.camSize / miniMap.getWidth() : miniMap.getWidth();
-                float h = Common.camSize > miniMap.getHeight() ? Common.camSize / miniMap.getHeight() : miniMap.getHeight();
+                float w = Common.camWidth > miniMap.getWidth() ? Common.camWidth / miniMap.getWidth() : miniMap.getWidth();
+                float h = Common.camHeight > miniMap.getHeight() ? Common.camHeight / miniMap.getHeight() : miniMap.getHeight();
 
                 Camera.c().move(e.getX() * w, e.getY() * h);
 
@@ -2680,7 +2750,7 @@ public class Window extends javax.swing.JFrame {
 
         });
 
-        miniMap.setToolTipText(String.format("Cam size: %dx%d", Common.camSize, Common.camSize));
+        miniMap.setToolTipText(String.format("Cam size: %dx%d", Common.camWidth, Common.camHeight));
 
         return miniMap;
     }
@@ -2745,9 +2815,12 @@ public class Window extends javax.swing.JFrame {
 
                     Camera.c().draw(g, el);
 
-                    g.setColor(BACKGROUND_COLOR);
+                    //g.setColor(BACKGROUND_COLOR);
+                    g.setColor(Color.BLACK);
                     g.drawRect(Camera.c().fx(el.getPx() - BD_SP), Camera.c().fy(el.getPy() - BD_SP), el.getWidth() + BD_SP * 2, el.getHeight() + BD_SP * 2);
                 }
+
+                Camera.c().draw(g, findElement);
 
             }
 
@@ -2776,9 +2849,10 @@ public class Window extends javax.swing.JFrame {
                             return;
                         case RELATION:
                             addRelationship(hasColision(mouseElement));
-                            return;
+                        //return;
                         case HAND:
-                            return;
+                        //return;
+                        default:;
                     }
 
                 } else {
@@ -2902,13 +2976,18 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void singleSelection(ElementModel el) {
+        /*if (el != null && (selectedElements[0] == el)) {
+         //TODO compare fields size
+         return;
+         }*/
+
         for (int i = 1; i < selectedElements.length; i++) {
             selectedElements[i] = null;
         }
 
         selectedElements[0] = el;
 
-        cancelTablesEditions(tbFields, tbIndex, tbRelationshipLeft, tbRelationshipRight);
+        cancelTablesEditions(tbFields, tbIndex, tbRelationship);
 
         FieldTableModel tbTableModel = (FieldTableModel) tbFields.getModel();
         GenericTableModel<IndexElement> tbIndexModel = (GenericTableModel<IndexElement>) tbIndex.getModel();
@@ -2923,16 +3002,16 @@ public class Window extends javax.swing.JFrame {
 
         } else if (el instanceof TableElement) {
             //System.out.println("el " + el);
-            tfTableName.setText(el.getName());
-            tfTableDesc.setText(((TableElement) el).getDescription());
 
             TableElement e = (TableElement) el;
+
+            tfTableName.setText(e.getName());
+            tfTableDesc.setText(e.getDescription());
 
             loadRelationship(e);
             cbBases.setSelectedItem(e.getDataBase().getName());
             tbIndexModel.setData(em.getEntity(IndexEntity.class).findIndexByTable(e));
             tbTableModel.setData(e.getFields());
-
         }
 
         updateIndexSelection();
@@ -2943,8 +3022,7 @@ public class Window extends javax.swing.JFrame {
 
     private void loadRelationship(TableElement e) {
         cbRelationship.removeAllItems();
-        tbRelationshipLeft.removeAll();
-        tbRelationshipRight.removeAll();
+        tbRelationship.removeAll();
 
         if (e != null) {
             Set<RelationshipElement> lst = rEntity.findRelationship(e);
@@ -2954,7 +3032,6 @@ public class Window extends javax.swing.JFrame {
             for (RelationshipElement re : lst) {
                 final String label = String.format("%s < %s > %s", re.getParent().getName(), re.getType().label, re.getChild().getName());
                 cbRelationship.addItem(new Option(i++, re, label));
-
             }
 
             if (cbRelationship.getItemCount() == 0) {
@@ -2969,36 +3046,26 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void loadRelationshipFieldTable(RelationshipElement re) {
-        GenericTableModel<RowItemSelection> mLeft = (GenericTableModel<RowItemSelection>) tbRelationshipLeft.getModel();
-        GenericTableModel<RowItemSelection> mRight = (GenericTableModel<RowItemSelection>) tbRelationshipRight.getModel();
+        RelationshipTableModel rtm = (RelationshipTableModel) tbRelationship.getModel();
+
+        rtm.setRelationShip(re);
+        TableColumn comboColumn = tbRelationship.getColumnModel().getColumn(2);
 
         if (re != null) {
-
-            List<RowItemSelection> lstLeft = new ArrayList<>(re.getParent().getFields().size());
-            List<RowItemSelection> lstRight = new ArrayList<>(re.getChild().getFields().size());
-
-            String label;
-
-            for (Field f : re.getParent().getFields()) {
-                label = String.format("%s ( %s )", f.getName(), f.getType());
-                lstLeft.add(new RowItemSelection(re.getParentFields().contains(f), label, f));
+            String[] arr = new String[re.getChild().getFields().size() + 1];
+            arr[0] = "";
+            for (int i = 1; i < arr.length; i++) {
+                Field f = re.getChild().getFields().get(i - 1);
+                arr[i] = f.getName();
             }
 
-            for (Field f : re.getChild().getFields()) {
-                label = String.format("%s ( %s )", f.getName(), f.getType());
-                lstRight.add(new RowItemSelection(re.getChildFields().contains(f), label, f));
-            }
-
-            mLeft.setData(lstLeft);
-            mRight.setData(lstRight);
+            comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(arr)));
 
         } else {
-            mLeft.setData(Collections.EMPTY_LIST);
-            mRight.setData(Collections.EMPTY_LIST);
+            comboColumn.setCellEditor(new DefaultCellEditor(new JComboBox<>(new String[0])));
         }
 
-        tbRelationshipLeft.updateUI();
-        tbRelationshipRight.updateUI();
+        tbRelationship.updateUI();
     }
 
     private void updateRelationType() {
@@ -3100,6 +3167,7 @@ public class Window extends javax.swing.JFrame {
 
     private void positionCam(ElementModel el) {
         Camera.c().move(el.getPx() - canvas.getWidth() / 2, el.getPy() - canvas.getHeight() / 2);
+
     }
 
     private void positionCam(int px, int py) {

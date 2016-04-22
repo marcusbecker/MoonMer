@@ -6,6 +6,7 @@
 package br.com.mvbos.mymer.xml;
 
 import br.com.mvbos.mymer.xml.field.DataBase;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author MarcusS
  */
 @XmlRootElement
-public class DataBaseStore {
+public class DataBaseStore implements Serializable {
 
     private List<DataBase> bases;
 

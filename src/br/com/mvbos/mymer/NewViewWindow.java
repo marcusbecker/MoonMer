@@ -37,7 +37,7 @@ public class NewViewWindow extends javax.swing.JFrame {
         return selectedTables;
     }
 
-    public void setSelectedTables(ElementModel[] selectedTables) {
+    public void setSelectedTables(final ElementModel[] selectedTables) {
         this.selectedTables = selectedTables;
         temp.delete(0, temp.length());
 
@@ -325,7 +325,9 @@ public class NewViewWindow extends javax.swing.JFrame {
         TableElement copy = EntityUtil.copy(t);
         int ppx = v.getPx() == 0 ? px : v.getPx();
 
+        copy.setState(TableElement.State.ALLWAYS_VISIBLE);
         copy.setPxy(ppx, v.getPy());
+        copy.update();
 
         return copy;
     }

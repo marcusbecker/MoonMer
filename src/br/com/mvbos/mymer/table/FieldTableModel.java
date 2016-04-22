@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.table;
 
+import br.com.mvbos.mymer.table.annotation.TableField;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,8 +21,19 @@ import javax.swing.table.AbstractTableModel;
 public class FieldTableModel extends AbstractTableModel {
 
     private final List<ColType> colTypes;
-    private List<Field> data = Collections.EMPTY_LIST;
-    private final java.lang.reflect.Field[] fields = Field.class.getDeclaredFields();
+    private List<Field> data;
+    private final java.lang.reflect.Field[] fields;
+
+    private DataChangeListener dataChangeListener;
+    private boolean disable;
+
+    public void addDataChangeListener(DataChangeListener dataChangeListener) {
+        this.dataChangeListener = dataChangeListener;
+    }
+
+    public void disableEdition(boolean disable) {
+        this.disable = disable;
+    }
 
     private class ColType {
 
@@ -38,6 +50,20 @@ public class FieldTableModel extends AbstractTableModel {
     }
 
     public FieldTableModel() {
+        data = Collections.EMPTY_LIST;
+        java.lang.reflect.Field[] temp = Field.class.getDeclaredFields();
+        List<java.lang.reflect.Field> lst = new ArrayList<>(temp.length);
+
+        for (java.lang.reflect.Field t : temp) {
+            TableField a = t.getAnnotation(TableField.class);
+
+            if (a == null || !a.ignore()) {
+                lst.add(t);
+            }
+        }
+
+        fields = lst.toArray(new java.lang.reflect.Field[0]);
+
         colTypes = new ArrayList<>(fields.length + 1);
         colTypes.add(new ColType("#", Integer.class, false));
 
@@ -48,7 +74,7 @@ public class FieldTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return colTypes.get(columnIndex).edit;
+        return !disable && colTypes.get(columnIndex).edit;
     }
 
     @Override
@@ -68,11 +94,18 @@ public class FieldTableModel extends AbstractTableModel {
         Field f = data.get(row);
 
         try {
+            Object old;
+
             java.lang.reflect.Field ff = fields[classCol];
             ff.setAccessible(true);
+            old = ff.get(f);
             ff.set(f, value);
 
             fireTableCellUpdated(row, col);
+
+            if (dataChangeListener != null) {
+                dataChangeListener.dataChange(new DataChange(row, classCol, f, old, value));
+            }
 
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             Logger.getLogger(FieldTableModel.class.getName()).log(Level.SEVERE, null, ex);
@@ -139,6 +172,33 @@ public class FieldTableModel extends AbstractTableModel {
         fireTableRowsUpdated(up ? pos : sel, up ? sel : pos);
 
         return true;
+    }
+
+    public void addField(Field field) {
+        addField(-1, field);
+    }
+
+    public void addField(int index, Field field) {
+        if (index > -1) {
+            data.add(index, field);
+        } else {
+            data.add(field);
+        }
+
+        fireTableRowsInserted(index == -1 ? data.size() : index, index == -1 ? data.size() : index);
+        //fireTableDataChanged();
+    }
+
+    public void removeField(int position) {
+        data.remove(position);
+        fireTableRowsDeleted(position, position);
+    }
+
+    public void removeField(Field field) {
+        int index = data.indexOf(field);
+        if (index > - 1) {
+            removeField(index);
+        }
     }
 
 }

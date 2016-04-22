@@ -15,6 +15,7 @@ import static br.com.mvbos.mymer.xml.XMLUtil.getFileInputStream;
 import static br.com.mvbos.mymer.xml.XMLUtil.getFileOutputStream;
 
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.FieldGroup;
 import br.com.mvbos.mymer.xml.field.Relationship;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -51,9 +52,9 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
 
     public RelationshipElement addNewRelationship(RelationshipElement.Type type, TableElement elLeft, TableElement elRight) {
         RelationshipElement relationshipElement = new RelationshipElement(type, elLeft, elRight);
-        
+
         relations.add(relationshipElement);
-        
+
         return relationshipElement;
     }
 
@@ -70,9 +71,7 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
 
         for (RelationshipElement e : relations) {
             Relationship r = new Relationship(e);
-
-            r.setChildFields(new LinkedHashSet<>(e.getChildFields()));
-            r.setParentFields(new LinkedHashSet<>(e.getParentFields()));
+            r.getFieldGroup().addAll(e.getGroup());
 
             rel.add(r);
         }
@@ -148,18 +147,15 @@ public class RelationEntity implements IElementEntity<RelationshipElement> {
                 RelationshipElement.Type type = RelationshipElement.Type.values()[r.getType()];
                 RelationshipElement re = new RelationshipElement(type, rParent, rChild);
 
-                for (Field f : r.getParentFields()) {
-                    Field ff = EntityUtil.findFieldByName(rParent.getFields(), f.getName());
-                    if (ff != null) {
-                        re.getParentFields().add(ff);
-                    }
-                }
+                for (FieldGroup fg : r.getFieldGroup()) {
+                    /*Field fParent = EntityUtil.findFieldByName(rParent.getFields(), fg.getParent().getName());
+                     Field fChild = EntityUtil.findFieldByName(rParent.getFields(), fg.getChild().getName());
 
-                for (Field f : r.getChildFields()) {
-                    Field ff = EntityUtil.findFieldByName(rChild.getFields(), f.getName());
-                    if (ff != null) {
-                        re.getChildFields().add(ff);
-                    }
+                     if (fParent != null && fChild != null) {
+                     re.getGroup().add(fg);
+                     }*/
+
+                    re.getGroup().add(fg);
                 }
 
                 relations.add(re);

@@ -70,11 +70,16 @@ public class XMLUtil1 {
 
     /*Folders*/
     public static final File CURRENT_PATH = new File(Common.currentPath);
-    /*0*/private static final File DIR_CONFIG = new File(CURRENT_PATH, "config");
-    /**/private static final File FILE_DIR_DB = new File(CURRENT_PATH, "dbs");
-    /**/private static final File FILE_DIR_REL = new File(CURRENT_PATH, "relations");
-    /**/private static final File FILE_DIR_INDEX = new File(CURRENT_PATH, "index");
-    /**/private static final File FILE_DIR_VIEWS = new File(CURRENT_PATH, "views");
+    /*0*/
+    private static final File DIR_CONFIG = new File(CURRENT_PATH, "config");
+    /**/
+    private static final File FILE_DIR_DB = new File(CURRENT_PATH, "dbs");
+    /**/
+    private static final File FILE_DIR_REL = new File(CURRENT_PATH, "relations");
+    /**/
+    private static final File FILE_DIR_INDEX = new File(CURRENT_PATH, "index");
+    /**/
+    private static final File FILE_DIR_VIEWS = new File(CURRENT_PATH, "views");
 
     /* Files */
     private static final File FILE_CONFIG = new File(DIR_CONFIG, "config.xml");
@@ -302,9 +307,8 @@ public class XMLUtil1 {
         for (RelationshipElement e : relations) {
             Relationship r = new Relationship(e);
 
-            r.setChildFields(new LinkedHashSet<>(e.getChildFields()));
-            r.setParentFields(new LinkedHashSet<>(e.getParentFields()));
-
+            //r.setChildFields(new LinkedHashSet<>(e.getChildFields()));
+            //r.setParentFields(new LinkedHashSet<>(e.getParentFields()));
             rel.add(r);
         }
 
@@ -534,20 +538,19 @@ public class XMLUtil1 {
                 RelationshipElement.Type type = RelationshipElement.Type.values()[r.getType()];
                 RelationshipElement re = new RelationshipElement(type, parent, child);
 
-                for (Field f : r.getParentFields()) {
-                    Field ff = EntityUtil.findFieldByName(parent.getFields(), f.getName());
-                    if (ff != null) {
-                        re.getParentFields().add(ff);
-                    }
-                }
+                /*for (Field f : r.getParentFields()) {
+                 Field ff = EntityUtil.findFieldByName(parent.getFields(), f.getName());
+                 if (ff != null) {
+                 re.getParentFields().add(ff);
+                 }
+                 }
 
-                for (Field f : r.getChildFields()) {
-                    Field ff = EntityUtil.findFieldByName(child.getFields(), f.getName());
-                    if (ff != null) {
-                        re.getChildFields().add(ff);
-                    }
-                }
-
+                 for (Field f : r.getChildFields()) {
+                 Field ff = EntityUtil.findFieldByName(child.getFields(), f.getName());
+                 if (ff != null) {
+                 re.getChildFields().add(ff);
+                 }
+                 }*/
                 lst.add(re);
             }
         }
@@ -696,8 +699,7 @@ public class XMLUtil1 {
         db.getTables().remove(e);
         filter.remove(e);
 
-        Undo.add(e);
-
+        //Undo.add(e);
         ActionEvent evt = new ActionEvent(e, EVT_REMOVE, "REMOVE_TABLE");
         for (ActionListener a : listern) {
             a.actionPerformed(evt);

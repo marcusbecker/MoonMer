@@ -37,9 +37,15 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -167,6 +173,8 @@ public class ViewWindow extends javax.swing.JFrame {
         btnShowDlgTable = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        btnDownload = new javax.swing.JButton();
+        lblInfo = new javax.swing.JLabel();
         pnCanvas = createCanvas();
 
         dlgAddTable.setTitle("Search and add tables");
@@ -252,7 +260,8 @@ public class ViewWindow extends javax.swing.JFrame {
             }
         });
 
-        btnShowDlgTable.setText("+");
+        btnShowDlgTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/table.png"))); // NOI18N
+        btnShowDlgTable.setToolTipText("Add table");
         btnShowDlgTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnShowDlgTableActionPerformed(evt);
@@ -275,30 +284,57 @@ public class ViewWindow extends javax.swing.JFrame {
             }
         });
 
+        btnDownload.setIcon(new javax.swing.ImageIcon(getClass().getResource("/down.png"))); // NOI18N
+        btnDownload.setToolTipText("Save");
+        btnDownload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDownloadActionPerformed(evt);
+            }
+        });
+
+        lblInfo.setText(" ");
+
         javax.swing.GroupLayout pnButtonsLayout = new javax.swing.GroupLayout(pnButtons);
         pnButtons.setLayout(pnButtonsLayout);
         pnButtonsLayout.setHorizontalGroup(
             pnButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnButtonsLayout.createSequentialGroup()
-                .addComponent(btnShowDlgTable)
+                .addComponent(btnShowDlgTable, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAddRelOneOne)
+                .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAddRelOneMany)
+                .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
-                .addGap(0, 661, Short.MAX_VALUE))
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
+                .addContainerGap())
         );
+
+        pnButtonsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAddRelOneMany, btnAddRelOneOne, btnDownload, btnShowDlgTable, jButton1, jButton2});
+
         pnButtonsLayout.setVerticalGroup(
             pnButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
-            .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(btnShowDlgTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(pnButtonsLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(pnButtonsLayout.createSequentialGroup()
+                .addGroup(pnButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                    .addComponent(btnAddRelOneMany, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                    .addComponent(btnAddRelOneOne, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                    .addComponent(btnShowDlgTable, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+                    .addComponent(btnDownload, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
+
+        pnButtonsLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {btnAddRelOneMany, btnAddRelOneOne, btnDownload, btnShowDlgTable, jButton1, jButton2});
 
         javax.swing.GroupLayout pnCanvasLayout = new javax.swing.GroupLayout(pnCanvas);
         pnCanvas.setLayout(pnCanvasLayout);
@@ -308,7 +344,7 @@ public class ViewWindow extends javax.swing.JFrame {
         );
         pnCanvasLayout.setVerticalGroup(
             pnCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 436, Short.MAX_VALUE)
+            .addGap(0, 459, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -322,8 +358,9 @@ public class ViewWindow extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(pnButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pnCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -435,16 +472,41 @@ public class ViewWindow extends javax.swing.JFrame {
         go(true);
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void btnDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDownloadActionPerformed
+        BufferedImage buffer = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D cg = buffer.createGraphics();
+        canvas.paintAll(cg);
+
+        try {
+            File f = new File(".", selectedView.getName() + ".png");
+            if (ImageIO.write(buffer, "png", f)) {
+                lblInfo.setText("Image saved: " + f.getAbsolutePath());
+            } else {
+                lblInfo.setText("Error to save image.");
+            }
+        } catch (IOException e) {
+            lblInfo.setText("Error to save image.");
+            Logger.getLogger(ViewWindow.class.getName()).log(Level.SEVERE, null, e);
+
+        } finally {
+            cg.dispose();
+        }
+
+
+    }//GEN-LAST:event_btnDownloadActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddRelOneMany;
     private javax.swing.JButton btnAddRelOneOne;
     private javax.swing.JButton btnAddTable;
+    private javax.swing.JButton btnDownload;
     private javax.swing.JButton btnShowDlgTable;
     private javax.swing.JDialog dlgAddTable;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblInfo;
     private javax.swing.JList lstTables;
     private javax.swing.JPanel pnButtons;
     private javax.swing.JPanel pnCanvas;
@@ -759,6 +821,7 @@ public class ViewWindow extends javax.swing.JFrame {
 
     private void addCopyTable(Option o) {
         TableElement copy = EntityUtil.copy((TableElement) o.getValue());
+        copy.setState(TableElement.State.ALLWAYS_VISIBLE);
         ViewTable v = new ViewTable(copy.getDataBase().getName(), copy.getName());
         if (addTable(copy)) {
             addViewTable(v);

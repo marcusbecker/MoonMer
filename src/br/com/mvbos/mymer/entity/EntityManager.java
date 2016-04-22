@@ -5,8 +5,6 @@
  */
 package br.com.mvbos.mymer.entity;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author Marcus Becker

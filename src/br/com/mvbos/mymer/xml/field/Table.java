@@ -6,6 +6,7 @@
 package br.com.mvbos.mymer.xml.field;
 
 import br.com.mvbos.mymer.el.TableElement;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author MarcusS
  */
 @XmlRootElement
-public class Table {
+public class Table implements Serializable{
 
     private String name;
     private String description;
