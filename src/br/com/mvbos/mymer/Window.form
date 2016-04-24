@@ -946,6 +946,7 @@
                     <Component class="javax.swing.JButton" name="btnAddFieldTable">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="+"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Add new Field"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddFieldTableActionPerformed"/>
@@ -954,6 +955,7 @@
                     <Component class="javax.swing.JButton" name="btnRemFieldTable">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="-"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Remove selected Field"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRemFieldTableActionPerformed"/>
@@ -1137,6 +1139,7 @@
                     <Component class="javax.swing.JButton" name="btnAddIndexFieldTable">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="+"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Add new Index"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddIndexFieldTableActionPerformed"/>
@@ -1145,6 +1148,7 @@
                     <Component class="javax.swing.JButton" name="btnRemIndex">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="-"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Remove selected Index"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRemIndexActionPerformed"/>

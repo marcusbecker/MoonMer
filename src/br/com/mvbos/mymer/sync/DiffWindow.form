@@ -79,7 +79,7 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="lblLefBase" pref="244" max="32767" attributes="0"/>
+                      <Component id="lblLeftBase" pref="244" max="32767" attributes="0"/>
                       <Component id="lblLefTable" max="32767" attributes="0"/>
                       <Component id="lblOrgLeft" alignment="0" max="32767" attributes="0"/>
                   </Group>
@@ -93,7 +93,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="lblLefBase" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblLeftBase" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -121,7 +121,7 @@
             <Property name="text" type="java.lang.String" value="Tabe:"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="lblLefBase">
+        <Component class="javax.swing.JLabel" name="lblLeftBase">
           <Properties>
             <Property name="text" type="java.lang.String" value=" "/>
           </Properties>
@@ -203,7 +203,7 @@
                       <Group type="102" attributes="0">
                           <Component id="jLabel3" linkSize="2" min="-2" pref="124" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="lblRigBase" max="32767" attributes="0"/>
+                          <Component id="lblRightBase" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -212,7 +212,7 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblRigTable" pref="270" max="32767" attributes="0"/>
+                              <Component id="lblRightTable" pref="270" max="32767" attributes="0"/>
                               <Component id="lblOrgRight" max="32767" attributes="0"/>
                           </Group>
                       </Group>
@@ -227,12 +227,12 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="lblRigBase" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblRightBase" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="lblRigTable" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblRightTable" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -255,12 +255,12 @@
             <Property name="text" type="java.lang.String" value="Table:"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="lblRigBase">
+        <Component class="javax.swing.JLabel" name="lblRightBase">
           <Properties>
             <Property name="text" type="java.lang.String" value=" "/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="lblRigTable">
+        <Component class="javax.swing.JLabel" name="lblRightTable">
           <Properties>
             <Property name="text" type="java.lang.String" value=" "/>
           </Properties>

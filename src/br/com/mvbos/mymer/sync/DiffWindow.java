@@ -6,9 +6,13 @@
 package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.util.FileUtil;
 import br.com.mvbos.mymer.xml.field.Field;
+import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -41,7 +45,7 @@ public class DiffWindow extends javax.swing.JFrame {
         pnLeftTop = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        lblLefBase = new javax.swing.JLabel();
+        lblLeftBase = new javax.swing.JLabel();
         lblLefTable = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         lblOrgLeft = new javax.swing.JLabel();
@@ -51,8 +55,8 @@ public class DiffWindow extends javax.swing.JFrame {
         pnRightTop = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        lblRigBase = new javax.swing.JLabel();
-        lblRigTable = new javax.swing.JLabel();
+        lblRightBase = new javax.swing.JLabel();
+        lblRightTable = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         lblOrgRight = new javax.swing.JLabel();
         pnRightBase = new javax.swing.JPanel();
@@ -69,7 +73,7 @@ public class DiffWindow extends javax.swing.JFrame {
 
         jLabel2.setText("Tabe:");
 
-        lblLefBase.setText(" ");
+        lblLeftBase.setText(" ");
 
         lblLefTable.setText(" ");
 
@@ -89,7 +93,7 @@ public class DiffWindow extends javax.swing.JFrame {
                     .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblLefBase, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+                    .addComponent(lblLeftBase, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
                     .addComponent(lblLefTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(lblOrgLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -103,7 +107,7 @@ public class DiffWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(lblLefBase))
+                    .addComponent(lblLeftBase))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnLeftTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -143,9 +147,9 @@ public class DiffWindow extends javax.swing.JFrame {
 
         jLabel4.setText("Table:");
 
-        lblRigBase.setText(" ");
+        lblRightBase.setText(" ");
 
-        lblRigTable.setText(" ");
+        lblRightTable.setText(" ");
 
         jLabel6.setText("Origin:");
 
@@ -161,14 +165,14 @@ public class DiffWindow extends javax.swing.JFrame {
                     .addGroup(pnRightTopLayout.createSequentialGroup()
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblRigBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(lblRightBase, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(pnRightTopLayout.createSequentialGroup()
                         .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblRigTable, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                            .addComponent(lblRightTable, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
                             .addComponent(lblOrgRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
@@ -181,11 +185,11 @@ public class DiffWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(lblRigBase))
+                    .addComponent(lblRightBase))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(lblRigTable))
+                    .addComponent(lblRightTable))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnRightTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
@@ -259,12 +263,12 @@ public class DiffWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JLabel lblLefBase;
     private javax.swing.JLabel lblLefTable;
+    private javax.swing.JLabel lblLeftBase;
     private javax.swing.JLabel lblOrgLeft;
     private javax.swing.JLabel lblOrgRight;
-    private javax.swing.JLabel lblRigBase;
-    private javax.swing.JLabel lblRigTable;
+    private javax.swing.JLabel lblRightBase;
+    private javax.swing.JLabel lblRightTable;
     private javax.swing.JPanel pnLeftBase;
     private javax.swing.JPanel pnLeftTop;
     private javax.swing.JPanel pnRightBase;
@@ -276,43 +280,101 @@ public class DiffWindow extends javax.swing.JFrame {
     private final List<Field> leftField = new ArrayList<>();
     private final List<Field> rightField = new ArrayList<>();
 
+    private final List<IndexElement> leftIndex = new ArrayList<>();
+    private final List<IndexElement> rightIndex = new ArrayList<>();
+
     private TableElement lSel;
     private TableElement rSel;
+
+    private void updateTextDiff() {
+        Differ.clear();
+
+        StringBuilder temp = Differ.compareField(lSel, leftField, rightField);
+        temp.append(Differ.compareIndex(lSel, leftIndex, rightIndex));
+        textDiffLeft.setText(temp.toString());
+
+        Differ.clear();
+        temp = Differ.compareField(rSel, rightField, leftField);
+        temp.append(Differ.compareIndex(rSel, rightIndex, leftIndex));
+        textDiffRight.setText(temp.toString());
+    }
+
+    private void clear(boolean left) {
+        if (left) {
+            this.lSel = null;
+            leftField.clear();
+            leftIndex.clear();
+            lblLeftBase.setText(null);
+            lblLefTable.setText(null);
+        } else {
+            this.rSel = null;
+            rightField.clear();
+            rightIndex.clear();
+            lblRightBase.setText(null);
+            lblRightTable.setText(null);
+        }
+    }
 
     public void setLeft(String base, Table sel) {
     }
 
     public void setLeft(TableElement sel) {
+
+        clear(true);
+
         this.lSel = sel;
 
         if (sel != null) {
-            lblLefBase.setText(sel.getDataBase().getName());
+            lblLeftBase.setText(sel.getDataBase().getName());
             lblLefTable.setText(sel.getName());
 
-            leftField.clear();
             leftField.addAll(sel.getFields());
+
+            IndexEntity ie = EntityManager.e().getEntity(IndexEntity.class);
+            leftIndex.addAll(ie.findIndexByTable(sel));
+
+            updateTextDiff();
         }
 
-        textDiffLeft.setText(Differ.compare(lSel, leftField, rightField).toString());
-        textDiffRight.setText(Differ.compare(rSel, rightField, leftField).toString());
     }
 
     public void setRight(String base, Table sel) {
-        this.rSel = new TableElement(new DataBaseElement(base, Color.BLUE), sel);
+
+        clear(false);
 
         if (sel != null) {
-            lblRigBase.setText(base);
-            lblRigTable.setText(sel.getName());
+            this.rSel = new TableElement(new DataBaseElement(base, Color.BLUE), sel);
 
-            rightField.clear();
+            lblRightBase.setText(base);
+            lblRightTable.setText(sel.getName());
+
             rightField.addAll(sel.getFields());
-        }
 
-        textDiffLeft.setText(Differ.compare(lSel, leftField, rightField).toString());
-        textDiffRight.setText(Differ.compare(rSel, rightField, leftField).toString());
+            if (sel.getIndices() != null) {
+                for (Index i : sel.getIndices()) {
+                    rightIndex.add(new IndexElement(i, rSel));
+                }
+            }
+
+            updateTextDiff();
+        }
     }
 
     public void setRight(TableElement sel) {
+        clear(false);
+        this.rSel = sel;
+
+        if (sel != null) {
+            lblRightBase.setText(sel.getDataBase().getName());
+            lblRightTable.setText(sel.getName());
+
+            rightField.addAll(sel.getFields());
+
+            IndexEntity ie = EntityManager.e().getEntity(IndexEntity.class);
+            rightIndex.addAll(ie.findIndexByTable(sel));
+
+            updateTextDiff();
+        }
     }
 
     private void clear() {
@@ -375,10 +437,10 @@ public class DiffWindow extends javax.swing.JFrame {
 
     private void resetView() {
         bar.setValue(0);
-        lblRigBase.setText("Loading...");
-        lblRigTable.setText("Loading...");
-        lblRigBase.setText("Loading...");
-        lblRigTable.setText("Loading...");
+        lblRightBase.setText("Loading...");
+        lblRightTable.setText("Loading...");
+        lblRightBase.setText("Loading...");
+        lblRightTable.setText("Loading...");
 
         lblOrgLeft.setText("");
         lblOrgRight.setText("");

@@ -5,6 +5,8 @@
  */
 package br.com.mvbos.mymer.xml.field;
 
+import br.com.mvbos.mymer.el.IndexElement;
+import br.com.mvbos.mymer.el.TableElement;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +27,10 @@ public class Index implements Serializable {
     private List<Field> fields;
 
     public Index() {
+    }
+
+    public Index(TableElement te, IndexElement ie) {
+        this(te.getDataBase().getName(), te.getName(), ie.getName(), ie.getPrimary(), ie.getUnique(), ie.getActive(), ie.getFields());
     }
 
     public Index(String dataBaseName, String tableName, String name) {

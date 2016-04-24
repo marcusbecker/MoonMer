@@ -43,6 +43,7 @@ import br.com.mvbos.mymer.sync.ImportBases;
 import br.com.mvbos.mymer.table.DataChange;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
 import br.com.mvbos.mymer.xml.DataBaseStore;
+import br.com.mvbos.mymer.xml.TransportDTO;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import java.awt.Color;
@@ -1009,6 +1010,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         });
 
         btnAddFieldTable.setText("+");
+        btnAddFieldTable.setToolTipText("Add new Field");
         btnAddFieldTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddFieldTableActionPerformed(evt);
@@ -1016,6 +1018,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         });
 
         btnRemFieldTable.setText("-");
+        btnRemFieldTable.setToolTipText("Remove selected Field");
         btnRemFieldTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemFieldTableActionPerformed(evt);
@@ -1157,6 +1160,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         jScrollPane4.setViewportView(lstIndexFields);
 
         btnAddIndexFieldTable.setText("+");
+        btnAddIndexFieldTable.setToolTipText("Add new Index");
         btnAddIndexFieldTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddIndexFieldTableActionPerformed(evt);
@@ -1164,6 +1168,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         });
 
         btnRemIndex.setText("-");
+        btnRemIndex.setToolTipText("Remove selected Index");
         btnRemIndex.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemIndexActionPerformed(evt);
@@ -1653,7 +1658,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 singleSelection(null);
                 EditControl.u().addEdit(new RemoveTableEdit(sel, this));
 
-                for (RelationshipElement r : rEntity.getList()) {
+                for (RelationshipElement r : rEntity.findRelationship(sel)) {
                     r.setVisible(false);
                 }
             }
@@ -2146,13 +2151,19 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private void btnAddIndexFieldTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddIndexFieldTableActionPerformed
 
         TableElement te = getTableSeletected();
+        addNewIndex(te, null);
 
+    }//GEN-LAST:event_btnAddIndexFieldTableActionPerformed
+
+    private void addNewIndex(TableElement te, IndexElement ie) {
         if (te != null) {
             GenericTableModel<IndexElement> m = (GenericTableModel<IndexElement>) tbIndex.getModel();
 
-            String name = String.format("%s%02d", te.getName(), m.getData().size() + 1);
+            if (ie == null) {
+                String name = String.format("%s%02d", te.getName(), m.getData().size() + 1);
+                ie = new IndexElement(name, false, false, true, te);
+            }
 
-            IndexElement ie = new IndexElement(name, false, false, true, te);
             ie.setFields(new ArrayList<Field>(5));
 
             m.getData().add(ie);
@@ -2160,8 +2171,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
             tbIndex.updateUI();
         }
-
-    }//GEN-LAST:event_btnAddIndexFieldTableActionPerformed
+    }
 
     private void btnRemIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemIndexActionPerformed
 
@@ -2308,7 +2318,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         }
 
         if (s.toLowerCase().contains(DataBaseStore.class.getSimpleName().toLowerCase())) {
-            List<TableElement> lst = XMLUtil.stringToTables(s);
+            TransportDTO dto = XMLUtil.stringToTables(s);
+            List<TableElement> lst = dto.getTables();
 
             int px = Camera.c().getPx();
 
@@ -2319,9 +2330,13 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 px += t.getWidth() + 10;
             }
 
+            for (IndexElement ie : dto.getIndexes()) {
+                addNewIndex(ie.getTable(), ie);
+            }
+
         } else {
             final String msg = String.format("No %s element found.", DataBaseStore.class.getSimpleName());
-            JOptionPane.showMessageDialog(this, msg, "Erro to import.", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, msg, "Import error.", JOptionPane.ERROR_MESSAGE);
         }
 
 
@@ -2869,7 +2884,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
                     if (!isAltDown) {
 
-                        if (selectedElements[0] == null || !isValidSelecion(mouseElement)) {
+                        if (!isValidSelecion(mouseElement)) {
                             selector.setEnabled(true);
                             selector.setPxy(e.getX(), e.getY());
                         } else {
@@ -2977,7 +2992,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void singleSelection(ElementModel el) {
         /*if (el != null && (selectedElements[0] == el)) {
-         //TODO compare fields size
+         //TODO compareField fields size
          return;
          }*/
 

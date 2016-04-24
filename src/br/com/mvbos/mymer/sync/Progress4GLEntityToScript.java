@@ -88,7 +88,7 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
     }
 
     @Override
-    public void renameField(TableElement tb, String oldName, String newName, StringBuilder sb) {
+    public void renameField(TableElement tb, Field field, String oldName, String newName, StringBuilder sb) {
         sb.append("RENAME FIELD <b>\"").append(oldName);
         sb.append("\"</b> OF <b>\"").append(tb.getName());
         sb.append("\"</b> TO <b>\"").append(newName).append("\"</b><br><br>\n");
@@ -118,8 +118,17 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append("DROP TABLE \"").append(tb.getName()).append("\"\n");
     }
 
-    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> values, StringBuilder log) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    @Override
+    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> changes, StringBuilder sb) {
+        sb.append("UPDATE INDEX <b>\"");
+        sb.append(fl.getName()).append("\"</b> OF <b>\"");
+        sb.append(tb.getName()).append("\"</b><br>\n");
+
+        for (String c : changes) {
+            sb.append(c).append("<br>\n");
+        }
+
+        sb.append("<br>\n");
     }
 
 }

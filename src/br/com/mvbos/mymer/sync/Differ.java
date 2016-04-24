@@ -59,9 +59,9 @@ public class Differ {
         }
     }
 
-    public static StringBuilder compare(TableElement tb, List<Field> left, List<Field> right) {
+    public static StringBuilder compareField(TableElement tb, List<Field> left, List<Field> right) {
 
-        log.delete(0, log.length());
+        //log.delete(0, log.length());
 
         if (tb == null || left.isEmpty() || right.isEmpty()) {
             return log;
@@ -84,7 +84,7 @@ public class Differ {
 
                     if (id != -1) {
                         Field fr = right.get(id);
-                        entityToScript.renameField(tb, fr.getName(), fr.getOrgId(), log);
+                        entityToScript.renameField(tb, fr, fr.getName(), fr.getOrgId(), log);
                     }
                 }
 
@@ -92,7 +92,7 @@ public class Differ {
                 id = EntityUtil.indexOfFieldByName(right, fl.getOrgId());
 
                 if (id != -1) {
-                    entityToScript.renameField(tb, fl.getOrgId(), fl.getName(), log);
+                    entityToScript.renameField(tb, fl, fl.getOrgId(), fl.getName(), log);
                 }
             }
 
@@ -106,7 +106,7 @@ public class Differ {
                     //change order
                 }
 
-                LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
+                final LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
                 compare(map, fl, fr);
                 map.remove("name");
                 map.remove("orgId");
@@ -141,7 +141,7 @@ public class Differ {
 
     public static StringBuilder compareIndex(TableElement tb, List<IndexElement> left, List<IndexElement> right) {
 
-        log.delete(0, log.length());
+        //log.delete(0, log.length());
 
         if (tb == null || left.isEmpty() || right.isEmpty()) {
             return log;
@@ -155,16 +155,14 @@ public class Differ {
             int id;
 
             if (fl.getName().equals(fl.getOrgId())) {
-                //rightField.indexOf(fl);
                 id = EntityUtil.indexOfIndexByName(right, fl.getName());
 
                 if (id == -1) {
                     id = EntityUtil.query(right, "orgId", fl.getOrgId());
-                    //id = EntityUtil.indexOfFieldByName(rightField, fl.getOrgId());
 
                     if (id != -1) {
-                        //Field fr = right.get(id);
-                        //entityToScript.renameField(tb, fr.getName(), fr.getOrgId(), log);
+                        IndexElement fr = right.get(id);
+                        entityToScript.renameIndex(tb, fr, fr.getName(), fr.getOrgId(), log);
                     }
                 }
 
@@ -172,7 +170,7 @@ public class Differ {
                 id = EntityUtil.indexOfIndexByName(right, fl.getOrgId());
 
                 if (id != -1) {
-                    entityToScript.renameField(tb, fl.getOrgId(), fl.getName(), log);
+                    entityToScript.renameIndex(tb, fl, fl.getOrgId(), fl.getName(), log);
                 }
             }
 
@@ -186,7 +184,7 @@ public class Differ {
                     //change order
                 }
 
-                LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
+                final LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
                 compare(map, fl, fr);
                 map.remove("name");
                 map.remove("orgId");
@@ -220,7 +218,10 @@ public class Differ {
     }
 
     public static StringBuilder compare(TableElement t, Table temp) {
-        return new StringBuilder(compare(t, t.getFields(), temp.getFields()));
+        StringBuilder sb = new StringBuilder(compareField(t, t.getFields(), temp.getFields()));
+        //sb.append(compareIndex(t, null, null));
+
+        return sb;
     }
 
     public static void removeTable(TableElement te, StringBuilder sb) {
@@ -252,6 +253,10 @@ public class Differ {
 
     public static void addBase(DataBaseElement localBase, StringBuilder sb) {
         //sb.append("CREATE DATABASE ").append(localBase.getName());
+    }
+
+    public static void clear() {
+        log.delete(0, log.length());
     }
 
     private void compare(Field fa, Field fb) {

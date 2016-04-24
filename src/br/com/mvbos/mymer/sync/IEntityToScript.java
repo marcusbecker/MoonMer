@@ -31,11 +31,11 @@ public interface IEntityToScript {
 
     public void addRelationship(TableElement tb, RelationshipElement re, StringBuilder sb);
 
-    public void renameBase(DataBaseElement db, String newName, StringBuilder sb);
+    public void renameBase(DataBaseElement db, String oldName, String newName, StringBuilder sb);
 
-    public void renameTable(TableElement tb, String newName, StringBuilder sb);
+    public void renameTable(TableElement tb, String oldName, String newName, StringBuilder sb);
 
-    public void renameIndex(TableElement tb, IndexElement ie, String newName, StringBuilder sb);
+    public void renameIndex(TableElement tb, IndexElement ie, String oldName, String newName, StringBuilder sb);
 
     public void renameRelationship(TableElement tb, RelationshipElement re, String newName, StringBuilder sb);
 
@@ -43,7 +43,7 @@ public interface IEntityToScript {
 
     public void updateTable(TableElement tb, StringBuilder sb);
 
-    public void updateIndex(TableElement tb, IndexElement ie, StringBuilder sb);
+    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> changes, StringBuilder sb);
 
     public void updateRelationship(TableElement tb, RelationshipElement re, StringBuilder sb);
 
@@ -57,7 +57,7 @@ public interface IEntityToScript {
 
     public void addField(TableElement tb, Field field, int index, StringBuilder sb);
 
-    public void renameField(TableElement tb, String oldName, String newName, StringBuilder sb);
+    public void renameField(TableElement tb, Field field, String oldName, String newName, StringBuilder sb);
 
     public void updateField(TableElement tb, Field field, Collection<String> changes, StringBuilder sb);
 

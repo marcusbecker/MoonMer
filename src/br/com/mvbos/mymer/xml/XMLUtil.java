@@ -8,10 +8,13 @@ package br.com.mvbos.mymer.xml;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.el.DataBaseElement;
+import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.entity.DataBaseEntity;
 import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.xml.field.DataBase;
+import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,10 +26,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
@@ -46,10 +47,12 @@ public class XMLUtil {
     /*Folders*/
     public static final File CURRENT_PATH = new File(Common.currentPath);
 
-    public static List<TableElement> stringToTables(String s) {
+    public static TransportDTO stringToTables(String s) {
         DataBaseStore dbs = null;
         List<TableElement> tables = null;
-        
+        List<IndexElement> indexes = new ArrayList<>(30);
+        TransportDTO dto = new TransportDTO();
+
         DataBaseEntity dbEntity = EntityManager.e().getEntity(DataBaseEntity.class);
 
         try {
@@ -92,13 +95,20 @@ public class XMLUtil {
                         e.setName(e.getName() + " " + ++DataBaseEntity.tableCount);
                     }
 
+                    for (Index i : t.getIndices()) {
+                        indexes.add(new IndexElement(i, e));
+                    }
+
                     elTables.add(e);
                     tables.add(e);
                 }
             }
         }
 
-        return tables;
+        dto.setTables(tables);
+        dto.setIndexes(indexes);
+
+        return dto;
     }
 
     public static String tablesToString(List<ElementModel> lst) {
@@ -126,7 +136,17 @@ public class XMLUtil {
             DataBase db = new DataBase(dbe);
 
             for (TableElement tb : map.get(dbe)) {
-                db.addTable(new Table(tb));
+                Table t = new Table(tb);
+
+                IndexEntity ie = EntityManager.e().getEntity(IndexEntity.class);
+                List<Index> indexLst = new ArrayList<>(15);
+
+                for (IndexElement i : ie.findIndexByTable(tb)) {
+                    indexLst.add(new Index(tb, i));
+                }
+
+                t.setIndices(indexLst);
+                db.addTable(t);
             }
 
             DataBaseStore dbs = new DataBaseStore();

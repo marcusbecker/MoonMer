@@ -45,15 +45,15 @@ public abstract class EntityToScriptAbstract implements IEntityToScript {
     }
 
     @Override
-    public void renameBase(DataBaseElement db, String newName, StringBuilder sb) {
+    public void renameBase(DataBaseElement db, String oldName, String newName, StringBuilder sb) {
     }
 
     @Override
-    public void renameTable(TableElement tb, String newName, StringBuilder sb) {
+    public void renameTable(TableElement tb, String oldName, String newName, StringBuilder sb) {
     }
 
     @Override
-    public void renameIndex(TableElement tb, IndexElement ie, String newName, StringBuilder sb) {
+    public void renameIndex(TableElement tb, IndexElement ie, String oldName, String newName, StringBuilder sb) {
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class EntityToScriptAbstract implements IEntityToScript {
     }
 
     @Override
-    public void updateIndex(TableElement tb, IndexElement ie, StringBuilder sb) {
+    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> changes, StringBuilder sb) {
     }
 
     @Override
@@ -97,7 +97,7 @@ public abstract class EntityToScriptAbstract implements IEntityToScript {
     }
 
     @Override
-    public void renameField(TableElement tb, String oldName, String newName, StringBuilder sb) {
+    public void renameField(TableElement tb, Field field, String oldName, String newName, StringBuilder sb) {
     }
 
     @Override
