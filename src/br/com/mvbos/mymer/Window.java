@@ -577,6 +577,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         miDiffExport = new javax.swing.JMenuItem();
         miOrderByRow = new javax.swing.JMenuItem();
         miOrderByCol = new javax.swing.JMenuItem();
+        menuWindow = new javax.swing.JMenu();
+        miUpdate = new javax.swing.JMenuItem();
 
         jLabel1.setText("Name:");
 
@@ -1506,6 +1508,19 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         menuTools.add(miOrderByCol);
 
         jMenuBar1.add(menuTools);
+
+        menuWindow.setText("Window");
+
+        miUpdate.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F5, 0));
+        miUpdate.setText("Update");
+        miUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miUpdateActionPerformed(evt);
+            }
+        });
+        menuWindow.add(miUpdate);
+
+        jMenuBar1.add(menuWindow);
 
         setJMenuBar(jMenuBar1);
 
@@ -2439,6 +2454,11 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_miDiffExportActionPerformed
 
+    private void miUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miUpdateActionPerformed
+        Common.updateAll = true;
+
+    }//GEN-LAST:event_miUpdateActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2499,6 +2519,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JMenu menuFile;
     private javax.swing.JMenu menuTools;
     private javax.swing.JMenu menuView;
+    private javax.swing.JMenu menuWindow;
     private javax.swing.JMenuItem miBases;
     private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
@@ -2513,6 +2534,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JMenuItem miRedo;
     private javax.swing.JMenuItem miSave;
     private javax.swing.JMenuItem miUndo;
+    private javax.swing.JMenuItem miUpdate;
     private javax.swing.JPanel pnBottom;
     private javax.swing.JPanel pnCanvas;
     private javax.swing.JPanel pnLeft;
@@ -2557,6 +2579,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 TableElement te = getTableSeletected();
                 if (te != null) {
                     EditControl.u().addEdit(new ChangeTableFieldEdit(te, data, Window.this));
+                    te.update();
                 }
             }
         });

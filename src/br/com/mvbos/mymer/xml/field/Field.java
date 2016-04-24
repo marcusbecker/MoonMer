@@ -10,6 +10,7 @@ import br.com.mvbos.mymer.table.annotation.TableField;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -17,6 +18,27 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class Field implements Serializable {
+
+    public static char[] getIndexInitial(Field f) {
+        if (f.getAttribute(Field.Attribute.PRIMARY) == null && f.getAttribute(Field.Attribute.INDEX) == null) {
+            return null;
+        }
+
+        char[] arr = {' ', ' '};
+
+        arr[0] = f.getAttribute(Field.Attribute.PRIMARY) != null ? 'P' : 'I';
+
+        if (f.getAttribute(Field.Attribute.UNIQUE) != null) {
+            arr[1] = 'U';
+        }
+
+        return arr;
+    }
+
+    public enum Attribute {
+
+        PRIMARY, UNIQUE, INDEX
+    }
 
     //public static Map<Short, Field> internalIndex = new HashMap<>(500);
     private String name;
@@ -29,6 +51,9 @@ public class Field implements Serializable {
 
     @TableField(ignore = true)
     private String orgId;
+
+    @TableField(ignore = true)
+    private Attribute[] attributes;
 
     public Field() {
     }
@@ -106,6 +131,28 @@ public class Field implements Serializable {
 
     public void setOrgId(String orgId) {
         this.orgId = orgId;
+    }
+
+    @XmlTransient
+    public Attribute[] getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Attribute[] attributes) {
+        this.attributes = attributes;
+    }
+
+    public Attribute getAttribute(Attribute attribute) {
+        return attributes != null ? attributes[attribute.ordinal()] : null;
+    }
+
+    public void addAttribute(Attribute attribute) {
+        if (attributes == null) {
+            attributes = new Attribute[Attribute.values().length];
+        }
+
+        attributes[attribute.ordinal()] = attribute;
+
     }
 
     public String getShortType() {

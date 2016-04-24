@@ -10,9 +10,6 @@ import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.xml.IndexStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
-import static br.com.mvbos.mymer.xml.XMLUtil.FORMATTED_OUTPUT;
-import static br.com.mvbos.mymer.xml.XMLUtil.getFileInputStream;
-import static br.com.mvbos.mymer.xml.XMLUtil.getFileOutputStream;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Index;
 import java.awt.event.ActionListener;
@@ -77,9 +74,9 @@ public class IndexEntity implements IElementEntity<IndexElement> {
 
             JAXBContext context = JAXBContext.newInstance(IndexStore.class);
             Marshaller m = context.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, FORMATTED_OUTPUT);
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, XMLUtil.FORMATTED_OUTPUT);
 
-            m.marshal(rStore, getFileOutputStream(FILE_INDEX_STORE));
+            m.marshal(rStore, XMLUtil.getFileOutputStream(FILE_INDEX_STORE));
 
         } catch (JAXBException | FileNotFoundException ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
@@ -110,7 +107,7 @@ public class IndexEntity implements IElementEntity<IndexElement> {
                 JAXBContext context = JAXBContext.newInstance(IndexStore.class);
                 Unmarshaller um = context.createUnmarshaller();
 
-                iStore = (IndexStore) um.unmarshal(getFileInputStream(FILE_INDEX_STORE));
+                iStore = (IndexStore) um.unmarshal(XMLUtil.getFileInputStream(FILE_INDEX_STORE));
             }
 
         } catch (JAXBException | FileNotFoundException ex) {
@@ -136,7 +133,21 @@ public class IndexEntity implements IElementEntity<IndexElement> {
                         int index = tb.getFields().indexOf(f);
 
                         if (index != -1) {
-                            lstField.add(tb.getFields().get(index));
+                            Field ff = tb.getFields().get(index);
+
+                            if (i.getActive()) {
+                                if (i.getPrimary()) {
+                                    ff.addAttribute(Field.Attribute.PRIMARY);
+                                } else {
+                                    ff.addAttribute(Field.Attribute.INDEX);
+                                }
+
+                                if (i.getUnique()) {
+                                    ff.addAttribute(Field.Attribute.UNIQUE);
+                                }
+                            }
+
+                            lstField.add(ff);
                         }
                     }
 
