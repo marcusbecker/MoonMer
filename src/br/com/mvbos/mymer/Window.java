@@ -276,6 +276,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     public Window() {
 
         initComponents();
+        
+        setIconImage(new javax.swing.ImageIcon(getClass().getResource("/icon.png")).getImage());
 
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.addKeyEventDispatcher(new MyDispatcher());
@@ -2304,6 +2306,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableElement te = getTableSeletected();
         if (te != null) {
             TableElement nte = EntityUtil.clone(te);
+
+            nte.setPxy(Camera.c().getCpx(), Camera.c().getCpy());
+
             dbEntity.addTable(nte);
         }
 
