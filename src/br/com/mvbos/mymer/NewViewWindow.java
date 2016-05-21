@@ -176,9 +176,7 @@ public class NewViewWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
-
         openView();
-
     }//GEN-LAST:event_btnNextActionPerformed
 
     private void openView() throws HeadlessException {

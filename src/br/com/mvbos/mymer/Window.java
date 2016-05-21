@@ -237,11 +237,11 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
             } else if (e.getID() == KeyEvent.KEY_RELEASED) {
                 //System.out.println("e.getKeyCode() " + e.getKeyCode());
-                if (107 == e.getKeyCode()) {
+                if (107 == e.getKeyCode() || KeyEvent.VK_PLUS == e.getKeyCode()) {
                     //scale += 0.1f;
                     applyZoom(10);
 
-                } else if (109 == e.getKeyCode()) {
+                } else if (109 == e.getKeyCode() || KeyEvent.VK_MINUS == e.getKeyCode()) {
                     //scale -= 0.1f;
                     applyZoom(-10);
 
@@ -276,7 +276,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     public Window() {
 
         initComponents();
-        
+
         setIconImage(new javax.swing.ImageIcon(getClass().getResource("/icon.png")).getImage());
 
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();

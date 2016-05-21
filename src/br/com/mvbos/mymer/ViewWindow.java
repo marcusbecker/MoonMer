@@ -24,6 +24,7 @@ import br.com.mvbos.mymer.xml.field.View;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.KeyEventDispatcher;
@@ -56,13 +57,15 @@ import javax.swing.Timer;
  */
 public class ViewWindow extends javax.swing.JFrame {
 
-    private JPanel canvas;
+    private MyPanel canvas;
     private final Timer timer;
 
     private final int camSize = 1500;
 
     private boolean isAltDown;
     private boolean isControlDown;
+
+    private short zoom;
 
     private List<TableElement> tables;// = new ArrayList<>(30);
     private final List<RelationshipElement> relations = new ArrayList<>(30);
@@ -111,7 +114,17 @@ public class ViewWindow extends javax.swing.JFrame {
                 }
 
             } else if (e.getID() == KeyEvent.KEY_RELEASED) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+
+                if (107 == e.getKeyCode() || KeyEvent.VK_PLUS == e.getKeyCode()) {
+                    applyZoom(10);
+
+                } else if (109 == e.getKeyCode() || KeyEvent.VK_MINUS == e.getKeyCode()) {
+                    applyZoom(-10);
+
+                } else if (KeyEvent.VK_EQUALS == e.getKeyCode()) {
+                    applyZoom(0);
+
+                } else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                     removeSelTables();
                 }
 
@@ -416,14 +429,17 @@ public class ViewWindow extends javax.swing.JFrame {
     private void tfTableFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfTableFilterKeyReleased
 
         String filter = tfTableFilter.getText();
-
         myListModel.getList().clear();
 
-        for (DataBaseElement d : dbEntity.getList()) {
+        if (!filter.trim().isEmpty()) {
+            short id = 0;
 
-            for (TableElement t : d.getTables()) {
-                if (EntityUtil.maths(filter, t)) {
-                    myListModel.add(new Option((short) t.getId(), t, t.getName()));
+            for (DataBaseElement d : dbEntity.getList()) {
+
+                for (TableElement t : d.getTables()) {
+                    if (EntityUtil.maths(filter, t)) {
+                        myListModel.add(new Option(++id, t, t.getName()));
+                    }
                 }
             }
         }
@@ -447,6 +463,7 @@ public class ViewWindow extends javax.swing.JFrame {
 
     private void btnShowDlgTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowDlgTableActionPerformed
         dlgAddTable.pack();
+        dlgAddTable.setModal(true);
         dlgAddTable.setLocationRelativeTo(this);
         dlgAddTable.setVisible(true);
 
@@ -473,9 +490,14 @@ public class ViewWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void btnDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDownloadActionPerformed
-        BufferedImage buffer = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage buffer = new BufferedImage(stageEl.getWidth(), stageEl.getHeight(), BufferedImage.TYPE_INT_RGB);
+
         Graphics2D cg = buffer.createGraphics();
-        canvas.paintAll(cg);
+
+        boolean old = cam.isActive();
+        cam.setActive(false);
+        canvas.paintComponent(cg);
+        cam.setActive(old);
 
         try {
             File f = new File(".", selectedView.getName() + ".png");
@@ -535,79 +557,88 @@ public class ViewWindow extends javax.swing.JFrame {
     private TableElement relRight;
     private RelationshipElement.Type relType;
 
-    private JPanel createCanvas() {
-        canvas = new JPanel() {
-            private final Color BACKGROUND_COLOR = new Color(235, 235, 235);
+    private class MyPanel extends JPanel {
 
-            @Override
-            protected void paintComponent(Graphics gg) {
-                super.paintComponent(gg);
+        private final Color BACKGROUND_COLOR = new Color(235, 235, 235);
 
-                Graphics2D g = (Graphics2D) gg;
-                Common.graphics = g;
+        @Override
+        public void paintComponent(Graphics gg) {
+            //super.paintComponent(gg);
 
-                g.setColor(BACKGROUND_COLOR);
-                g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            Graphics2D g = (Graphics2D) gg;
+            Common.graphics = g;
 
-                //stageEl.setColor(btnCanvasColor.getBackground());
-                stageEl.setColor(Color.WHITE);
-                cam.draw(g, stageEl);
+            g.setColor(BACKGROUND_COLOR);
+            g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-                int sp = 5;
-                g.setColor(Color.BLACK);
+            //stageEl.setColor(btnCanvasColor.getBackground());
+            if (zoom != 0) {
+                float scale = 1 + zoom / 100f;
+                g.scale(scale, scale);
+            }
 
+            stageEl.setColor(Color.WHITE);
+            cam.draw(g, stageEl);
+
+            int sp = 5;
+            g.setColor(Color.BLACK);
+
+            for (ElementModel el : selectedElements) {
+                if (el == null) {
+                    break;
+                }
+
+                g.drawRect(cam.fx(el.getPx() - sp), cam.fy(el.getPy() - sp), el.getWidth() + sp * 2, el.getHeight() + sp * 2);
+            }
+
+            if (startDrag != null) {
+                int npx = mousePos.x - startDrag.x;
+                int npy = mousePos.y - startDrag.y;
                 for (ElementModel el : selectedElements) {
                     if (el == null) {
                         break;
                     }
 
-                    g.drawRect(cam.fx(el.getPx() - sp), cam.fy(el.getPy() - sp), el.getWidth() + sp * 2, el.getHeight() + sp * 2);
+                    g.drawRect(cam.fx(el.getPx() + npx), cam.fy(el.getPy() + npy), el.getWidth(), el.getHeight());
                 }
-
-                if (startDrag != null) {
-                    int npx = mousePos.x - startDrag.x;
-                    int npy = mousePos.y - startDrag.y;
-                    for (ElementModel el : selectedElements) {
-                        if (el == null) {
-                            break;
-                        }
-
-                        g.drawRect(cam.fx(el.getPx() + npx), cam.fy(el.getPy() + npy), el.getWidth(), el.getHeight());
-                    }
-                }
-
-                if (Common.updateAll) {
-                    for (ElementModel el : tables) {
-                        el.update();
-                    }
-
-                    Common.updateAll = false;
-
-                } else {
-
-                    for (RelationshipElement rl : relations) {
-                        rl.drawMe(g);
-                    }
-
-                    for (ElementModel el : tables) {
-                        cam.draw(g, el);
-                    }
-
-                    selector.drawMe(g);
-                    drawRelationPointer(g);
-                }
-
             }
 
-            private void drawRelationPointer(Graphics2D g) {
-                if (mode != EditTool.RELATION || relLeft == null) {
-                    return;
+            if (Common.updateAll) {
+                for (ElementModel el : tables) {
+                    el.update();
                 }
 
-                g.setColor(Color.DARK_GRAY);
-                g.drawLine(cam.fx(relLeft.getPx() + relLeft.getHalfWidth()), cam.fy(relLeft.getPy() + relLeft.getHalfHeight()), mousePos.x, mousePos.y);
+                Common.updateAll = false;
+
+            } else {
+
+                for (RelationshipElement rl : relations) {
+                    rl.drawMe(g);
+                }
+
+                for (ElementModel el : tables) {
+                    cam.draw(g, el);
+                }
+
+                selector.drawMe(g);
+                drawRelationPointer(g);
             }
-        };
+
+        }
+
+        private void drawRelationPointer(Graphics2D g) {
+            if (mode != EditTool.RELATION || relLeft == null) {
+                return;
+            }
+
+            g.setColor(Color.DARK_GRAY);
+            g.drawLine(cam.fx(relLeft.getPx() + relLeft.getHalfWidth()), cam.fy(relLeft.getPy() + relLeft.getHalfHeight()), mousePos.x, mousePos.y);
+        }
+
+    }
+
+    private JPanel createCanvas() {
+        canvas = new MyPanel();
 
         canvas.addMouseListener(new MouseListener() {
 
@@ -683,6 +714,8 @@ public class ViewWindow extends javax.swing.JFrame {
                             el.incPx(npx);
                             el.incPy(npy);
                         }
+                        
+                        recalcStegeELSize();
                     }
 
                     selector.setEnabled(false);
@@ -747,6 +780,10 @@ public class ViewWindow extends javax.swing.JFrame {
         });
 
         return canvas;
+    }
+
+    private void applyZoom(int val) {
+        zoom = (short) (val != 0 ? zoom + val : val);
     }
 
     private void singleSelection(ElementModel el) {
@@ -814,14 +851,19 @@ public class ViewWindow extends javax.swing.JFrame {
         if (idx == -1) {
             return;
         }
+
         Option o = (Option) myListModel.getElementAt(idx);
         addCopyTable(o);
+        //lstTables.remove(idx);
         myListModel.remove(o);
+
+        recalcStegeELSize();
     }
 
     private void addCopyTable(Option o) {
         TableElement copy = EntityUtil.copy((TableElement) o.getValue());
         copy.setState(TableElement.State.ALLWAYS_VISIBLE);
+        copy.update();
         ViewTable v = new ViewTable(copy.getDataBase().getName(), copy.getName());
         if (addTable(copy)) {
             addViewTable(v);
@@ -908,21 +950,39 @@ public class ViewWindow extends javax.swing.JFrame {
         selectedView = view;
 
         singleSelection(null);
-        setTitle("View: ".concat(selectedView.getName()));
+        setTitle(String.format("View: %s", selectedView.getName()));
 
         tables = selectedView.getTempTables();
-        if (tables.size() != selectedView.getTables().size()) {
 
+        if (tables.size() != selectedView.getTables().size()) {
             tables.clear();
             for (ViewTable vt : selectedView.getTables()) {
-
                 TableElement te = dbEntity.findByTableName(vt.getDataBaseName(), vt.getTableName());
                 TableElement copy = EntityUtil.convert(te, vt);
                 tables.add(copy);
             }
+
         }
 
         loadRelations(relEntity.findRelationship(tables), true);
+        recalcStegeELSize();
+        cam.center(stageEl);
+    }
+
+    private void recalcStegeELSize() {
+        Point xy = new Point();
+        Dimension wh = new Dimension(800 - 15, 600 - 15);
+
+        for (TableElement te : tables) {
+            xy.x = xy.x > te.getPx() ? te.getPx() : xy.x;
+            xy.y = xy.y > te.getPy() ? te.getPy() : xy.y;
+
+            wh.width = wh.width < te.getAllWidth() ? te.getAllWidth() : wh.width;
+            wh.height = wh.height < te.getAllHeight() ? te.getAllHeight() : wh.height;
+        }
+
+        stageEl.setPxy(xy.x, xy.y);
+        stageEl.setSize(wh.width + 15, wh.height + 15);
     }
 
     private void loadRelations(Set<RelationshipElement> relationship, boolean replace) {
@@ -931,13 +991,18 @@ public class ViewWindow extends javax.swing.JFrame {
         }
 
         for (RelationshipElement r : relationship) {
-            TableElement parent = tables.get(tables.indexOf(r.getParent()));
-            TableElement child = tables.get(tables.indexOf(r.getChild()));
+            int idParent = tables.indexOf(r.getParent());
+            int idChild = tables.indexOf(r.getChild());
 
-            RelationshipElement re = new RelationshipElement(r.getType(), parent, child);
-            re.setCam(cam);
+            if (idParent > -1 && idChild > -1) {
+                TableElement parent = tables.get(idParent);
+                TableElement child = tables.get(idChild);
 
-            relations.add(re);
+                RelationshipElement re = new RelationshipElement(r.getType(), parent, child);
+                re.setCam(cam);
+
+                relations.add(re);
+            }
         }
     }
 
