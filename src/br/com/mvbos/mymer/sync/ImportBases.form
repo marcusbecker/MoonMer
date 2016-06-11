@@ -28,7 +28,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="tab" alignment="0" max="32767" attributes="0"/>
+          <Component id="tab" alignment="0" pref="731" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -36,7 +36,9 @@
                   <Group type="102" attributes="0">
                       <Component id="lblInfo" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btnNext" min="-2" pref="100" max="-2" attributes="0"/>
+                      <Component id="btnIgnore" linkSize="3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnNext" linkSize="3" min="-2" pref="100" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -54,6 +56,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="btnNext" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="lblInfo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnIgnore" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -88,7 +91,7 @@
                               <Component id="btnFile" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jScrollPane1" pref="291" max="32767" attributes="0"/>
+                              <Component id="jScrollPane1" pref="322" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="btnAdd" linkSize="2" min="-2" max="-2" attributes="0"/>
@@ -97,7 +100,7 @@
                                   <Component id="btnRemAll" linkSize="2" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="291" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="323" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -233,7 +236,7 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane3" pref="643" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" pref="706" max="32767" attributes="0"/>
                           <Component id="jLabel1" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -302,7 +305,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane4" pref="663" max="32767" attributes="0"/>
+                  <Component id="jScrollPane4" pref="726" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnUpdate" min="-2" pref="100" max="-2" attributes="0"/>
@@ -388,7 +391,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane6" alignment="0" pref="663" max="32767" attributes="0"/>
+                  <Component id="jScrollPane6" alignment="0" pref="726" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="btnUpdateIndex" min="-2" pref="100" max="-2" attributes="0"/>
@@ -485,6 +488,15 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Use URL or select a File"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnIgnore">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Ignore"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnIgnoreActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

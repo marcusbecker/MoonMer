@@ -22,6 +22,7 @@ import br.com.mvbos.mymer.edit.AddTableEdit;
 import br.com.mvbos.mymer.edit.ChangeTableFieldEdit;
 import br.com.mvbos.mymer.edit.EditControl;
 import br.com.mvbos.mymer.edit.EditWindowInterface;
+import br.com.mvbos.mymer.edit.RemoveDataBaseEdit;
 import br.com.mvbos.mymer.edit.RemoveTableEdit;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.FindAnimationElement;
@@ -83,6 +84,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -150,11 +152,12 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     public void changeSelection(ElementModel e) {
         singleSelection(e);
 
-        if (e != null) {
+        if (e instanceof TableElement) {
             highlights(e);
             positionCam(e);
+
+            //fireTableCellUpdated(row, col);
         }
-        //fireTableCellUpdated(row, col);
     }
 
     private void highlights(ElementModel e) {
@@ -488,6 +491,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         tfDBTablesCounter = new javax.swing.JTextField();
         cbEditDataBase = new javax.swing.JComboBox();
         btnSaveDataBase = new javax.swing.JButton();
+        btnRemoveDataBase = new javax.swing.JButton();
+        btnSaveAndCloseDataBase = new javax.swing.JButton();
         dlgSearchField = new javax.swing.JDialog();
         tfSearchField = new javax.swing.JTextField();
         dlgCanvas = new javax.swing.JDialog();
@@ -601,6 +606,20 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        btnRemoveDataBase.setText("Remove");
+        btnRemoveDataBase.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveDataBaseActionPerformed(evt);
+            }
+        });
+
+        btnSaveAndCloseDataBase.setText("Save & close");
+        btnSaveAndCloseDataBase.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveAndCloseDataBaseActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout dlgDataBaseLayout = new javax.swing.GroupLayout(dlgDataBase.getContentPane());
         dlgDataBase.getContentPane().setLayout(dlgDataBaseLayout);
         dlgDataBaseLayout.setHorizontalGroup(
@@ -619,18 +638,28 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                             .addGroup(dlgDataBaseLayout.createSequentialGroup()
                                 .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(tfDBTablesCounter, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
+                                .addComponent(cbEditDataBase, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnRemoveDataBase))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnSaveDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(cbEditDataBase, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnSaveDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnSaveAndCloseDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
+
+        dlgDataBaseLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnRemoveDataBase, btnSaveDataBase});
+
         dlgDataBaseLayout.setVerticalGroup(
             dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, dlgDataBaseLayout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addComponent(cbEditDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(8, 8, 8)
+                .addGroup(dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbEditDataBase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnRemoveDataBase))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -644,7 +673,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ccDBColor, javax.swing.GroupLayout.PREFERRED_SIZE, 281, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSaveDataBase)
+                .addGroup(dlgDataBaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSaveDataBase)
+                    .addComponent(btnSaveAndCloseDataBase))
                 .addContainerGap())
         );
 
@@ -1852,33 +1883,43 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void btnSaveDataBaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveDataBaseActionPerformed
 
-        if (tfDBName.getText().trim().isEmpty()) {
-            return;
+        saveDataBaseAction();
+
+    }//GEN-LAST:event_btnSaveDataBaseActionPerformed
+
+    private boolean saveDataBaseAction() throws HeadlessException {
+        final String newName = tfDBName.getText().trim();
+        if (newName.isEmpty()) {
+            return false;
         }
-
+        if (DataBaseEntity.DEFAULT_DATA_BASE.getName().equalsIgnoreCase(newName)) {
+            JOptionPane.showMessageDialog(this, "Plase, type a valid database name.");
+            return false;
+        }
+        if (dataBaseSelected == null) {
+            if (dbEntity.findByName(newName) != null) {
+                JOptionPane.showMessageDialog(this, "Error, duplicate database name.");
+                return false;
+            }
+        }
         DataBaseElement db;
-
         if (dataBaseSelected == null) {
             db = new DataBaseElement();
             dataBaseSelected = db;
         } else {
             db = dataBaseSelected;
         }
-
-        db.setName(tfDBName.getText());
+        db.setName(newName);
         db.setColor(ccDBColor.getColor());
-
         dbEntity.add(db);
-
         for (TableElement el : db.getTables()) {
             //el.setDataBase(db);
             el.setColor(db.getColor());
             el.update();
         }
 
-        dlgDataBase.setVisible(false);
-
-    }//GEN-LAST:event_btnSaveDataBaseActionPerformed
+        return true;
+    }
 
     private void tfFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfFilterKeyReleased
 
@@ -2464,6 +2505,27 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_miUpdateActionPerformed
 
+    private void btnRemoveDataBaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveDataBaseActionPerformed
+        if (dataBaseSelected != null) {
+            int confirm = JOptionPane.showConfirmDialog(this, "Do you want to remove selected data base?");
+            if (confirm == JOptionPane.OK_OPTION) {
+                singleSelection(null);
+                EditControl.u().addEdit(new RemoveDataBaseEdit(dataBaseSelected, this));
+                dbEntity.remove(dataBaseSelected);
+            }
+        }
+
+    }//GEN-LAST:event_btnRemoveDataBaseActionPerformed
+
+    private void btnSaveAndCloseDataBaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveAndCloseDataBaseActionPerformed
+
+        if (saveDataBaseAction()) {
+            //dlgDataBase.dispose();
+            dlgDataBase.setVisible(false);
+        }
+
+    }//GEN-LAST:event_btnSaveAndCloseDataBaseActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2478,6 +2540,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JToggleButton btnCrop;
     private javax.swing.JButton btnRemFieldTable;
     private javax.swing.JButton btnRemIndex;
+    private javax.swing.JButton btnRemoveDataBase;
     private javax.swing.JButton btnRemoveRelationship;
     private javax.swing.JButton btnRemoveTable;
     private javax.swing.JButton btnSQLColNames;
@@ -2486,6 +2549,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JButton btnSQLSel;
     private javax.swing.JButton btnSQLTempTable;
     private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnSaveAndCloseDataBase;
     private javax.swing.JButton btnSaveCanvas;
     private javax.swing.JButton btnSaveDataBase;
     private javax.swing.JButton btnSearchField;
@@ -3023,6 +3087,10 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
          //TODO compareField fields size
          return;
          }*/
+
+        if (el != null && !(el instanceof TableElement)) {
+            return;
+        }
 
         for (int i = 1; i < selectedElements.length; i++) {
             selectedElements[i] = null;

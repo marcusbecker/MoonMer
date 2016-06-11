@@ -31,16 +31,22 @@ public class IndexElement extends ElementModel {
         this.table = table;
     }
 
+    public IndexElement(Index i, TableElement tb) {
+        this(i.getName(), i.getPrimary(), i.getUnique(), i.getActive(), tb, i.getFields());
+    }
+
     public IndexElement(String name, Boolean primary, Boolean unique, Boolean active, TableElement table) {
+        this(name, primary, unique, active, table, null);
+    }
+
+    public IndexElement(String name, Boolean primary, Boolean unique, Boolean active, TableElement table, List<Field> fields) {
         this.name = name;
         this.primary = primary;
         this.unique = unique;
         this.active = active;
         this.table = table;
-    }
 
-    public IndexElement(Index i, TableElement tb) {
-        this(i.getName(), i.getPrimary(), i.getUnique(), i.getActive(), tb);
+        this.fields = fields;
     }
 
     public Boolean getPrimary() {
@@ -121,7 +127,7 @@ public class IndexElement extends ElementModel {
     }
 
     public String getOrgId() {
-       return getName();
+        return getName();
     }
 
 }

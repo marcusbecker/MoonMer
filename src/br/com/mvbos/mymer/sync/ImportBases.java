@@ -178,9 +178,11 @@ public class ImportBases extends javax.swing.JFrame {
             lblInfo.setForeground(Color.BLACK);
 
             btnNext.setEnabled(true);
+            btnIgnore.setEnabled(true);
 
         } else {
             btnNext.setEnabled(false);
+            btnIgnore.setEnabled(false);
             lblDBInfo.setText("No data base selected.");
         }
     }
@@ -349,6 +351,7 @@ public class ImportBases extends javax.swing.JFrame {
         btnNext = new javax.swing.JButton();
         lblDBInfo = new javax.swing.JLabel();
         lblInfo = new javax.swing.JLabel();
+        btnIgnore = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Import Bases");
@@ -415,7 +418,7 @@ public class ImportBases extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnFile))
                     .addGroup(pnStepOneLayout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnStepOneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(btnAdd)
@@ -423,7 +426,7 @@ public class ImportBases extends javax.swing.JFrame {
                             .addComponent(btnRem)
                             .addComponent(btnRemAll))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -474,7 +477,7 @@ public class ImportBases extends javax.swing.JFrame {
             .addGroup(pnStepTwoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepTwoLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -524,7 +527,7 @@ public class ImportBases extends javax.swing.JFrame {
         pnStepThree.setLayout(pnStepThreeLayout);
         pnStepThreeLayout.setHorizontalGroup(
             pnStepThreeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepThreeLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -576,7 +579,7 @@ public class ImportBases extends javax.swing.JFrame {
         pnStepFour.setLayout(pnStepFourLayout);
         pnStepFourLayout.setHorizontalGroup(
             pnStepFourLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+            .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 726, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepFourLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnUpdateIndex, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -612,11 +615,19 @@ public class ImportBases extends javax.swing.JFrame {
 
         lblInfo.setText("Use URL or select a File");
 
+        btnIgnore.setText("Ignore");
+        btnIgnore.setEnabled(false);
+        btnIgnore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnIgnoreActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tab)
+            .addComponent(tab, javax.swing.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -624,9 +635,14 @@ public class ImportBases extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIgnore)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnIgnore, btnNext});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -637,7 +653,8 @@ public class ImportBases extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnNext)
-                    .addComponent(lblInfo))
+                    .addComponent(lblInfo)
+                    .addComponent(btnIgnore))
                 .addContainerGap())
         );
 
@@ -972,6 +989,14 @@ public class ImportBases extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnRemoveLocalTableActionPerformed
 
+    private void btnIgnoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIgnoreActionPerformed
+        if (dbStart < dbCount) {
+            nextDataBase();
+        } else {
+            this.dispose();
+        }
+    }//GEN-LAST:event_btnIgnoreActionPerformed
+
     private void changeTab(int index) {
         tab.setSelectedIndex(index);
 
@@ -1213,6 +1238,7 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnAddAll;
     private javax.swing.JButton btnFile;
+    private javax.swing.JButton btnIgnore;
     private javax.swing.JButton btnNext;
     private javax.swing.JButton btnRem;
     private javax.swing.JButton btnRemAll;

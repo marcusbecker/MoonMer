@@ -37,7 +37,17 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
             sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(tb.getName()).append("\" AS ").append(f.getType()).append("\n");
             sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
             sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
-            sb.append("  INITIAL \"\"\n");
+
+            if (f.getInitial() == null || f.getInitial().isEmpty()) {
+                sb.append("  INITIAL \"\"\n");
+            } else {
+                if (f.getFormat() == null || f.getFormat().startsWith("x")) {
+                    sb.append("  INITIAL \"").append(f.getInitial()).append("\"\n");
+                } else {
+                    sb.append("  INITIAL ").append(f.getInitial()).append("\n");
+                }
+            }
+
             sb.append("  LABEL \"").append(f.getName()).append("\"\n");
             //sb.append("  POSITION ").append(ct).append("\n");
             //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
@@ -72,10 +82,10 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
             sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(tb.getName()).append("\"\n");
             sb.append("  AREA \"Indices\"\n");
             if (ie.getPrimary()) {
-                sb.append("  UNIQUE\n");
+                sb.append(" PRIMARY\n");
             }
             if (ie.getUnique()) {
-                sb.append("  PRIMARY\n");
+                sb.append(" UNIQUE \n");
             }
 
             for (Field f : ie.getFields()) {

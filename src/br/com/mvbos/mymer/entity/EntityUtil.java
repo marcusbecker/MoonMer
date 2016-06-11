@@ -15,7 +15,6 @@ import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

@@ -69,6 +69,10 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
 
         filterBases.add(e);
 
+        for (TableElement t : e.getTables()) {
+            allTables.add(t);
+        }
+
         ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_ADD, "ADD_DATABASE");
         for (ActionListener a : listern) {
             a.actionPerformed(evt);
@@ -84,6 +88,10 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
         }
 
         filterBases.remove(e);
+
+        for (TableElement t : e.getTables()) {
+            allTables.remove(t);
+        }
 
         ActionEvent evt = new ActionEvent(e, IElementEntity.EVT_REMOVE, "REMOVE_DATABASE");
         for (ActionListener a : listern) {
@@ -129,6 +137,9 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
 
     @Override
     public boolean save(IElementEntity p) {
+
+        List<File> lstTemp = new ArrayList(filterBases.size());
+
         for (DataBaseElement e : filterBases) {
 
             DataBase db = new DataBase(e.getName());
@@ -145,6 +156,7 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
             dbs.addBase(db);
 
             File dst = new File(FILE_DIR_DB, db.getName().concat(".xml"));
+            lstTemp.add(dst);
 
             try {
                 JAXBContext context = JAXBContext.newInstance(DataBaseStore.class);
@@ -158,6 +170,12 @@ public class DataBaseEntity implements IElementEntity<DataBaseElement> {
                 Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
 
                 return false;
+            }
+        }
+
+        for (File f : getDBFiles()) {
+            if (!lstTemp.contains(f)) {
+                f.delete();
             }
         }
 
