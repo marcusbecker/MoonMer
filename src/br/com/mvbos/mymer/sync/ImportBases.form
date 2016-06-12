@@ -28,7 +28,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="tab" alignment="0" pref="731" max="32767" attributes="0"/>
+          <Component id="tab" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -491,7 +491,8 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnIgnore">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Ignore"/>
+        <Property name="text" type="java.lang.String" value="Skip"/>
+        <Property name="toolTipText" type="java.lang.String" value="Skip import this database"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>

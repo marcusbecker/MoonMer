@@ -566,6 +566,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
         miSave = new javax.swing.JMenuItem();
+        miSaveAndExit = new javax.swing.JMenuItem();
         miExit = new javax.swing.JMenuItem();
         menuEditDataBase = new javax.swing.JMenu();
         miUndo = new javax.swing.JMenuItem();
@@ -1408,6 +1409,14 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         });
         menuFile.add(miSave);
 
+        miSaveAndExit.setText("Save & Exit");
+        miSaveAndExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miSaveAndExitActionPerformed(evt);
+            }
+        });
+        menuFile.add(miSaveAndExit);
+
         miExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
         miExit.setText("Exit");
         miExit.addActionListener(new java.awt.event.ActionListener() {
@@ -1939,7 +1948,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     }//GEN-LAST:event_tfFilterKeyReleased
 
     private void miExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExitActionPerformed
-        exit();
+        exit(false);
     }//GEN-LAST:event_miExitActionPerformed
 
 
@@ -1979,7 +1988,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
 
-        exit();
+        exit(false);
 
     }//GEN-LAST:event_formWindowClosing
 
@@ -2526,6 +2535,12 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_btnSaveAndCloseDataBaseActionPerformed
 
+    private void miSaveAndExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miSaveAndExitActionPerformed
+
+        exit(true);
+
+    }//GEN-LAST:event_miSaveAndExitActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2602,6 +2617,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JMenuItem miPasteXML;
     private javax.swing.JMenuItem miRedo;
     private javax.swing.JMenuItem miSave;
+    private javax.swing.JMenuItem miSaveAndExit;
     private javax.swing.JMenuItem miUndo;
     private javax.swing.JMenuItem miUpdate;
     private javax.swing.JPanel pnBottom;
@@ -2908,7 +2924,18 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                     }
 
                     for (ElementModel el : dbEntity.getTableList()) {
-                        Camera.c().draw(g, el);
+                        if (Common.autoFitCam) {
+                            short counter = 1000;
+
+                            if (Camera.c().draw(g, el)) {
+                                counter--;
+                                if (counter == 0) {
+                                    break;
+                                }
+                            }
+                        } else {
+                            Camera.c().draw(g, el);
+                        }
                     }
 
                     selector.drawMe(g);
@@ -3290,11 +3317,14 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         Camera.c().rollY(mousePos.y - e.getY());
     }
 
-    private void exit() {
+    private void exit(boolean autoSave) {
+        int r = JOptionPane.OK_OPTION;
 
-        int r = JOptionPane.showConfirmDialog(this, "Save and exit?");
-        if (r == JOptionPane.CANCEL_OPTION) {
-            return;
+        if (!autoSave) {
+            r = JOptionPane.showConfirmDialog(this, "Save and exit?");
+            if (r == JOptionPane.CANCEL_OPTION) {
+                return;
+            }
         }
 
         try {

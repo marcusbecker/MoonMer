@@ -17,6 +17,7 @@ import br.com.mvbos.mymer.tree.FieldTreeNode;
 import br.com.mvbos.mymer.tree.IndexTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.util.FileUtil;
+import br.com.mvbos.mymer.view.LoadingPanel;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
@@ -43,11 +44,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JDialog;
 import javax.swing.JTree;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import javax.xml.bind.UnmarshalException;
 
 /**
  *
@@ -615,7 +619,8 @@ public class ImportBases extends javax.swing.JFrame {
 
         lblInfo.setText("Use URL or select a File");
 
-        btnIgnore.setText("Ignore");
+        btnIgnore.setText("Skip");
+        btnIgnore.setToolTipText("Skip import this database");
         btnIgnore.setEnabled(false);
         btnIgnore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -627,7 +632,7 @@ public class ImportBases extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tab, javax.swing.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
+            .addComponent(tab)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -671,37 +676,8 @@ public class ImportBases extends javax.swing.JFrame {
         tfOrigin.setEnabled(false);
         btnURL.setEnabled(false);
 
-        try {
-            URL url = new URL(tfOrigin.getText());
-
-            DataBaseStore db;
-            try (InputStreamReader stream = new InputStreamReader(url.openStream(), Common.importCharset)) {
-                db = XMLUtil.parseToDataBase(stream);
-                createCache(db);
-                startImport(db);
-            }
-
-        } catch (MalformedURLException ex) {
-            lblInfo.setText(ex.getMessage());
-            lblInfo.setForeground(Color.RED);
-
-            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            lblInfo.setText(ex.getMessage());
-            lblInfo.setForeground(Color.RED);
-
-            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
-
-        } catch (Exception ex) {
-            lblInfo.setText(ex.getMessage());
-            lblInfo.setForeground(Color.RED);
-
-            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
-
-        } finally {
-            tfOrigin.setEnabled(true);
-            btnURL.setEnabled(true);
-        }
+        InputStreamReader stream = getURLStream();
+        startParseImport(stream);
 
     }//GEN-LAST:event_btnURLActionPerformed
 
@@ -719,20 +695,9 @@ public class ImportBases extends javax.swing.JFrame {
         }
 
         if (f != null) {
-            try {
-                DataBaseStore db;
-                try (InputStreamReader stream = new InputStreamReader(new FileInputStream(f), Common.charset)) {
-                    db = XMLUtil.parseToDataBase(stream);
-                    tfOrigin.setText(f.getAbsolutePath());
-                    createCache(db);
-                    startImport(db);
-                }
-
-            } catch (Exception ex) {
-                lblInfo.setText(ex.getMessage());
-                lblInfo.setForeground(Color.RED);
-                Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            final InputStreamReader stream = getFileStram(f);
+            startParseImport(stream);
+            tfOrigin.setText(f.getAbsolutePath());
         }
 
     }//GEN-LAST:event_btnFileActionPerformed
@@ -1376,6 +1341,96 @@ public class ImportBases extends javax.swing.JFrame {
             }
         }
 
+    }
+
+    private void startParseImport(final InputStreamReader stream) {
+        if (stream == null) {
+            return;
+        }
+
+        final JDialog dialog = LoadingPanel.createDialog(this, "Processing...", true, false, true);
+
+        SwingWorker sw = new SwingWorker<DataBaseStore, Void>() {
+
+            final LoadingPanel lPanel = (LoadingPanel) dialog.getContentPane().getComponent(0);
+
+            @Override
+            protected DataBaseStore doInBackground() throws Exception {
+                try {
+                    DataBaseStore db;
+
+                    lPanel.getProgressBar().setValue(10);
+                    db = XMLUtil.parseToDataBase(stream);
+
+                    lPanel.getProgressBar().setValue(20);
+                    createCache(db);
+                    lPanel.getProgressBar().setValue(50);
+                    startImport(db);
+
+                    return db;
+
+                } catch (Exception ex) {
+                    lblInfo.setText(ex.getMessage() != null ? ex.getMessage() : "Unknown error. Please check the selected file.");
+                    lblInfo.setForeground(Color.RED);
+                    Logger.getLogger(ImportBases.class.getName()).log(Level.WARNING, null, ex);
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                lPanel.getProgressBar().setValue(100);
+                dialog.dispose();
+            }
+
+        };
+
+        sw.execute();
+        dialog.setVisible(true);
+    }
+
+    private InputStreamReader getFileStram(File f) {
+        InputStreamReader stream = null;
+        try {
+            stream = new InputStreamReader(new FileInputStream(f), Common.charset);
+
+        } catch (Exception ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+            Logger.getLogger(ImportBases.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return stream;
+    }
+
+    private InputStreamReader getURLStream() {
+        InputStreamReader stream = null;
+        try {
+            URL url = new URL(tfOrigin.getText());
+            stream = new InputStreamReader(url.openStream(), Common.importCharset);
+
+        } catch (MalformedURLException ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+            Logger.getLogger(ImportBases.class.getName()).log(Level.WARNING, null, ex);
+
+        } catch (IOException ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+            Logger.getLogger(ImportBases.class.getName()).log(Level.WARNING, null, ex);
+
+        } catch (Exception ex) {
+            lblInfo.setText(ex.getMessage());
+            lblInfo.setForeground(Color.RED);
+            Logger.getLogger(ImportBases.class.getName()).log(Level.WARNING, null, ex);
+
+        } finally {
+            tfOrigin.setEnabled(true);
+            btnURL.setEnabled(true);
+        }
+
+        return stream;
     }
 
 }
