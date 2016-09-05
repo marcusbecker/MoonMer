@@ -47,7 +47,7 @@ public class XMLUtil {
     /*Folders*/
     public static final File CURRENT_PATH = new File(Common.currentPath);
 
-    public static TransportDTO stringToTables(String s) {
+    public static TransportDTO stringToTables(String s) throws Exception {
         DataBaseStore dbs = null;
         List<TableElement> tables = null;
         List<IndexElement> indexes = new ArrayList<>(30);
@@ -74,6 +74,10 @@ public class XMLUtil {
                 DataBaseElement dbEl = dbEntity.findByName(db.getName());
                 List<TableElement> elTables;
 
+                if (db.getTables() == null) {
+                    continue;
+                }
+
                 if (dbEl == null) {
                     dbEl = new DataBaseElement(db);
 
@@ -95,8 +99,10 @@ public class XMLUtil {
                         e.setName(e.getName() + " " + ++DataBaseEntity.tableCount);
                     }
 
-                    for (Index i : t.getIndices()) {
-                        indexes.add(new IndexElement(i, e));
+                    if (t.getIndices() != null) {
+                        for (Index i : t.getIndices()) {
+                            indexes.add(new IndexElement(i, e));
+                        }
                     }
 
                     elTables.add(e);

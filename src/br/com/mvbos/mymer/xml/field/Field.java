@@ -6,7 +6,7 @@
 package br.com.mvbos.mymer.xml.field;
 
 import br.com.mvbos.mymer.Common;
-import br.com.mvbos.mymer.table.annotation.TableField;
+import br.com.mvbos.mymer.annotation.TableFieldAnnotation;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -42,6 +42,7 @@ public class Field implements Serializable {
 
     //public static Map<Short, Field> internalIndex = new HashMap<>(500);
     private String name;
+    @TableFieldAnnotation(exportLabel = "MAX-WIDTH")
     private Integer size;
     private String type;
     private String format;
@@ -49,10 +50,10 @@ public class Field implements Serializable {
     private Integer decimals;
     private String description;
 
-    @TableField(ignore = true)
+    @TableFieldAnnotation(ignore = true)
     private String orgId;
 
-    @TableField(ignore = true)
+    @TableFieldAnnotation(ignore = true)
     private Attribute[] attributes;
 
     public Field() {

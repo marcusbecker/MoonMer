@@ -5,7 +5,7 @@
  */
 package br.com.mvbos.mymer.table;
 
-import br.com.mvbos.mymer.table.annotation.TableField;
+import br.com.mvbos.mymer.annotation.TableFieldAnnotation;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +55,7 @@ public class FieldTableModel extends AbstractTableModel {
         List<java.lang.reflect.Field> lst = new ArrayList<>(temp.length);
 
         for (java.lang.reflect.Field t : temp) {
-            TableField a = t.getAnnotation(TableField.class);
+            TableFieldAnnotation a = t.getAnnotation(TableFieldAnnotation.class);
 
             if (a == null || !a.ignore()) {
                 lst.add(t);

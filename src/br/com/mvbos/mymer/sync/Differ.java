@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.sync;
 
+import br.com.mvbos.mymer.annotation.TableFieldAnnotation;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
@@ -50,7 +51,15 @@ public class Differ {
                 }
 
                 if (!fl.get(fa).equals(fr.get(fb))) {
-                    map.put(fl.getName(), fl.getName().toUpperCase() + " " + fl.get(fa));
+                    TableFieldAnnotation a = fl.getAnnotation(TableFieldAnnotation.class);
+
+                    String label = fl.getName();
+
+                    if (a != null && !a.exportLabel().isEmpty()) {
+                        label = a.exportLabel();
+                    }
+
+                    map.put(fl.getName(), label.toUpperCase() + " " + fl.get(fa));
                 }
 
             } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
@@ -62,7 +71,6 @@ public class Differ {
     public static StringBuilder compareField(TableElement tb, List<Field> left, List<Field> right) {
 
         //log.delete(0, log.length());
-
         if (tb == null || left.isEmpty() || right.isEmpty()) {
             return log;
         }
@@ -142,7 +150,6 @@ public class Differ {
     public static StringBuilder compareIndex(TableElement tb, List<IndexElement> left, List<IndexElement> right) {
 
         //log.delete(0, log.length());
-
         if (tb == null || left.isEmpty() || right.isEmpty()) {
             return log;
         }
@@ -257,6 +264,10 @@ public class Differ {
 
     public static void clear() {
         log.delete(0, log.length());
+    }
+
+    public static String getString() {
+        return log.toString();
     }
 
     private void compare(Field fa, Field fb) {

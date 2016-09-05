@@ -84,7 +84,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -2388,22 +2387,26 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         }
 
         if (s.toLowerCase().contains(DataBaseStore.class.getSimpleName().toLowerCase())) {
-            TransportDTO dto = XMLUtil.stringToTables(s);
-            List<TableElement> lst = dto.getTables();
+            try {
+                TransportDTO dto = XMLUtil.stringToTables(s);
+                List<TableElement> lst = dto.getTables();
 
-            int px = Camera.c().getPx();
+                int px = Camera.c().getPx();
 
-            for (TableElement t : lst) {
-                t.setPxy(px, Camera.c().getCpy());
-                addNewTable(t);
+                for (TableElement t : lst) {
+                    t.setPxy(px, Camera.c().getCpy());
+                    addNewTable(t);
 
-                px += t.getWidth() + 10;
+                    px += t.getWidth() + 10;
+                }
+
+                for (IndexElement ie : dto.getIndexes()) {
+                    addNewIndex(ie.getTable(), ie);
+                }
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error on parse table: " + e.getMessage(), "Import error.", JOptionPane.ERROR_MESSAGE);
             }
-
-            for (IndexElement ie : dto.getIndexes()) {
-                addNewIndex(ie.getTable(), ie);
-            }
-
         } else {
             final String msg = String.format("No %s element found.", DataBaseStore.class.getSimpleName());
             JOptionPane.showMessageDialog(this, msg, "Import error.", JOptionPane.ERROR_MESSAGE);
@@ -2489,13 +2492,13 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
             @Override
             public void run() {
-                DiffWindow diff = new DiffWindow();
+                DiffWindow diffWindow = new DiffWindow();
                 //diff.setLeft(sel);
 
-                diff.setVisible(true);
-                diff.setLocationRelativeTo(Window.this);
+                diffWindow.setVisible(true);
+                diffWindow.setLocationRelativeTo(Window.this);
 
-                diff.loadFormHistory(sel);
+                diffWindow.loadFormHistory(sel);
             }
         });
 
@@ -2893,6 +2896,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
                 g.scale(scale, scale);
+                Camera.c().zoom(scale, scale);
+
                 stageEl.setColor(btnCanvasColor.getBackground());
                 Camera.c().draw(g, stageEl);
 
@@ -2975,7 +2980,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
                 if (e.getButton() == MouseEvent.BUTTON1) {
 
-                    mouseElement.setPxy(e.getX() + Camera.c().getCpx(), e.getY() + Camera.c().getCpy());
+                    Camera.c().fixPosition(mouseElement, e.getX(), e.getY());
 
                     switch (mode) {
                         case SELECTOR:
@@ -3305,7 +3310,6 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void positionCam(ElementModel el) {
         Camera.c().move(el.getPx() - canvas.getWidth() / 2, el.getPy() - canvas.getHeight() / 2);
-
     }
 
     private void positionCam(int px, int py) {
@@ -3419,6 +3423,10 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         for (JTable tb : tables) {
             if (tb.isEditing()) {
                 tb.getCellEditor().stopCellEditing();
+            }
+
+            if (tb.getRowCount() > 0) {
+                tb.setRowSelectionInterval(0, 0);
             }
         }
     }

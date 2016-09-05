@@ -289,14 +289,14 @@ public class DiffWindow extends javax.swing.JFrame {
     private void updateTextDiff() {
         Differ.clear();
 
-        StringBuilder temp = Differ.compareField(lSel, leftField, rightField);
-        temp.append(Differ.compareIndex(lSel, leftIndex, rightIndex));
-        textDiffLeft.setText(temp.toString());
+        Differ.compareField(lSel, leftField, rightField);
+        Differ.compareIndex(lSel, leftIndex, rightIndex);
+        textDiffLeft.setText(Differ.getString());
 
         Differ.clear();
-        temp = Differ.compareField(rSel, rightField, leftField);
-        temp.append(Differ.compareIndex(rSel, rightIndex, leftIndex));
-        textDiffRight.setText(temp.toString());
+        Differ.compareField(rSel, rightField, leftField);
+        Differ.compareIndex(rSel, rightIndex, leftIndex);
+        textDiffRight.setText(Differ.getString());
     }
 
     private void clear(boolean left) {
