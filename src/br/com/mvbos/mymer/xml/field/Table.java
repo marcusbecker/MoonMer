@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author MarcusS
  */
 @XmlRootElement
-public class Table implements Serializable{
+public class Table implements Serializable {
 
     private String name;
     private String description;
@@ -79,6 +79,11 @@ public class Table implements Serializable{
         }
 
         fields.add(f);
+    }
+
+    @Override
+    public String toString() {
+        return "Table{" + "name=" + name + '}';
     }
 
 }

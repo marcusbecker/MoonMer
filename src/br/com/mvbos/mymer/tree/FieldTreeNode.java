@@ -16,7 +16,7 @@ public class FieldTreeNode extends DefaultMutableTreeNode {
 
     public enum Diff {
 
-        NONE, NEW, DELETED, FIELD
+        NONE, NEW, DELETED, FIELD, REMOVED_FROM_INDEX
     }
 
     private Diff diff = Diff.NONE;

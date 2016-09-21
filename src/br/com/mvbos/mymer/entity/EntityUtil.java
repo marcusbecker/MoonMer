@@ -15,6 +15,8 @@ import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.ViewTable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -187,6 +189,14 @@ public class EntityUtil {
         return set;
     }
 
+    public static boolean maths(String filter, Field f) {
+        return f.getName().toLowerCase().contains(filter.toLowerCase());
+    }
+
+    public static boolean maths(String filter, IndexElement i) {
+        return i.getName().toLowerCase().contains(filter.toLowerCase());
+    }
+
     public static boolean maths(String filter, TableElement t) {
         return t.getName().toLowerCase().contains(filter.toLowerCase());
     }
@@ -302,6 +312,14 @@ public class EntityUtil {
         }
 
         return -1;
+    }
+
+    public static <T> Collection<T> notNull(Collection<T> list) {
+        return list == null ? Collections.EMPTY_LIST : list;
+    }
+
+    public static boolean hasValue(String string) {
+        return string != null && !string.trim().isEmpty();
     }
 
 }

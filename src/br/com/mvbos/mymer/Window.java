@@ -41,6 +41,7 @@ import br.com.mvbos.mymer.sync.Differ;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
+import br.com.mvbos.mymer.sync.QuickImportBases;
 import br.com.mvbos.mymer.table.DataChange;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
 import br.com.mvbos.mymer.xml.DataBaseStore;
@@ -406,7 +407,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void filterTreeNodes(String filter) {
 
-        if (filter == null || filter.trim().isEmpty()) {
+        if (filter == null || filter.isEmpty()) {
             treeBases.setModel(new DefaultTreeModel(root));
             return;
         }
@@ -500,6 +501,16 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         ccCanvas = new javax.swing.JColorChooser();
         tfCanvasSize = new javax.swing.JTextField();
         btnSaveCanvas = new javax.swing.JButton();
+        dlgFinder = new javax.swing.JDialog();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        dlgFinderList = new javax.swing.JList();
+        dlgFinderText = new javax.swing.JTextField();
+        dlgFinderRBTable = new javax.swing.JRadioButton();
+        dlgFinderRBField = new javax.swing.JRadioButton();
+        dlgFinderRBIndex = new javax.swing.JRadioButton();
+        dlgFinderBtnFind = new javax.swing.JButton();
+        dlgFinderLabel = new javax.swing.JLabel();
+        dlgFinderButtonGroup = new javax.swing.ButtonGroup();
         splitHor = new javax.swing.JSplitPane();
         pnTop = new javax.swing.JPanel();
         splitVer = new javax.swing.JSplitPane();
@@ -578,9 +589,12 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         miBases = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         miImport = new javax.swing.JMenuItem();
+        miQuickImport = new javax.swing.JMenuItem();
         menuView = new javax.swing.JMenu();
         miEditView = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
+        miFinder = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
         miDiffExport = new javax.swing.JMenuItem();
         miOrderByRow = new javax.swing.JMenuItem();
         miOrderByCol = new javax.swing.JMenuItem();
@@ -741,6 +755,76 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSaveCanvas)
+                .addContainerGap())
+        );
+
+        dlgFinder.setTitle("Finder");
+
+        dlgFinderList.setModel(new DefaultListModel<Option>());
+        dlgFinderList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        dlgFinderList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                dlgFinderListValueChanged(evt);
+            }
+        });
+        jScrollPane5.setViewportView(dlgFinderList);
+
+        dlgFinderButtonGroup.add(dlgFinderRBTable);
+        dlgFinderRBTable.setText("Table");
+
+        dlgFinderButtonGroup.add(dlgFinderRBField);
+        dlgFinderRBField.setSelected(true);
+        dlgFinderRBField.setText("Field");
+
+        dlgFinderButtonGroup.add(dlgFinderRBIndex);
+        dlgFinderRBIndex.setText("Index");
+
+        dlgFinderBtnFind.setText(">");
+        dlgFinderBtnFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dlgFinderBtnFindActionPerformed(evt);
+            }
+        });
+
+        dlgFinderLabel.setText("...");
+
+        javax.swing.GroupLayout dlgFinderLayout = new javax.swing.GroupLayout(dlgFinder.getContentPane());
+        dlgFinder.getContentPane().setLayout(dlgFinderLayout);
+        dlgFinderLayout.setHorizontalGroup(
+            dlgFinderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dlgFinderLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(dlgFinderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                    .addGroup(dlgFinderLayout.createSequentialGroup()
+                        .addComponent(dlgFinderRBTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dlgFinderRBField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dlgFinderRBIndex, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(dlgFinderLayout.createSequentialGroup()
+                        .addComponent(dlgFinderText)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dlgFinderBtnFind))
+                    .addComponent(dlgFinderLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        dlgFinderLayout.setVerticalGroup(
+            dlgFinderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dlgFinderLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(dlgFinderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dlgFinderText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dlgFinderBtnFind))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(dlgFinderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dlgFinderRBTable)
+                    .addComponent(dlgFinderRBField)
+                    .addComponent(dlgFinderRBIndex))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dlgFinderLabel)
                 .addContainerGap())
         );
 
@@ -1126,10 +1210,10 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                         .addComponent(btnSearchField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(84, 84, 84)
-                        .addComponent(tfTableName, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfTableDesc)
+                        .addComponent(tfTableName)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfTableDesc, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbBases, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1506,6 +1590,15 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         });
         menuEditDataBase.add(miImport);
 
+        miQuickImport.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        miQuickImport.setText("Quick Import");
+        miQuickImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miQuickImportActionPerformed(evt);
+            }
+        });
+        menuEditDataBase.add(miQuickImport);
+
         jMenuBar1.add(menuEditDataBase);
 
         menuView.setText("View");
@@ -1521,6 +1614,16 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         jMenuBar1.add(menuView);
 
         menuTools.setText("Tools");
+
+        miFinder.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        miFinder.setText("Finder");
+        miFinder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miFinderActionPerformed(evt);
+            }
+        });
+        menuTools.add(miFinder);
+        menuTools.add(jSeparator6);
 
         miDiffExport.setText("Export differ");
         miDiffExport.addActionListener(new java.awt.event.ActionListener() {
@@ -1931,9 +2034,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void tfFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfFilterKeyReleased
 
-        filterTreeNodes(tfFilter.getText());
+        filterTreeNodes(tfFilter.getText().trim());
 
-        if (!tfFilter.getText().isEmpty()) {
+        if (!tfFilter.getText().trim().isEmpty()) {
 
             /*String s = tfFilter.getText().toLowerCase();
              for (TableElement t : dbEntity.getTableList()) {
@@ -2193,7 +2296,6 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             public void run() {
                 ImportBases importBases = new ImportBases();
                 importBases.setLocationRelativeTo(Window.this);
-                importBases.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 importBases.setVisible(true);
             }
         });
@@ -2488,6 +2590,10 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
         final TableElement sel = getTableSeletected();
 
+        if (sel == null) {
+            return;
+        }
+
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -2544,6 +2650,114 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_miSaveAndExitActionPerformed
 
+    private void miQuickImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miQuickImportActionPerformed
+
+        singleSelection(null);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final QuickImportBases importBases = new QuickImportBases();
+                importBases.setLocationRelativeTo(Window.this);
+                importBases.setVisible(true);
+
+                importBases.hideOnStart(Window.this);
+                importBases.startImport();
+            }
+        });
+
+    }//GEN-LAST:event_miQuickImportActionPerformed
+
+    private void miFinderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miFinderActionPerformed
+        dlgFinder.pack();
+        dlgFinder.setLocationRelativeTo(this);
+        dlgFinder.setVisible(true);
+
+    }//GEN-LAST:event_miFinderActionPerformed
+
+    private void dlgFinderBtnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dlgFinderBtnFindActionPerformed
+
+        String filter = dlgFinderText.getText().trim();
+
+        if (filter.isEmpty()) {
+            return;
+        }
+
+        short idx = 0;
+
+        DefaultListModel<Option> model = (DefaultListModel<Option>) dlgFinderList.getModel();
+        model.clear();
+
+        if (dlgFinderRBTable.isSelected()) {
+
+            for (TableElement t : dbEntity.getTableList()) {
+                if (EntityUtil.maths(filter, t)) {
+                    model.addElement(new Option(idx++, t, t.getName()));
+                }
+            }
+
+        } else if (dlgFinderRBField.isSelected()) {
+            for (TableElement t : dbEntity.getTableList()) {
+                for (Field f : t.getFields()) {
+                    if (EntityUtil.maths(filter, f)) {
+                        model.addElement(new Option(idx++, t, t.getName()));
+                        break;
+                    }
+                }
+            }
+
+        } else {
+            IndexEntity ie = em.getEntity(IndexEntity.class);
+
+            for (TableElement t : dbEntity.getTableList()) {
+                List<IndexElement> lst = ie.findIndexByTable(t);
+
+                boolean ignore = false;
+
+                for (IndexElement i : lst) {
+                    if (ignore) {
+                        break;
+                    }
+
+                    if (EntityUtil.maths(filter, i)) {
+                        model.addElement(new Option(idx++, t, t.getName()));
+                        break;
+                    }
+
+                    /*for (Field f : i.getFields()) {
+                     if (EntityUtil.maths(filter, f)) {
+                     model.addElement(new Option(idx++, t, t.getName()));
+                     ignore = true;
+                     break;
+                     }
+                     }*/
+                }
+            }
+        }
+
+        dlgFinderLabel.setText(String.format("%d object(s) found.", idx));
+        dlgFinderList.updateUI();
+
+    }//GEN-LAST:event_dlgFinderBtnFindActionPerformed
+
+    private void dlgFinderListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_dlgFinderListValueChanged
+
+        int sel = dlgFinderList.getSelectedIndex();
+
+        if (sel != -1) {
+            DefaultListModel<Option> model = (DefaultListModel<Option>) dlgFinderList.getModel();
+            Option opt = model.get(sel);
+
+            if (opt.getValue() instanceof TableElement) {
+                TableElement t = (TableElement) opt.getValue();
+                positionCam(t);
+                highlights(t);
+                singleSelection(t);
+            }
+        }
+
+    }//GEN-LAST:event_dlgFinderListValueChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2582,6 +2796,15 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JColorChooser ccDBColor;
     private javax.swing.JDialog dlgCanvas;
     private javax.swing.JDialog dlgDataBase;
+    private javax.swing.JDialog dlgFinder;
+    private javax.swing.JButton dlgFinderBtnFind;
+    private javax.swing.ButtonGroup dlgFinderButtonGroup;
+    private javax.swing.JLabel dlgFinderLabel;
+    private javax.swing.JList dlgFinderList;
+    private javax.swing.JRadioButton dlgFinderRBField;
+    private javax.swing.JRadioButton dlgFinderRBIndex;
+    private javax.swing.JRadioButton dlgFinderRBTable;
+    private javax.swing.JTextField dlgFinderText;
     private javax.swing.JDialog dlgSearchField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -2592,12 +2815,14 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JSlider jsZoom;
     private javax.swing.JLabel lblInfo;
@@ -2613,11 +2838,13 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JMenuItem miDiffExport;
     private javax.swing.JMenuItem miEditView;
     private javax.swing.JMenuItem miExit;
+    private javax.swing.JMenuItem miFinder;
     private javax.swing.JMenuItem miImport;
     private javax.swing.JMenuItem miNewTable;
     private javax.swing.JMenuItem miOrderByCol;
     private javax.swing.JMenuItem miOrderByRow;
     private javax.swing.JMenuItem miPasteXML;
+    private javax.swing.JMenuItem miQuickImport;
     private javax.swing.JMenuItem miRedo;
     private javax.swing.JMenuItem miSave;
     private javax.swing.JMenuItem miSaveAndExit;

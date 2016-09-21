@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  *
@@ -29,6 +31,7 @@ import java.util.logging.Logger;
 public class FileUtil {
 
     public static final File CURRENT_PATH = new File(Common.currentPath);
+    public static final File LOG_PATH = new File(CURRENT_PATH, "log");
     public static final File IMPORT_DATA = new File(CURRENT_PATH, "import.data");
 
     public static void store(File dir, DataBaseStore db) {
@@ -114,6 +117,29 @@ public class FileUtil {
             Logger.getLogger(FileUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    
+    public static Logger getLoggerToFile(Class aClass, String path) {
+        Logger logger = Logger.getLogger(aClass.getSimpleName());
+        FileHandler fh;
+
+        try {
+            if (!LOG_PATH.exists()) {
+                LOG_PATH.mkdir();
+            }
+
+            File f = new File(LOG_PATH, path.concat(".log"));
+            fh = new FileHandler(f.getAbsolutePath(), true);
+            fh.setFormatter(new SimpleFormatter());
+            
+            logger.addHandler(fh);
+
+        } catch (SecurityException | IOException ex) {
+            Logger.getLogger(FileUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return logger;
     }
 
 }

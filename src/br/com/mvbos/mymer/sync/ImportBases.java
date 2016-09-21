@@ -51,7 +51,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import javax.xml.bind.UnmarshalException;
 
 /**
  *
@@ -59,6 +58,7 @@ import javax.xml.bind.UnmarshalException;
  */
 public class ImportBases extends javax.swing.JFrame {
 
+    private short optIndex;
     private DataBase remoteBase;
 
     private Map<String, Set<FieldChange>> updateFields;
@@ -78,6 +78,9 @@ public class ImportBases extends javax.swing.JFrame {
     private int dbStart;
     private int dbCount;
     private DataBaseStore dbStore;
+
+    private DefaultMutableTreeNode tableRoot;
+    private DefaultMutableTreeNode indexRoot;
 
     private final EntityManager em = EntityManager.e();
 
@@ -216,8 +219,6 @@ public class ImportBases extends javax.swing.JFrame {
         updateNextButton();
     }
 
-    private short optIndex;
-
     private void populeListOrg(DataBase db) {
 
         remoteBase = db;
@@ -334,8 +335,8 @@ public class ImportBases extends javax.swing.JFrame {
         btnRem = new javax.swing.JButton();
         btnRemAll = new javax.swing.JButton();
         pnStepTwo = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        lblTablesConflict = new javax.swing.JLabel();
+        scrollTablesConflict = new javax.swing.JScrollPane();
         lstTablesConflict = new javax.swing.JList();
         btnRemoveLocalTable = new javax.swing.JButton();
         pnStepThree = new javax.swing.JPanel();
@@ -352,12 +353,12 @@ public class ImportBases extends javax.swing.JFrame {
         btnUpdateIndex = new javax.swing.JButton();
         jScrollPane8 = new javax.swing.JScrollPane();
         tfLogIndex = new javax.swing.JEditorPane();
-        btnNext = new javax.swing.JButton();
         lblDBInfo = new javax.swing.JLabel();
         lblInfo = new javax.swing.JLabel();
+        btnNext = new javax.swing.JButton();
         btnIgnore = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Import Bases");
 
         btnFile.setText("File");
@@ -462,10 +463,10 @@ public class ImportBases extends javax.swing.JFrame {
 
         tab.addTab("Remote Tables", pnStepOne);
 
-        jLabel1.setText("New local tables");
+        lblTablesConflict.setText("New local tables");
 
         lstTablesConflict.setModel(new DefaultListModel());
-        jScrollPane3.setViewportView(lstTablesConflict);
+        scrollTablesConflict.setViewportView(lstTablesConflict);
 
         btnRemoveLocalTable.setText("Remove");
         btnRemoveLocalTable.addActionListener(new java.awt.event.ActionListener() {
@@ -481,8 +482,8 @@ public class ImportBases extends javax.swing.JFrame {
             .addGroup(pnStepTwoLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(scrollTablesConflict, javax.swing.GroupLayout.DEFAULT_SIZE, 706, Short.MAX_VALUE)
+                    .addComponent(lblTablesConflict, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepTwoLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnRemoveLocalTable, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -492,9 +493,9 @@ public class ImportBases extends javax.swing.JFrame {
             pnStepTwoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnStepTwoLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(lblTablesConflict)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+                .addComponent(scrollTablesConflict, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnRemoveLocalTable)
                 .addContainerGap())
@@ -606,6 +607,11 @@ public class ImportBases extends javax.swing.JFrame {
 
         tab.addTab("Index Conflict", pnStepFour);
 
+        lblDBInfo.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        lblDBInfo.setText("No data base selected.");
+
+        lblInfo.setText("Use URL or select a File");
+
         btnNext.setText("Next");
         btnNext.setEnabled(false);
         btnNext.addActionListener(new java.awt.event.ActionListener() {
@@ -613,11 +619,6 @@ public class ImportBases extends javax.swing.JFrame {
                 btnNextActionPerformed(evt);
             }
         });
-
-        lblDBInfo.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        lblDBInfo.setText("No data base selected.");
-
-        lblInfo.setText("Use URL or select a File");
 
         btnIgnore.setText("Skip");
         btnIgnore.setToolTipText("Skip import this database");
@@ -751,10 +752,6 @@ public class ImportBases extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_btnRemActionPerformed
-
-    private DefaultMutableTreeNode tableRoot;
-    private DefaultMutableTreeNode indexRoot;
-
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
 
@@ -982,7 +979,7 @@ public class ImportBases extends javax.swing.JFrame {
                 model.addElement(name);
 
             } else {
-                //TODO auto replace on local table description, need to improve better fix
+                //TODO auto replace to local table description, need to improve better fix
                 Table rTb = remoteTables.get(name);
                 TableElement lTb = localTalbles.get(name);
                 lTb.setDescription(rTb.getDescription());
@@ -1189,13 +1186,7 @@ public class ImportBases extends javax.swing.JFrame {
     }
 
     private IndexElement createIndexElement(Index ridx, TableElement lte) {
-        IndexElement ie = new IndexElement(ridx.getName(), lte);
-        ie.setActive(ridx.getActive());
-        ie.setPrimary(ridx.getPrimary());
-        ie.setUnique(ridx.getUnique());
-        ie.setFields(ridx.getFields());
-
-        return ie;
+        return new IndexElement(ridx, lte);
     }
 
 
@@ -1214,16 +1205,15 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JButton btnUpdateAllIndices;
     private javax.swing.JButton btnUpdateIndex;
     private javax.swing.JFileChooser fc;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JLabel lblDBInfo;
     private javax.swing.JLabel lblInfo;
+    private javax.swing.JLabel lblTablesConflict;
     private javax.swing.JList lstDst;
     private javax.swing.JList lstOrg;
     private javax.swing.JList lstTablesConflict;
@@ -1231,6 +1221,7 @@ public class ImportBases extends javax.swing.JFrame {
     private javax.swing.JPanel pnStepOne;
     private javax.swing.JPanel pnStepThree;
     private javax.swing.JPanel pnStepTwo;
+    private javax.swing.JScrollPane scrollTablesConflict;
     private javax.swing.JTabbedPane tab;
     private javax.swing.JEditorPane tfLog;
     private javax.swing.JEditorPane tfLogIndex;
@@ -1263,7 +1254,7 @@ public class ImportBases extends javax.swing.JFrame {
     private void persist() {
 
         lblInfo.setForeground(Color.BLACK);
-        lblInfo.setText(String.format("Changes on %s were updated.", remoteBase.getName()));
+        lblInfo.setText(String.format("Changes to %s was updated.", remoteBase.getName()));
 
         DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
         IndexEntity indexEntity = em.getEntity(IndexEntity.class);
@@ -1276,7 +1267,8 @@ public class ImportBases extends javax.swing.JFrame {
 
         } else {
             for (TableElement t : lstRemoveLocalTable) {
-                dbEntity.removeTable(db, t);
+                //dbEntity.removeTable(db, t);
+                dbEntity.removeTable(t);
             }
         }
 

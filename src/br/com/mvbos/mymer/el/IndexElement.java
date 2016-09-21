@@ -19,9 +19,10 @@ import java.util.Objects;
 public class IndexElement extends ElementModel {
 
     private String name;
+    private Boolean active;
     private Boolean primary;
     private Boolean unique;
-    private Boolean active;
+
     private List<Field> fields;
 
     private final TableElement table;
