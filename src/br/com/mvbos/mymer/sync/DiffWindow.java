@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openFromCache the template in the editor.
  */
 package br.com.mvbos.mymer.sync;
 
@@ -287,6 +287,11 @@ public class DiffWindow extends javax.swing.JFrame {
     private TableElement rSel;
 
     private void updateTextDiff() {
+
+        if (lSel == null || rSel == null) {
+            return;
+        }
+
         Differ.clear();
 
         Differ.compareField(lSel, leftField, rightField);
@@ -421,8 +426,8 @@ public class DiffWindow extends javax.swing.JFrame {
                 setLeft(sel);
                 bar.setValue(50);
 
-                Table tb = FileUtil.open(sel.getDataBase().getName(), sel.getName());
-                //Table tb = FileUtil.open(String.format("%s.%s", sel.getDataBase().getName(), sel.getName()));
+                Table tb = FileUtil.openFromCache(sel.getDataBase().getName(), sel.getName());
+                //Table tb = FileUtil.openFromCache(String.format("%s.%s", sel.getDataBase().getName(), sel.getName()));
                 bar.setValue(75);
 
                 setRight(sel.getDataBase().getName(), tb);

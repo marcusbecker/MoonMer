@@ -43,7 +43,7 @@ public interface IEntityToScript {
 
     public void updateTable(TableElement tb, StringBuilder sb);
 
-    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> changes, StringBuilder sb);
+    public void updateIndex(TableElement tb, IndexElement newIndex, IndexElement oldIndex, StringBuilder sb);
 
     public void updateRelationship(TableElement tb, RelationshipElement re, StringBuilder sb);
 

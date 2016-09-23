@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openFromCache the template in the editor.
  */
 package br.com.mvbos.mymer.sync;
 
@@ -197,7 +197,7 @@ public class ImportBases extends javax.swing.JFrame {
     private void createCache(DataBaseStore db) {
 
         if (db != null && db.hasBases()) {
-            FileUtil.store(FileUtil.IMPORT_DATA, db);
+            FileUtil.storeToCache(db);
 
             /*int total = EntityUtil.sumTables(db);
              Map<String, Table> map = new HashMap<>(total);

@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openFromCache the template in the editor.
  */
 package br.com.mvbos.mymer.sync;
 
@@ -42,7 +42,7 @@ import javax.swing.SwingWorker;
  */
 public class QuickImportBases extends javax.swing.JFrame {
 
-    class FieldChange {
+    private class FieldChange {
 
         private Field field;
         private short position;
@@ -60,7 +60,7 @@ public class QuickImportBases extends javax.swing.JFrame {
         }
     }
 
-    class IndexChange {
+    private class IndexChange {
 
         private Index index;
         private Field removedField;
@@ -469,7 +469,8 @@ public class QuickImportBases extends javax.swing.JFrame {
                     }
                 }
 
-                FileUtil.store(FileUtil.IMPORT_DATA, db);
+                //Create cache
+                FileUtil.storeToCache(db);
                 return db;
             }
 

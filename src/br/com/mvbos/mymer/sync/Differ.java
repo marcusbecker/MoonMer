@@ -14,6 +14,7 @@ import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class Differ {
         entityToScript = new Progress4GLEntityToScript();
     }
 
-    private static <T> void compare(Map<String, String> map, T fa, T fb) {
+    public static <T> void compare(Map<String, String> map, T fa, T fb) {
 
         java.lang.reflect.Field[] fields = fa.getClass().getDeclaredFields();
 
@@ -45,6 +46,10 @@ public class Differ {
                 java.lang.reflect.Field fr = fb.getClass().getDeclaredField(fl.getName());
                 fl.setAccessible(true);
                 fr.setAccessible(true);
+
+                if (fl.get(fa) instanceof Collection) {
+                    continue;
+                }
 
                 if (fl.get(fa) == null || fr.get(fb) == null) {
                     continue;
@@ -115,7 +120,7 @@ public class Differ {
                 }
 
                 final LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
-                compare(map, fl, fr);
+                Differ.compare(map, fl, fr);
                 map.remove("name");
                 map.remove("orgId");
 
@@ -147,65 +152,58 @@ public class Differ {
         return log;
     }
 
-    public static StringBuilder compareIndex(TableElement tb, List<IndexElement> left, List<IndexElement> right) {
+    public static StringBuilder compareIndex(TableElement tb, List<IndexElement> leftList, List<IndexElement> rightList) {
 
         //log.delete(0, log.length());
-        if (tb == null || left.isEmpty() || right.isEmpty()) {
+        if (tb == null || leftList.isEmpty() || rightList.isEmpty()) {
             return log;
         }
 
-        int ct = 1;
         entityToScript.setMode(IEntityToScript.Mode.DECORED);
 
-        for (int i = 0; i < left.size(); i++) {
-            IndexElement fl = left.get(i);
+        for (int i = 0; i < leftList.size(); i++) {
             int id;
+            IndexElement lIndex = leftList.get(i);
 
-            if (fl.getName().equals(fl.getOrgId())) {
-                id = EntityUtil.indexOfIndexByName(right, fl.getName());
+            if (lIndex.getName().equals(lIndex.getOrgId())) {
+                id = EntityUtil.indexOfIndexByName(rightList, lIndex.getOrgId());
 
                 if (id == -1) {
-                    id = EntityUtil.query(right, "orgId", fl.getOrgId());
+                    id = EntityUtil.query(rightList, "orgId", lIndex.getOrgId());
 
                     if (id != -1) {
-                        IndexElement fr = right.get(id);
-                        entityToScript.renameIndex(tb, fr, fr.getName(), fr.getOrgId(), log);
+                        IndexElement rIndex = rightList.get(id);
+                        entityToScript.renameIndex(tb, rIndex, rIndex.getName(), rIndex.getOrgId(), log);
                     }
                 }
 
             } else {
-                id = EntityUtil.indexOfIndexByName(right, fl.getOrgId());
+                id = EntityUtil.indexOfIndexByName(rightList, lIndex.getOrgId());
 
                 if (id != -1) {
-                    entityToScript.renameIndex(tb, fl, fl.getOrgId(), fl.getName(), log);
+                    entityToScript.renameIndex(tb, lIndex, lIndex.getOrgId(), lIndex.getName(), log);
                 }
             }
 
             if (id == -1) {
-                entityToScript.addIndex(tb, fl, log);
+                entityToScript.addIndex(tb, lIndex, log);
 
             } else {
-                IndexElement fr = right.get(id);
+                IndexElement rIndex = rightList.get(id);
 
                 if (id != i) {
                     //change order
                 }
 
-                final LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
-                compare(map, fl, fr);
-                map.remove("name");
-                map.remove("orgId");
-
-                if (!map.isEmpty()) {
-                    entityToScript.updateIndex(tb, fl, map.values(), log);
-                }
+                entityToScript.updateIndex(tb, lIndex, rIndex, log);
             }
         }
 
-        for (IndexElement f : right) {
+        //Check droped indices
+        for (IndexElement f : rightList) {
             boolean drop = true;
 
-            for (IndexElement ff : left) {
+            for (IndexElement ff : leftList) {
                 if (EntityUtil.compareName(f.getName(), ff.getName())
                         || EntityUtil.compareName(f.getName(), ff.getOrgId())
                         || EntityUtil.compareName(f.getOrgId(), ff.getName())

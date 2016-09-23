@@ -6,6 +6,7 @@
 package br.com.mvbos.mymer.el;
 
 import br.com.mvbos.jeg.element.ElementModel;
+import br.com.mvbos.mymer.annotation.TableFieldAnnotation;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Index;
 import java.util.ArrayList;
@@ -23,13 +24,15 @@ public class IndexElement extends ElementModel {
     private Boolean primary;
     private Boolean unique;
 
+    @TableFieldAnnotation(ignore = true)
+    private String orgId;
+
     private List<Field> fields;
 
     private final TableElement table;
 
     public IndexElement(String name, TableElement table) {
-        this.name = name;
-        this.table = table;
+        this(name, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, table, null);
     }
 
     public IndexElement(Index i, TableElement tb) {
@@ -42,6 +45,7 @@ public class IndexElement extends ElementModel {
 
     public IndexElement(String name, Boolean primary, Boolean unique, Boolean active, TableElement table, List<Field> fields) {
         this.name = name;
+        this.orgId = name;
         this.primary = primary;
         this.unique = unique;
         this.active = active;
@@ -97,7 +101,19 @@ public class IndexElement extends ElementModel {
 
     @Override
     public void setName(String name) {
+        if (this.orgId == null) {
+            this.orgId = this.name != null ? this.name : name;
+        }
+
         this.name = name;
+    }
+
+    public String getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
     }
 
     @Override
@@ -125,10 +141,6 @@ public class IndexElement extends ElementModel {
     @Override
     public String toString() {
         return "Index{" + "name=" + name + ", primary=" + primary + ", unique=" + unique + ", active=" + active + ", fields=" + fields + ", table=" + table.getName() + '}';
-    }
-
-    public String getOrgId() {
-        return getName();
     }
 
 }

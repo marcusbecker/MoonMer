@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openFromCache the template in the editor.
  */
 package br.com.mvbos.mymer.util;
 
@@ -58,6 +58,10 @@ public class FileUtil {
         }
     }
 
+    public static void storeToCache(DataBaseStore db) {
+        store(FileUtil.IMPORT_DATA, db);
+    }
+
     private static Object load(File file) {
         Object o = null;
 
@@ -82,7 +86,7 @@ public class FileUtil {
         return dbs;
     }
 
-    public static Table open(String baseName, String tableName) {
+    public static Table openFromCache(String baseName, String tableName) {
         Table tb = null;
         final DataBaseStore dbs = (DataBaseStore) load(IMPORT_DATA);
 
@@ -119,7 +123,6 @@ public class FileUtil {
 
     }
 
-    
     public static Logger getLoggerToFile(Class aClass, String path) {
         Logger logger = Logger.getLogger(aClass.getSimpleName());
         FileHandler fh;
@@ -132,7 +135,7 @@ public class FileUtil {
             File f = new File(LOG_PATH, path.concat(".log"));
             fh = new FileHandler(f.getAbsolutePath(), true);
             fh.setFormatter(new SimpleFormatter());
-            
+
             logger.addHandler(fh);
 
         } catch (SecurityException | IOException ex) {

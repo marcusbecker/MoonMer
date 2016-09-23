@@ -69,7 +69,7 @@ public abstract class EntityToScriptAbstract implements IEntityToScript {
     }
 
     @Override
-    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> changes, StringBuilder sb) {
+    public void updateIndex(TableElement tb, IndexElement newIndex, IndexElement oldIndex, StringBuilder sb) {
     }
 
     @Override

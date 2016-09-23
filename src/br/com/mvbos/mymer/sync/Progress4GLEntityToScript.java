@@ -7,8 +7,12 @@ package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Set;
 
 /**
  *
@@ -78,23 +82,35 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
 
     @Override
     public void addIndex(TableElement tb, IndexElement ie, StringBuilder sb) {
-        if (IEntityToScript.Mode.PLAIN == mode) {
-            sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(tb.getName()).append("\"\n");
-            sb.append("  AREA \"Indices\"\n");
-            if (ie.getPrimary()) {
-                sb.append(" PRIMARY\n");
-            }
-            if (ie.getUnique()) {
-                sb.append(" UNIQUE \n");
-            }
+        String line = IEntityToScript.Mode.PLAIN == mode ? System.lineSeparator() : System.lineSeparator() + "<br>";
 
-            for (Field f : ie.getFields()) {
-                sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING\n");
-            }
+        sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(tb.getName());
+        sb.append("\"").append(line);
+        sb.append("  AREA \"Indices\"");
+        sb.append(line);
 
-            sb.append("\n");
-        } else {
+        if (ie.getActive()) {
+            sb.append(" ACTIVE");
+            sb.append(line);
         }
+
+        if (ie.getPrimary()) {
+            sb.append(" PRIMARY");
+            sb.append(line);
+        }
+
+        if (ie.getUnique()) {
+            sb.append(" UNIQUE ");
+            sb.append(line);
+        }
+
+        for (Field f : ie.getFields()) {
+            sb.append("  INDEX-FIELD \"").append(f.getName()).append("\" ASCENDING");
+            sb.append(line);
+        }
+
+        sb.append(line);
+
     }
 
     @Override
@@ -102,6 +118,14 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append("RENAME FIELD <b>\"").append(oldName);
         sb.append("\"</b> OF <b>\"").append(tb.getName());
         sb.append("\"</b> TO <b>\"").append(newName).append("\"</b><br><br>\n");
+    }
+
+    @Override
+    public void renameIndex(TableElement tb, IndexElement ie, String oldName, String newName, StringBuilder sb) {
+        sb.append("RENAME INDEX <b>\"").append(oldName);
+        sb.append("\"</b> TO <b>\"").append(newName);
+        sb.append("\"</b> ON <b>\"").append(tb.getName());
+        sb.append("\"</b><br><br>\n");
     }
 
     @Override
@@ -129,16 +153,70 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
     }
 
     @Override
-    public void updateIndex(TableElement tb, IndexElement fl, Collection<String> changes, StringBuilder sb) {
-        sb.append("UPDATE INDEX <b>\"");
-        sb.append(fl.getName()).append("\"</b> OF <b>\"");
-        sb.append(tb.getName()).append("\"</b><br>\n");
+    public void updateIndex(TableElement tb, IndexElement newIndex, IndexElement oldIndex, StringBuilder sb) {
 
-        for (String c : changes) {
-            sb.append(c).append("<br>\n");
+        final LinkedHashMap<String, String> map = new LinkedHashMap<>(15);
+        Differ.compare(map, newIndex, oldIndex);
+        map.remove("name");
+        map.remove("orgId");
+
+        String tempName = newIndex.getName();
+
+        //List<Field> fieldsToAdd = new ArrayList<>(oldIndex.getFields().size());
+        //List<Field> fieldsToRem = new ArrayList<>(newIndex.getFields().size());
+        boolean changeUnique = !newIndex.getUnique().equals(oldIndex.getUnique());
+        boolean addedOrRemovedFields = newIndex.getFields().size() != oldIndex.getFields().size();
+
+        if (!addedOrRemovedFields) {
+
+            Set<String> newIndexNames = new HashSet<>(newIndex.getFields().size());
+            Set<String> oldIndexNames = new HashSet<>(oldIndex.getFields().size());
+
+            for (Field f : newIndex.getFields()) {
+                newIndexNames.add(f.getOrgId());
+            }
+
+            for (Field f : oldIndex.getFields()) {
+                oldIndexNames.add(f.getOrgId());
+            }
+
+            if (!newIndexNames.containsAll(oldIndexNames)) {
+                addedOrRemovedFields = true;
+            }
         }
+        /*
+         Para tornar um índice único deve-se utilizar o temporário, segue a sintaxe abaixo.
+         RENAME INDEX " INDICE02" TO "temp-30828" ON "TABELA ABC"
 
-        sb.append("<br>\n");
+         ADD INDEX " INDICE02" ON " TABELA ABC "
+         AREA "Indices"
+         UNIQUE
+         INDEX-FIELD "CAMPO" ASCENDING
+
+         DROP INDEX "temp-30828" ON " TABELA ABC"
+       
+         */
+        if (changeUnique || addedOrRemovedFields) {
+            tempName = "temp-" + tempName;
+            sb.append(String.format("RENAME INDEX \"%s\" TO \"%s\" ON \"%s\"", newIndex.getName(), tempName, tb.getName()));
+            sb.append("</br>\n");
+
+            addIndex(tb, newIndex, sb);
+
+            sb.append(String.format("DROP INDEX \"%s\" ON \"%s\"", tempName, tb.getName()));
+            sb.append("</br>\n");
+
+        } else if (!map.isEmpty()) {
+            sb.append("UPDATE INDEX <b>\"");
+            sb.append(tempName).append("\"</b> OF <b>\"");
+            sb.append(tb.getName()).append("\"</b><br>\n");
+
+            for (String c : map.values()) {
+                sb.append(c).append("<br>\n");
+            }
+
+            sb.append("<br>\n");
+        }
     }
 
 }

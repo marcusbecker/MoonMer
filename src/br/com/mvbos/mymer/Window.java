@@ -1271,6 +1271,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         preConfig(tbIndex);
 
         lstIndexFields.setModel(new DefaultListModel<String>());
+        lstIndexFields.setToolTipText("Use Delete to remove selected fields");
         lstIndexFields.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 lstIndexFieldsKeyReleased(evt);
@@ -1336,7 +1337,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(tabIndexLayout.createSequentialGroup()
                 .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                     .addGroup(tabIndexLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(btnAddIndexFieldTable)
@@ -1344,11 +1345,11 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                         .addComponent(btnRemIndex)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(tabIndexLayout.createSequentialGroup()
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(tabIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbIndexAvailField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnAddFieldIndexList))))
+                            .addComponent(btnAddFieldIndexList))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane4)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tfInfoIndexFields, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5))
@@ -1436,12 +1437,12 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(tabStructLayout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(btnShowDiff)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnBuildSctruct, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         tabStructLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnBuildSctruct, btnShowDiff});
@@ -2297,6 +2298,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 ImportBases importBases = new ImportBases();
                 importBases.setLocationRelativeTo(Window.this);
                 importBases.setVisible(true);
+
+                EditControl.u().discardAllEdits();
             }
         });
 
@@ -2599,10 +2602,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             @Override
             public void run() {
                 DiffWindow diffWindow = new DiffWindow();
-                //diff.setLeft(sel);
-
-                diffWindow.setVisible(true);
                 diffWindow.setLocationRelativeTo(Window.this);
+                diffWindow.setVisible(true);
 
                 diffWindow.loadFormHistory(sel);
             }
@@ -2663,6 +2664,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
                 importBases.hideOnStart(Window.this);
                 importBases.startImport();
+
+                EditControl.u().discardAllEdits();
             }
         });
 
@@ -2903,7 +2906,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     }
 
     private GenericTableModel createIndexTableModel() {
-        final Set<String> ignore = new HashSet<>(Arrays.asList("fields", "table"));
+        final Set<String> ignore = new HashSet<>(Arrays.asList("fields", "table", "orgId"));
 
         GenericTableModel<IndexElement> ind = new GenericTableModel<>(IndexElement.class, ignore);
 
