@@ -29,8 +29,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -301,7 +303,7 @@ public class QuickImportBases extends javax.swing.JFrame {
 
                     log.append("Field ").append(locField.getName());
                     log.append(" removed from index ").append(remoteIndex.getName());
-                    log.append(" to ").append(lt.getName()).append(".");
+                    log.append(" in ").append(lt.getName()).append(".");
                     log.append(System.lineSeparator());
 
                 } else {
@@ -318,12 +320,23 @@ public class QuickImportBases extends javax.swing.JFrame {
                     log.append(remoteIndex.getName()).append(" to ");
                     log.append(lt.getName()).append(".");
                     log.append(System.lineSeparator());
-
-                } else {
-                    //itn.setDiff(FieldTreeNode.Diff.NONE);
                 }
             }
+        }
 
+        Set<String> tempIndeces = new HashSet<>(EntityUtil.notNull(rt.getIndices()).size());
+        for (Index remoteIndex : EntityUtil.notNull(rt.getIndices())) {
+            tempIndeces.add(remoteIndex.getName());
+        }
+
+        for (IndexElement localIndex : indEnt.findIndexByTable(lt)) {
+            if (!tempIndeces.contains(localIndex.getName())) {
+                log.append("Index ").append(localIndex.getName());
+                log.append(" removed from table ").append(lt.getName());
+                log.append(".").append(System.lineSeparator());
+
+                indexChanges.add(new IndexChange(lt, new Index(lt, localIndex), FieldTreeNode.Diff.DELETED));
+            }
         }
     }
 

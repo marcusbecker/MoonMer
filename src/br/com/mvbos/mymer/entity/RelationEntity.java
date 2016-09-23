@@ -13,8 +13,6 @@ import br.com.mvbos.mymer.xml.XMLUtil;
 import static br.com.mvbos.mymer.xml.XMLUtil.FORMATTED_OUTPUT;
 import static br.com.mvbos.mymer.xml.XMLUtil.getFileInputStream;
 import static br.com.mvbos.mymer.xml.XMLUtil.getFileOutputStream;
-
-import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.FieldGroup;
 import br.com.mvbos.mymer.xml.field.Relationship;
 import java.awt.event.ActionListener;
@@ -22,7 +20,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;

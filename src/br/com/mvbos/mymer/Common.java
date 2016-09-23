@@ -16,6 +16,8 @@ import java.nio.charset.Charset;
  */
 public class Common {
 
+    public static float VERSION = 1.5f;
+
     public static final int MINI_MAP_UPDATE = 3 * 1000;
 
     public static short ct; //counter
@@ -31,7 +33,7 @@ public class Common {
 
     public static int camWidth = Integer.valueOf(MMProperties.get("camWidth", 9000));
     public static int camHeight = Integer.valueOf(MMProperties.get("camHeight", 9000));
-    
+
     public static int backgroundColor = Integer.valueOf(MMProperties.get("backgroundColor", Color.WHITE.getRGB()));
 
     public static final String[] comboTypes = MMProperties.get("comboTypes", "character,date,decimal,integer,logical,rowid,handle").split(",");

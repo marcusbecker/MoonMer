@@ -11,7 +11,6 @@ import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
-import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.DataConfig;
 import br.com.mvbos.mymer.xml.field.Field;

@@ -5,7 +5,6 @@
  */
 package br.com.mvbos.mymer;
 
-import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.jeg.element.SelectorElement;
 import br.com.mvbos.jeg.engine.GraphicTool;
@@ -17,6 +16,7 @@ import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.entity.DataBaseEntity;
 import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.entity.RelationEntity;
 import br.com.mvbos.mymer.entity.ViewEntity;
 import br.com.mvbos.mymer.list.GenericListModel;

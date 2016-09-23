@@ -468,7 +468,7 @@ public class ImportBases extends javax.swing.JFrame {
         lstTablesConflict.setModel(new DefaultListModel());
         scrollTablesConflict.setViewportView(lstTablesConflict);
 
-        btnRemoveLocalTable.setText("Remove");
+        btnRemoveLocalTable.setText("Remove local tables");
         btnRemoveLocalTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveLocalTableActionPerformed(evt);
@@ -486,7 +486,7 @@ public class ImportBases extends javax.swing.JFrame {
                     .addComponent(lblTablesConflict, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnStepTwoLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnRemoveLocalTable, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnRemoveLocalTable)))
                 .addContainerGap())
         );
         pnStepTwoLayout.setVerticalGroup(
@@ -942,11 +942,10 @@ public class ImportBases extends javax.swing.JFrame {
 
     private void btnRemoveLocalTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveLocalTableActionPerformed
 
-        if (lstTablesConflict.getSelectedValue() != null) {
-            String name = lstTablesConflict.getSelectedValue().toString();
+        for (Object o : lstTablesConflict.getSelectedValuesList()) {
+            String name = o.toString();
             lstRemoveLocalTable.add(localTalbles.get(name));
-
-            ((DefaultListModel) lstTablesConflict.getModel()).removeElement(lstTablesConflict.getSelectedValue());
+            ((DefaultListModel) lstTablesConflict.getModel()).removeElement(o);
         }
 
     }//GEN-LAST:event_btnRemoveLocalTableActionPerformed
@@ -1373,11 +1372,12 @@ public class ImportBases extends javax.swing.JFrame {
             @Override
             protected void done() {
                 lPanel.getProgressBar().setValue(100);
+                lstOrg.updateUI();
                 dialog.dispose();
             }
 
         };
-
+        
         sw.execute();
         dialog.setVisible(true);
     }

@@ -36,10 +36,11 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Component id="progressBar" alignment="0" max="32767" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblInfo" max="32767" attributes="0"/>
+                  <Component id="tfInfo" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="rQuick" min="-2" pref="120" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -50,7 +51,6 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="progressBar" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -63,7 +63,7 @@
                   <Component id="btn" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="lblInfo" min="-2" max="-2" attributes="0"/>
+              <Component id="tfInfo" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
               <Component id="progressBar" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -96,12 +96,9 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="lblInfo">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" "/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JProgressBar" name="progressBar">
+    </Component>
+    <Component class="javax.swing.JTextField" name="tfInfo">
     </Component>
   </SubComponents>
 </Form>

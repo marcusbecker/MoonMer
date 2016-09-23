@@ -165,6 +165,10 @@ public class Differ {
             int id;
             IndexElement lIndex = leftList.get(i);
 
+            if ("default".equals(lIndex.getName())) {
+                continue;
+            }
+
             if (lIndex.getName().equals(lIndex.getOrgId())) {
                 id = EntityUtil.indexOfIndexByName(rightList, lIndex.getOrgId());
 
@@ -220,13 +224,6 @@ public class Differ {
         }
 
         return log;
-    }
-
-    public static StringBuilder compare(TableElement t, Table temp) {
-        StringBuilder sb = new StringBuilder(compareField(t, t.getFields(), temp.getFields()));
-        //sb.append(compareIndex(t, null, null));
-
-        return sb;
     }
 
     public static void removeTable(TableElement te, StringBuilder sb) {

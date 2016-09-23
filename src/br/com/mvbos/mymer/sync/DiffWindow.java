@@ -121,7 +121,6 @@ public class DiffWindow extends javax.swing.JFrame {
 
         pnLeftBase.setBackground(new java.awt.Color(240, 224, 223));
 
-        textDiffLeft.setContentType("text/html"); // NOI18N
         jScrollPane3.setViewportView(textDiffLeft);
 
         javax.swing.GroupLayout pnLeftBaseLayout = new javax.swing.GroupLayout(pnLeftBase);
@@ -199,7 +198,6 @@ public class DiffWindow extends javax.swing.JFrame {
 
         pnRightBase.setBackground(new java.awt.Color(226, 226, 226));
 
-        textDiffRight.setContentType("text/html"); // NOI18N
         jScrollPane4.setViewportView(textDiffRight);
 
         javax.swing.GroupLayout pnRightBaseLayout = new javax.swing.GroupLayout(pnRightBase);
@@ -285,6 +283,8 @@ public class DiffWindow extends javax.swing.JFrame {
 
     private TableElement lSel;
     private TableElement rSel;
+    
+    private final IndexEntity ie = EntityManager.e().getEntity(IndexEntity.class);
 
     private void updateTextDiff() {
 
@@ -334,8 +334,6 @@ public class DiffWindow extends javax.swing.JFrame {
             lblLefTable.setText(sel.getName());
 
             leftField.addAll(sel.getFields());
-
-            IndexEntity ie = EntityManager.e().getEntity(IndexEntity.class);
             leftIndex.addAll(ie.findIndexByTable(sel));
 
             updateTextDiff();
@@ -374,8 +372,6 @@ public class DiffWindow extends javax.swing.JFrame {
             lblRightTable.setText(sel.getName());
 
             rightField.addAll(sel.getFields());
-
-            IndexEntity ie = EntityManager.e().getEntity(IndexEntity.class);
             rightIndex.addAll(ie.findIndexByTable(sel));
 
             updateTextDiff();

@@ -7,7 +7,6 @@ package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
-import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,69 +19,52 @@ import java.util.Set;
  */
 public class Progress4GLEntityToScript extends EntityToScriptAbstract {
 
+    private final String line = System.lineSeparator();
+
     /*
      First improve: use text string in Java code
      */
     @Override
     public void addTable(TableElement tb, StringBuilder sb) {
-        if (IEntityToScript.Mode.PLAIN == mode) {
-            sb.append(String.format("ADD TABLE \"%s\"\n", tb.getName()));
-            sb.append("  AREA \"Dados\"\n");
-            sb.append(String.format("  DESCRIPTION \"%s\"\n", tb.getDescription()));
-            sb.append(String.format("  DUMP-NAME \"%s\"\n", tb.getName()));
-            sb.append("\n");
-        } else {
-        }
+        //IEntityToScript.Mode.PLAIN == mode
+        sb.append(String.format("ADD TABLE \"%s\"", tb.getName())).append(line);
+        sb.append("  AREA \"Dados\"").append(line);
+        sb.append(String.format("  DESCRIPTION \"%s\"", tb.getDescription())).append(line);
+        sb.append(String.format("  DUMP-NAME \"%s\"", tb.getName())).append(line);
+        sb.append(line);
+
     }
 
     @Override
     public void addField(TableElement tb, Field f, int index, StringBuilder sb) {
-        if (IEntityToScript.Mode.PLAIN == mode) {
-            sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"").append(tb.getName()).append("\" AS ").append(f.getType()).append("\n");
-            sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"\n");
-            sb.append("  FORMAT \"").append(f.getFormat()).append("\"\n");
+        sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"");
+        sb.append(tb.getName()).append("\" AS ").append(f.getType()).append(line);
+        sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"").append(line);
+        sb.append("  FORMAT \"").append(f.getFormat()).append("\"").append(line);
 
-            if (f.getInitial() == null || f.getInitial().isEmpty()) {
-                sb.append("  INITIAL \"\"\n");
-            } else {
-                if (f.getFormat() == null || f.getFormat().startsWith("x")) {
-                    sb.append("  INITIAL \"").append(f.getInitial()).append("\"\n");
-                } else {
-                    sb.append("  INITIAL ").append(f.getInitial()).append("\n");
-                }
-            }
-
-            sb.append("  LABEL \"").append(f.getName()).append("\"\n");
-            //sb.append("  POSITION ").append(ct).append("\n");
-            //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"\n");
-            sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"\n");
-            sb.append("  HELP \"").append(f.getHelp()).append("\"\n");
-            sb.append("  ORDER ").append(index * 10).append("\n");
-            sb.append("\n");
-
+        if (f.getInitial() == null || f.getInitial().isEmpty()) {
+            sb.append("  INITIAL \"\"").append(line);
         } else {
-            //log.append("ADD <b>").append(f.getName()).append("</i><br />");
-            sb.append("ADD FIELD <b>\"").append(f.getName()).append("\"</b> OF <b>\"").append(tb.getName());
-            sb.append("\"</b> AS ").append(f.getType()).append("<br>\n");
-            sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"<br>\n");
-            sb.append("  FORMAT \"").append(f.getFormat()).append("\"<br>\n");
-            sb.append("  INITIAL \"\"<br>\n");
-            sb.append("  LABEL \"").append(f.getName()).append("\"<br>\n");
-            //log.append("  POSITION ").append(ct).append("<br>");
-            //log.append("  MAX-WIDTH 4").append(te.getName()).append("\"<br>");
-            sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"<br>\n");
-            sb.append("  HELP \"").append(f.getHelp()).append("\"<br>\n");
-            sb.append("  ORDER ").append(index * 10).append("<br>\n");
-
-            sb.append("<br>");
-
+            if (f.getFormat() == null || f.getFormat().startsWith("x")) {
+                sb.append("  INITIAL \"").append(f.getInitial()).append("\"").append(line);
+            } else {
+                sb.append("  INITIAL ").append(f.getInitial()).append(line);
+            }
         }
+
+        sb.append("  LABEL \"").append(f.getName()).append("\"").append(line);
+        //sb.append("  POSITION ").append(ct).append(line);
+        //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"").append(line);
+        sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"").append(line);
+        sb.append("  HELP \"").append(f.getHelp()).append("\"").append(line);
+        sb.append("  ORDER ").append(index * 10).append(line);
+        sb.append(line);
 
     }
 
     @Override
     public void addIndex(TableElement tb, IndexElement ie, StringBuilder sb) {
-        String line = IEntityToScript.Mode.PLAIN == mode ? System.lineSeparator() : System.lineSeparator() + "<br>";
+        //String line = IEntityToScript.Mode.PLAIN == mode ? System.lineSeparator() : System.lineSeparator() + "";
 
         sb.append("ADD INDEX \"").append(ie.getName()).append("\" ON \"").append(tb.getName());
         sb.append("\"").append(line);
@@ -90,17 +72,17 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append(line);
 
         if (ie.getActive()) {
-            sb.append(" ACTIVE");
+            sb.append("  ACTIVE");
             sb.append(line);
         }
 
         if (ie.getPrimary()) {
-            sb.append(" PRIMARY");
+            sb.append("  PRIMARY");
             sb.append(line);
         }
 
         if (ie.getUnique()) {
-            sb.append(" UNIQUE ");
+            sb.append("  UNIQUE ");
             sb.append(line);
         }
 
@@ -115,41 +97,41 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
 
     @Override
     public void renameField(TableElement tb, Field field, String oldName, String newName, StringBuilder sb) {
-        sb.append("RENAME FIELD <b>\"").append(oldName);
-        sb.append("\"</b> OF <b>\"").append(tb.getName());
-        sb.append("\"</b> TO <b>\"").append(newName).append("\"</b><br><br>\n");
+        sb.append("RENAME FIELD \"").append(oldName);
+        sb.append("\" OF \"").append(tb.getName());
+        sb.append("\" TO \"").append(newName).append("\"").append(line);
     }
 
     @Override
     public void renameIndex(TableElement tb, IndexElement ie, String oldName, String newName, StringBuilder sb) {
-        sb.append("RENAME INDEX <b>\"").append(oldName);
-        sb.append("\"</b> TO <b>\"").append(newName);
-        sb.append("\"</b> ON <b>\"").append(tb.getName());
-        sb.append("\"</b><br><br>\n");
+        sb.append("RENAME INDEX \"").append(oldName);
+        sb.append("\" TO \"").append(newName);
+        sb.append("\" ON \"").append(tb.getName());
+        sb.append("\"").append(line);
     }
 
     @Override
     public void updateField(TableElement tb, Field f, Collection<String> changes, StringBuilder sb) {
-        sb.append("UPDATE FIELD <b>\"");
-        sb.append(f.getName()).append("\"</b> OF <b>\"");
-        sb.append(tb.getName()).append("\"</b><br>\n");
+        sb.append("UPDATE FIELD \"");
+        sb.append(f.getName()).append("\" OF \"");
+        sb.append(tb.getName()).append("\"").append(line);
 
         for (String c : changes) {
-            sb.append(c).append("<br>\n");
+            sb.append(c).append(line);
         }
 
-        sb.append("<br>\n");
+        sb.append(line);
     }
 
     @Override
     public void dropField(TableElement tb, Field f, StringBuilder sb) {
-        sb.append("DROP FIELD <b>\"").append(f.getName()).append("\"</b> OF <b>\"");
-        sb.append(tb.getName()).append("\"</b> <br><br>");
+        sb.append("DROP FIELD \"").append(f.getName()).append("\" OF \"");
+        sb.append(tb.getName()).append("\" ").append(line);
     }
 
     @Override
     public void dropTable(TableElement tb, StringBuilder sb) {
-        sb.append("DROP TABLE \"").append(tb.getName()).append("\"\n");
+        sb.append("DROP TABLE \"").append(tb.getName()).append("\"").append(line);
     }
 
     @Override
@@ -199,23 +181,23 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         if (changeUnique || addedOrRemovedFields) {
             tempName = "temp-" + tempName;
             sb.append(String.format("RENAME INDEX \"%s\" TO \"%s\" ON \"%s\"", newIndex.getName(), tempName, tb.getName()));
-            sb.append("</br>\n");
+            sb.append(line);
 
             addIndex(tb, newIndex, sb);
 
             sb.append(String.format("DROP INDEX \"%s\" ON \"%s\"", tempName, tb.getName()));
-            sb.append("</br>\n");
+            sb.append(line);
 
         } else if (!map.isEmpty()) {
-            sb.append("UPDATE INDEX <b>\"");
-            sb.append(tempName).append("\"</b> OF <b>\"");
-            sb.append(tb.getName()).append("\"</b><br>\n");
+            sb.append("UPDATE INDEX \"");
+            sb.append(tempName).append("\" OF \"");
+            sb.append(tb.getName()).append("\"").append(line);
 
             for (String c : map.values()) {
-                sb.append(c).append("<br>\n");
+                sb.append(c).append(line);
             }
 
-            sb.append("<br>\n");
+            sb.append(line);
         }
     }
 

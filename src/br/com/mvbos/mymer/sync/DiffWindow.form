@@ -179,9 +179,6 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JEditorPane" name="textDiffLeft">
-              <Properties>
-                <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-              </Properties>
             </Component>
           </SubComponents>
         </Container>
@@ -313,9 +310,6 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JEditorPane" name="textDiffRight">
-              <Properties>
-                <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-              </Properties>
             </Component>
           </SubComponents>
         </Container>

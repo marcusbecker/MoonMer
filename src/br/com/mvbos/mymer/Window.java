@@ -5,10 +5,6 @@
  */
 package br.com.mvbos.mymer;
 
-import br.com.mvbos.mymer.table.DataChangeListener;
-import br.com.mvbos.mymer.entity.EntityUtil;
-import br.com.mvbos.mymer.table.GenericTableModel;
-import br.com.mvbos.mymer.table.FieldTableModel;
 import br.com.mvbos.jeg.element.ElementModel;
 import br.com.mvbos.jeg.element.SelectorElement;
 import br.com.mvbos.jeg.engine.GraphicTool;
@@ -32,22 +28,26 @@ import br.com.mvbos.mymer.el.StageElement;
 import br.com.mvbos.mymer.el.TableElement;
 import br.com.mvbos.mymer.entity.DataBaseEntity;
 import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.EntityUtil;
 import br.com.mvbos.mymer.entity.IElementEntity;
 import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.entity.RelationEntity;
-import br.com.mvbos.mymer.sync.DiffExportWindow;
+import br.com.mvbos.mymer.sync.DiffWindowExport;
 import br.com.mvbos.mymer.sync.DiffWindow;
 import br.com.mvbos.mymer.sync.Differ;
-import br.com.mvbos.mymer.tree.DataTreeNode;
-import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.sync.ImportBases;
 import br.com.mvbos.mymer.sync.QuickImportBases;
 import br.com.mvbos.mymer.table.DataChange;
+import br.com.mvbos.mymer.table.DataChangeListener;
+import br.com.mvbos.mymer.table.FieldTableModel;
+import br.com.mvbos.mymer.table.GenericTableModel;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
+import br.com.mvbos.mymer.tree.DataTreeNode;
+import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.xml.DataBaseStore;
 import br.com.mvbos.mymer.xml.TransportDTO;
-import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.XMLUtil;
+import br.com.mvbos.mymer.xml.field.Field;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -595,7 +595,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         menuTools = new javax.swing.JMenu();
         miFinder = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        miDiff = new javax.swing.JMenuItem();
         miDiffExport = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
         miOrderByRow = new javax.swing.JMenuItem();
         miOrderByCol = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
@@ -1136,6 +1138,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        btnRemFieldTable.setForeground(new java.awt.Color(255, 0, 0));
         btnRemFieldTable.setText("-");
         btnRemFieldTable.setToolTipText("Remove selected Field");
         btnRemFieldTable.addActionListener(new java.awt.event.ActionListener() {
@@ -1287,6 +1290,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        btnRemIndex.setForeground(new java.awt.Color(255, 0, 0));
         btnRemIndex.setText("-");
         btnRemIndex.setToolTipText("Remove selected Index");
         btnRemIndex.addActionListener(new java.awt.event.ActionListener() {
@@ -1365,7 +1369,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        btnRemoveRelationship.setForeground(new java.awt.Color(255, 0, 0));
         btnRemoveRelationship.setText("-");
+        btnRemoveRelationship.setToolTipText("Remove");
         btnRemoveRelationship.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveRelationshipActionPerformed(evt);
@@ -1419,6 +1425,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         jScrollPane1.setViewportView(tfStruct);
 
         btnBuildSctruct.setText("Build");
+        btnBuildSctruct.setToolTipText("Preview the selected table structure");
         btnBuildSctruct.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBuildSctructActionPerformed(evt);
@@ -1426,6 +1433,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         });
 
         btnShowDiff.setText("Differ");
+        btnShowDiff.setToolTipText("Preview changes of the selected table");
         btnShowDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnShowDiffActionPerformed(evt);
@@ -1450,11 +1458,12 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         tabStructLayout.setVerticalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tabStructLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnBuildSctruct)
-                    .addComponent(btnShowDiff))
+                    .addComponent(btnShowDiff)
+                    .addComponent(btnBuildSctruct))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
@@ -1626,6 +1635,16 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         menuTools.add(miFinder);
         menuTools.add(jSeparator6);
 
+        miDiff.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        miDiff.setText("Differ");
+        miDiff.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miDiffActionPerformed(evt);
+            }
+        });
+        menuTools.add(miDiff);
+
+        miDiffExport.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         miDiffExport.setText("Export differ");
         miDiffExport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1633,6 +1652,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
         menuTools.add(miDiffExport);
+        menuTools.add(jSeparator7);
 
         miOrderByRow.setText("Order by row");
         miOrderByRow.setToolTipText("Order by row");
@@ -2591,29 +2611,14 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void btnShowDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowDiffActionPerformed
 
-        final TableElement sel = getTableSeletected();
-
-        if (sel == null) {
-            return;
-        }
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                DiffWindow diffWindow = new DiffWindow();
-                diffWindow.setLocationRelativeTo(Window.this);
-                diffWindow.setVisible(true);
-
-                diffWindow.loadFormHistory(sel);
-            }
-        });
+        differAction();
 
 
     }//GEN-LAST:event_btnShowDiffActionPerformed
 
+
     private void miDiffExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDiffExportActionPerformed
-        DiffExportWindow diff = new DiffExportWindow();
+        DiffWindowExport diff = new DiffWindowExport();
         diff.setLocationRelativeTo(this);
         diff.setVisible(true);
 
@@ -2761,6 +2766,12 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_dlgFinderListValueChanged
 
+    private void miDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miDiffActionPerformed
+
+        differAction();
+
+    }//GEN-LAST:event_miDiffActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddFieldIndexList;
@@ -2826,6 +2837,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JSlider jsZoom;
     private javax.swing.JLabel lblInfo;
@@ -2838,6 +2850,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JMenuItem miBases;
     private javax.swing.JMenuItem miCloneTable;
     private javax.swing.JMenuItem miCopyXml;
+    private javax.swing.JMenuItem miDiff;
     private javax.swing.JMenuItem miDiffExport;
     private javax.swing.JMenuItem miEditView;
     private javax.swing.JMenuItem miExit;
@@ -3659,5 +3672,23 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 tb.setRowSelectionInterval(0, 0);
             }
         }
+    }
+
+    private void differAction() {
+        final TableElement sel = getTableSeletected();
+        if (sel == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                DiffWindow diffWindow = new DiffWindow();
+                diffWindow.setLocationRelativeTo(Window.this);
+                diffWindow.setVisible(true);
+
+                diffWindow.loadFormHistory(sel);
+            }
+        });
     }
 }
