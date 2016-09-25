@@ -2468,6 +2468,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             TableElement te = (TableElement) e;
             Differ.addTable(te, sb);
             Differ.addTableIndex(te, sb);
+
         }
 
         tfStruct.setText(sb.toString());

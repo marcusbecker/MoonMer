@@ -234,7 +234,7 @@ public class Differ {
         entityToScript.setMode(IEntityToScript.Mode.PLAIN);
         entityToScript.addTable(te, sb);
 
-        short ct = 1;
+        int ct = 1;
 
         for (Field f : te.getFields()) {
             entityToScript.addField(te, f, ct++, sb);

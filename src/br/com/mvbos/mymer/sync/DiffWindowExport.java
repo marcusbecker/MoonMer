@@ -181,8 +181,6 @@ public class DiffWindowExport extends javax.swing.JFrame {
 
                                 if (remoteTable == null) {
                                     Differ.addTable(localTable, sb);
-                                    Differ.addTableIndex(localTable, sb);
-                                    
                                 } else {
                                     List<IndexElement> tempList = Collections.EMPTY_LIST;
 
