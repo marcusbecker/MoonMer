@@ -55,9 +55,15 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append("  LABEL \"").append(f.getName()).append("\"").append(line);
         //sb.append("  POSITION ").append(ct).append(line);
         //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"").append(line);
+
+        if (f.getDecimals() > 0) {
+            sb.append("  DECIMALS ").append(f.getDecimals()).append(line);
+        }
+
         sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"").append(line);
         sb.append("  HELP \"").append(f.getHelp()).append("\"").append(line);
         sb.append("  ORDER ").append(index * 10).append(line);
+
         sb.append(line);
 
     }

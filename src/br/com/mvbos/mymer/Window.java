@@ -49,6 +49,7 @@ import br.com.mvbos.mymer.xml.TransportDTO;
 import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -100,7 +101,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 /**
@@ -137,6 +140,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
+        cancelTablesEditions(table);
         FieldTableModel model = (FieldTableModel) table.getModel();
 
         if (model.moveRow(sel, up)) {
@@ -193,6 +197,34 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         Common.camHeight = stageEl.getHeight();
         MMProperties.save();
 
+    }
+
+    private TreeCellRenderer getTreeCellRender() {
+        TreeCellRenderer cellRender = new DefaultTreeCellRenderer() {
+
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+
+                if (value instanceof DataTreeNode) {
+
+                    DataTreeNode nodo = (DataTreeNode) value;
+                    //if (nodo.getChildCount() > 0) {}
+                    //super.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tree_icon.png")));
+                    super.setIcon(nodo.getIcon());
+
+                } else if (value instanceof TableTreeNode) {
+                    super.setIcon(new javax.swing.ImageIcon(getClass().getResource("/table.png")));
+
+                } else if (value instanceof DefaultMutableTreeNode) {
+                    super.setIcon(new javax.swing.ImageIcon(getClass().getResource("/database_ico.png")));
+                }
+
+                return this;
+            }
+        };
+
+        return cellRender;
     }
 
     private class MyDispatcher implements KeyEventDispatcher {
@@ -1021,6 +1053,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        treeBases.setCellRenderer(getTreeCellRender());
         treeBases.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 treeBasesValueChanged(evt);
@@ -2591,7 +2624,6 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
         if (evt.isAltDown()) {
             JTable tb = (JTable) evt.getSource();
-            cancelTablesEditions(tb);
             if (evt.getKeyCode() == KeyEvent.VK_UP || evt.getKeyCode() == KeyEvent.VK_DOWN) {
                 reoderRow(tb, evt.getKeyCode() == KeyEvent.VK_UP);
             }
