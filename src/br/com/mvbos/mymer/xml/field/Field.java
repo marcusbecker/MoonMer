@@ -35,6 +35,10 @@ public class Field implements Serializable {
         return arr;
     }
 
+    private boolean isEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
+
     public enum Attribute {
 
         PRIMARY, UNIQUE, INDEX
@@ -42,13 +46,22 @@ public class Field implements Serializable {
 
     //public static Map<Short, Field> internalIndex = new HashMap<>(500);
     private String name;
-    @TableFieldAnnotation(exportLabel = "MAX-WIDTH")
+    @TableFieldAnnotation(exportLabel = "MAX-WIDTH", tableLabel = "max width")
     private Integer size;
     private String type;
     private String format;
     private String initial;
     private Integer decimals;
     private String description;
+
+    private String label;
+    @TableFieldAnnotation(exportLabel = "COLUMN-LABEL", tableLabel = "column label")
+    private String colLabel;
+    private String help;
+    @TableFieldAnnotation(tableLabel = "val. expression")
+    private String valExp;
+    @TableFieldAnnotation(tableLabel = "val. message")
+    private String valMsg;
 
     @TableFieldAnnotation(ignore = true)
     private String orgId;
@@ -86,7 +99,7 @@ public class Field implements Serializable {
     }
 
     public String getType() {
-        return type == null ? "" : type;
+        return isEmpty(type) ? "" : type;
     }
 
     public void setType(String type) {
@@ -94,7 +107,7 @@ public class Field implements Serializable {
     }
 
     public String getFormat() {
-        return format == null ? "" : format;
+        return isEmpty(format) ? "" : format;
     }
 
     public void setFormat(String format) {
@@ -118,11 +131,63 @@ public class Field implements Serializable {
     }
 
     public String getDescription() {
-        return description == null ? "" : description;
+        return isEmpty(description) ? "" : description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getLabel() {
+        return isEmpty(label) ? "" : label;
+    }
+
+    public String getDefaultLabel() {
+        return isEmpty(label) ? getName() : label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getColLabel() {
+        return isEmpty(colLabel) ? "" : colLabel;
+    }
+
+    public String getDefaultColLabel() {
+        return isEmpty(colLabel) ? getName().replaceAll("-", "!") : colLabel;
+    }
+
+    public void setColLabel(String colLabel) {
+        this.colLabel = colLabel;
+    }
+
+    public String getHelp() {
+        return isEmpty(help) ? "" : help;
+    }
+
+    public String getDefaultHelp() {
+        return isEmpty(help) ? getName().replaceAll("-", " ") : help;
+    }
+
+    public void setHelp(String help) {
+        this.help = help;
+    }
+
+    public String getValExp() {
+        return isEmpty(valExp) ? "" : valExp;
+    }
+
+    public void setValExp(String valExp) {
+        this.valExp = valExp;
+    }
+
+    public String getValMsg() {
+        return isEmpty(valMsg) ? "" : valMsg;
+    }
+
+    public void setValMsg(String valMsg) {
+        this.valMsg = valMsg;
     }
 
     public String getOrgId() {
@@ -162,14 +227,6 @@ public class Field implements Serializable {
         }
 
         return getType().length() <= Common.typeCharLength ? getType() : getType().substring(0, Common.typeCharLength);
-    }
-
-    public String getLabel() {
-        return getName().replaceAll("-", "!");
-    }
-
-    public String getHelp() {
-        return getName().replaceAll("-", " ");
     }
 
     @Override

@@ -64,7 +64,14 @@ public class Differ {
                         label = a.exportLabel();
                     }
 
-                    map.put(fl.getName(), label.toUpperCase() + " " + fl.get(fa));
+                    String value;
+                    if (fl.getType() == String.class) {
+                        value = label.toUpperCase() + " \"" + fl.get(fa) + "\"";
+                    } else {
+                        value = label.toUpperCase() + " " + fl.get(fa);
+                    }
+
+                    map.put(fl.getName(), value);
                 }
 
             } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
@@ -73,6 +80,16 @@ public class Differ {
         }
     }
 
+    /**
+     *
+     * @param tb
+     * @param left
+     * @param right
+     * @return
+     * @deprecated It need to be replaced by compareTable(TableElement t1,
+     * TableElement t2)
+     */
+    @Deprecated
     public static StringBuilder compareField(TableElement tb, List<Field> left, List<Field> right) {
 
         //log.delete(0, log.length());
@@ -80,7 +97,7 @@ public class Differ {
             return log;
         }
 
-        int ct = 1;
+        int ct = left.isEmpty() ? 1 : left.size();
         entityToScript.setMode(IEntityToScript.Mode.DECORED);
 
         for (int i = 0; i < left.size(); i++) {
@@ -263,6 +280,10 @@ public class Differ {
 
     public static String getString() {
         return log.toString();
+    }
+
+    public static void compareTables(TableElement localTable, Table remoteTable) {
+        Differ.compareField(localTable, localTable.getFields(), remoteTable.getFields());
     }
 
     private void compare(Field fa, Field fb) {

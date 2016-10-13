@@ -52,7 +52,7 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
             }
         }
 
-        sb.append("  LABEL \"").append(f.getName()).append("\"").append(line);
+        sb.append("  LABEL \"").append(f.getDefaultLabel()).append("\"").append(line);
         //sb.append("  POSITION ").append(ct).append(line);
         //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"").append(line);
 
@@ -60,12 +60,20 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
             sb.append("  DECIMALS ").append(f.getDecimals()).append(line);
         }
 
-        sb.append("  COLUMN-LABEL \"").append(f.getLabel()).append("\"").append(line);
-        sb.append("  HELP \"").append(f.getHelp()).append("\"").append(line);
+        sb.append("  COLUMN-LABEL \"").append(f.getDefaultColLabel()).append("\"").append(line);
+        sb.append("  HELP \"").append(f.getDefaultHelp()).append("\"").append(line);
+
+        if (f.getValExp() != null && !f.getValExp().isEmpty()) {
+            sb.append("  VALEXP \"").append(f.getValExp()).append("\"").append(line);
+        }
+
+        if (f.getValMsg() != null && !f.getValMsg().isEmpty()) {
+            sb.append("  VALMSG \"").append(f.getValMsg()).append("\"").append(line);
+        }
+
         sb.append("  ORDER ").append(index * 10).append(line);
 
         sb.append(line);
-
     }
 
     @Override
@@ -77,11 +85,10 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append("  AREA \"Indices\"");
         sb.append(line);
 
-        if (ie.getActive()) {
-            sb.append("  ACTIVE");
-            sb.append(line);
-        }
-
+        /*if (ie.getActive()) {
+         sb.append("  ACTIVE");
+         sb.append(line);
+         }*/
         if (ie.getPrimary()) {
             sb.append("  PRIMARY");
             sb.append(line);
@@ -147,6 +154,7 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         Differ.compare(map, newIndex, oldIndex);
         map.remove("name");
         map.remove("orgId");
+        map.remove("active");
 
         String tempName = newIndex.getName();
 

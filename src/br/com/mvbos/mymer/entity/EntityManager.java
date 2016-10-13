@@ -5,11 +5,13 @@
  */
 package br.com.mvbos.mymer.entity;
 
+import java.util.Iterator;
+
 /**
  *
  * @author Marcus Becker
  */
-public class EntityManager {
+public class EntityManager implements Iterator<IElementEntity> {
 
     private static EntityManager em;
 
@@ -21,6 +23,9 @@ public class EntityManager {
         return em;
     }
 
+    private short index;
+    private IElementEntity lastElement;
+
     private final IElementEntity[] entities = new IElementEntity[5];
 
     private EntityManager() {
@@ -31,11 +36,15 @@ public class EntityManager {
         entities[4] = new ViewEntity();
     }
 
-    public void start() {
+    public void start(IElementEntity element) {
+        element.load(entities[0]);
+    }
+
+    public void startAll() {
         boolean load = entities[0].load(null);
 
         if (load) {
-            for (int i = 1; i < entities.length; i++) {
+            for (short i = 1; i < entities.length; i++) {
                 entities[i].load(entities[0]);
             }
         }
@@ -45,7 +54,7 @@ public class EntityManager {
         boolean save = entities[0].save(null);
 
         if (save) {
-            for (int i = 1; i < entities.length; i++) {
+            for (short i = 1; i < entities.length; i++) {
                 entities[i].save(entities[0]);
             }
 
@@ -62,16 +71,39 @@ public class EntityManager {
             if (cl.isInstance(e)) {
                 return cl.cast(e);
             }
-
         }
 
         return null;
     }
 
-    public static void main(String[] a) {
-        EntityManager em = EntityManager.e();
-        em.start();
-        DataBaseEntity dbe = em.getEntity(DataBaseEntity.class);
+    public int getIndex() {
+        return index;
+    }
+
+    public int getElementsCount() {
+        return entities.length;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return index < entities.length;
+    }
+
+    @Override
+    public IElementEntity next() {
+        if (index < entities.length) {
+            lastElement = entities[index];
+            index++;
+
+        } else {
+            lastElement = null;
+        }
+
+        return lastElement;
+    }
+
+    @Override
+    public void remove() {
     }
 
 }

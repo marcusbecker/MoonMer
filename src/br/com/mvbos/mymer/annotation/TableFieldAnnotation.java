@@ -20,4 +20,5 @@ public @interface TableFieldAnnotation {
     int size() default -1;
     boolean ignore() default false;
     String exportLabel() default "";
+    String tableLabel() default "";
 }

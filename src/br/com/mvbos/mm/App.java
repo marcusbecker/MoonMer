@@ -7,6 +7,7 @@ package br.com.mvbos.mm;
 
 import br.com.mvbos.mymer.Window;
 import br.com.mvbos.mymer.entity.EntityManager;
+import br.com.mvbos.mymer.entity.IElementEntity;
 import java.awt.EventQueue;
 
 /**
@@ -36,11 +37,34 @@ public class App {
             java.util.logging.Logger.getLogger(br.com.mvbos.mymer.Window.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        EntityManager.e().start();
+        final LoadWindow l = new LoadWindow();
+        final EntityManager em = EntityManager.e();
+
+        l.setLocationRelativeTo(null);
+        l.setVisible(true);
+
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Window().setVisible(true);
+                //new Window().setVisible(true);
+                new Thread() {
+
+                    @Override
+                    public void run() {
+                        while (em.hasNext()) {
+                            IElementEntity iee = em.next();
+                            em.start(iee);
+
+                            float total = (float) em.getIndex() / (em.getElementsCount() + 1) * 100;
+                            l.getProgressBar().setValue(Math.round(total));
+                        }
+
+                        final Window w = new Window();
+                        l.getProgressBar().setValue(100);
+                        w.setVisible(true);
+                        l.dispose();
+                    }
+                }.start();
             }
         });
     }

@@ -2505,6 +2505,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         }
 
         tfStruct.setText(sb.toString());
+        tfStruct.setCaretPosition(0);
 
 
     }//GEN-LAST:event_btnBuildSctructActionPerformed
@@ -3391,7 +3392,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void singleSelection(ElementModel el) {
         /*if (el != null && (selectedElements[0] == el)) {
-         //TODO compareField fields size
+         //TODO compareTables fields size
          return;
          }*/
 

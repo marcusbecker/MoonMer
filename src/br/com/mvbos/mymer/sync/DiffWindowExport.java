@@ -194,7 +194,7 @@ public class DiffWindowExport extends javax.swing.JFrame {
                                     }
 
                                     Differ.clear();
-                                    Differ.compareField(localTable, localTable.getFields(), remoteTable.getFields());
+                                    Differ.compareTables(localTable, remoteTable);
                                     Differ.compareIndex(localTable, ie.findIndexByTable(localTable), tempList);
                                     sb.append(Differ.getString());
                                 }

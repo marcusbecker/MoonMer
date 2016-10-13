@@ -68,7 +68,10 @@ public class FieldTableModel extends AbstractTableModel {
         colTypes.add(new ColType("#", Integer.class, false));
 
         for (java.lang.reflect.Field f : fields) {
-            colTypes.add(new ColType(f.getName(), f.getType(), true));
+            TableFieldAnnotation a = f.getAnnotation(TableFieldAnnotation.class);
+            String name = (a != null && !a.tableLabel().isEmpty()) ? a.tableLabel() : f.getName();
+
+            colTypes.add(new ColType(name, f.getType(), true));
         }
     }
 
