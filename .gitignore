@@ -42,7 +42,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 /build/
-/dist/
+/dist*/
 /nbproject/
 build.xml
 *.7z
@@ -50,3 +50,5 @@ build.xml
 /relations/
 /config/*.xml
 /dbs/
+/24102016src/
+*.zip

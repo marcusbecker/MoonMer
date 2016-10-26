@@ -6,7 +6,6 @@
 package br.com.mvbos.mymer.sync;
 
 import br.com.mvbos.mm.MMProperties;
-import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.TableElement;
@@ -17,15 +16,10 @@ import br.com.mvbos.mymer.entity.IndexEntity;
 import br.com.mvbos.mymer.tree.FieldTreeNode;
 import br.com.mvbos.mymer.util.FileUtil;
 import br.com.mvbos.mymer.xml.DataBaseStore;
-import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Table;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -129,7 +123,7 @@ public class QuickImportBases extends javax.swing.JFrame {
                     pBar.setValue(10);
                     tfResult.setText("Loading file: " + path);
 
-                    final DataBaseStore db = validadeAndLoadFile(path);
+                    final DataBaseStore db = EntityUtil.validadeAndLoadFile(path);
 
                     if (db == null || EntityUtil.notNull(db.getBases()).isEmpty()) {
                         log.append("Nothing to import.");
@@ -196,7 +190,6 @@ public class QuickImportBases extends javax.swing.JFrame {
         };
 
         sw.execute();
-
     }
 
     private boolean isNewField(String tableName, Field field, List<FieldChange> lst) {
@@ -450,51 +443,6 @@ public class QuickImportBases extends javax.swing.JFrame {
                 indexEntity.replace(idx, new IndexElement(i.index, i.table));
             }
         }
-    }
-
-    private DataBaseStore validadeAndLoadFile(String path) {
-        final DataBaseStore db;
-
-        if (path.isEmpty()) {
-            return null;
-        }
-
-        File f = new File(path);
-
-        if (!f.exists() || f.isDirectory()) {
-            return null;
-        }
-
-        try {
-            final InputStreamReader stream = new InputStreamReader(new FileInputStream(f), Common.charset);
-
-            db = XMLUtil.parseToDataBase(stream);
-
-            if (db != null && db.hasBases()) {
-
-                DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
-
-                List<DataBase> temp = new ArrayList(db.getBases());
-                for (DataBase d : temp) {
-                    DataBaseElement base = dbEntity.findByName(d.getName());
-                    if (base == null) {
-                        db.getBases().remove(d);
-                    }
-                }
-
-                //Create cache
-                FileUtil.storeToCache(db);
-                return db;
-            }
-
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(QuickImportBases.class.getName()).log(Level.SEVERE, null, ex);
-
-        } catch (Exception ex) {
-            Logger.getLogger(QuickImportBases.class.getName()).log(Level.WARNING, null, ex);
-        }
-
-        return null;
     }
 
     private FieldTreeNode.Diff compareFields(String tableName, Field fa, Field fb, StringBuilder log) {

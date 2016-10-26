@@ -5,15 +5,22 @@
  */
 package br.com.mvbos.mymer.entity;
 
+import br.com.mvbos.mymer.Common;
 import br.com.mvbos.mymer.el.DataBaseElement;
 import br.com.mvbos.mymer.el.IndexElement;
 import br.com.mvbos.mymer.el.RelationshipElement;
 import br.com.mvbos.mymer.el.TableElement;
+import br.com.mvbos.mymer.util.FileUtil;
 import br.com.mvbos.mymer.xml.DataBaseStore;
+import br.com.mvbos.mymer.xml.XMLUtil;
 import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Field;
 import br.com.mvbos.mymer.xml.field.Table;
 import br.com.mvbos.mymer.xml.field.ViewTable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +35,68 @@ import java.util.logging.Logger;
  * @author marcuss
  */
 public class EntityUtil {
+
+    public static DataBaseStore validadeAndLoadFile(String path) {
+        return validadeAndLoadFile(path, true, true);
+    }
+
+    public static DataBaseStore validadeAndLoadFile(String path, boolean forceLoad, boolean forceSave) {
+        final DataBaseStore db;
+
+        if (path == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (path.isEmpty()) {
+            return null;
+        }
+
+        File f = new File(path);
+
+        if (!f.exists() || f.isDirectory()) {
+            return null;
+        }
+
+        final boolean isNew = f.lastModified() > FileUtil.IMPORT_DATA.lastModified();
+
+        if (!isNew && !forceLoad) {
+            return null;
+        }
+
+        try {
+            final InputStreamReader stream = new InputStreamReader(new FileInputStream(f), Common.charset);
+
+            db = XMLUtil.parseToDataBase(stream);
+
+            if (db != null && db.hasBases()) {
+                final EntityManager em = EntityManager.e();
+                DataBaseEntity dbEntity = em.getEntity(DataBaseEntity.class);
+
+                List<DataBase> temp = new ArrayList(db.getBases());
+                for (DataBase d : temp) {
+                    DataBaseElement base = dbEntity.findByName(d.getName());
+                    if (base == null) {
+                        db.getBases().remove(d);
+                    }
+                }
+
+                //Create cache
+                if (isNew || forceSave) {
+                    FileUtil.storeToCache(db);
+                }
+                
+                return db;
+            }
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(EntityUtil.class.getName()).log(Level.SEVERE, null, ex);
+
+        } catch (Exception ex) {
+            Logger.getLogger(EntityUtil.class.getName()).log(Level.WARNING, null, ex);
+        }
+
+        return null;
+    }
 
     public static boolean compare(TableElement t, ViewTable v) {
         if (t == null || v == null) {
