@@ -110,7 +110,11 @@ public class Iup {
     }
 
     public boolean hasNewVersion() {
-        return info.getAppVersion() != null && !info.getAppVersion().equals(info.getVersion());
+        if(info.getAppVersion() == null || info.getVersion() == null){
+            return false;
+        }
+        
+        return !info.getAppVersion().equals(info.getVersion());
     }
 
     public void updateNewVersion(String currentVersion) {
