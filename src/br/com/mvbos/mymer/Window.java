@@ -42,6 +42,7 @@ import br.com.mvbos.mymer.table.DataChangeListener;
 import br.com.mvbos.mymer.table.FieldTableModel;
 import br.com.mvbos.mymer.table.GenericTableModel;
 import br.com.mvbos.mymer.table.RelationshipTableModel;
+import br.com.mvbos.mymer.task.CheckNewVersionTask;
 import br.com.mvbos.mymer.tree.DataTreeNode;
 import br.com.mvbos.mymer.tree.TableTreeNode;
 import br.com.mvbos.mymer.xml.DataBaseStore;
@@ -51,6 +52,7 @@ import br.com.mvbos.mymer.xml.field.Field;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
@@ -105,6 +107,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import br.com.mvbos.mm.Util;
 
 /**
  *
@@ -137,6 +140,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private final int BD_SP = 5; //Border space
 
     private final ElementModel findElement = new FindAnimationElement();
+
+    private final TemplateUtil buttonTemplate = new TemplateUtil();
 
     private void reoderRow(JTable table, boolean up) {
         int sel = table.getSelectedRow();
@@ -485,7 +490,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }
 
-    private void copyToClip() {
+    private void copyToClip(StringBuilder clip) {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
         StringSelection selection = new StringSelection(clip.toString());
@@ -604,6 +609,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         tfStruct = new javax.swing.JTextArea();
         btnBuildSctruct = new javax.swing.JButton();
         btnShowDiff = new javax.swing.JButton();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        tfStructError = new javax.swing.JTextArea();
         lblInfo = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuFile = new javax.swing.JMenu();
@@ -1473,17 +1480,24 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
             }
         });
 
+        tfStructError.setColumns(20);
+        tfStructError.setRows(5);
+        jScrollPane7.setViewportView(tfStructError);
+
         javax.swing.GroupLayout tabStructLayout = new javax.swing.GroupLayout(tabStruct);
         tabStruct.setLayout(tabStructLayout);
         tabStructLayout.setHorizontalGroup(
             tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
+            .addGroup(tabStructLayout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 310, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(tabStructLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnShowDiff)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnBuildSctruct, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         tabStructLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnBuildSctruct, btnShowDiff});
@@ -1496,7 +1510,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                     .addComponent(btnShowDiff)
                     .addComponent(btnBuildSctruct))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
+                .addGroup(tabStructLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7)))
         );
 
         jTabbedPane1.addTab("Struct", tabStruct);
@@ -2190,19 +2206,13 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     }//GEN-LAST:event_splitVerPropertyChange
 
-    private final StringBuilder clip = new StringBuilder(100);
 
     private void btnSQLFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSQLFindActionPerformed
 
         TableElement t = getTableSeletected();
 
         if (t != null) {
-            clip.delete(0, clip.length());
-
-            clip.append("FIND FIRST ").append(t.getName()).append(" NO-LOCK NO-ERROR.");
-            clip.append("\r\nDISP ").append(t.getName()).append(".");
-
-            copyToClip();
+            copyToClip(buttonTemplate.create(1, t));
         }
 
     }//GEN-LAST:event_btnSQLFindActionPerformed
@@ -2212,13 +2222,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableElement t = getTableSeletected();
 
         if (t != null) {
-            clip.delete(0, clip.length());
-
-            clip.append("FOR EACH ").append(t.getName()).append(" NO-LOCK:");
-            clip.append("\r\nDISP ").append(t.getName()).append(".");
-            clip.append("\r\nEND.");
-
-            copyToClip();
+            copyToClip(buttonTemplate.create(2, t));
         }
 
     }//GEN-LAST:event_btnSQLSelActionPerformed
@@ -2228,17 +2232,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableElement t = getTableSeletected();
 
         if (t != null) {
-            clip.delete(0, clip.length());
-            clip.append("CREATE ").append(t.getName()).append(".");
-            clip.append("\r\nASSIGN\r\n");
-
-            for (Field f : t.getFields()) {
-                clip.append(t.getName()).append(".").append(f.getName()).append(" = ").append(f.getType()).append("\r\n");
-            }
-
-            clip.append(".");
-
-            copyToClip();
+            copyToClip(buttonTemplate.create(3, t));
         }
 
 
@@ -2249,13 +2243,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableElement t = getTableSeletected();
 
         if (t != null) {
-            clip.delete(0, clip.length());
-
-            for (Field f : t.getFields()) {
-                clip.append(f.getName()).append("\r\n");
-            }
-
-            copyToClip();
+            copyToClip(buttonTemplate.create(4, t));
         }
 
     }//GEN-LAST:event_btnSQLColNamesActionPerformed
@@ -2265,18 +2253,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
         TableElement t = getTableSeletected();
 
         if (t != null) {
-            clip.delete(0, clip.length());
-
-            clip.append("DEF TEMP-TABLE ").append(t.getName()).append(" NO-UNDO");
-            for (Field f : t.getFields()) {
-                clip.append("\r\nFIELD ").append(f.getName()).append(" AS ").append(f.getType());
-            }
-
-            clip.append("\r\n.");
-
-            copyToClip();
+            copyToClip(buttonTemplate.create(5, t));
         }
-
 
     }//GEN-LAST:event_btnSQLTempTableActionPerformed
 
@@ -2381,19 +2359,29 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
     private void addNewIndex(TableElement te, IndexElement ie) {
         if (te != null) {
+            IndexEntity indexEntity = em.getEntity(IndexEntity.class);
+
             GenericTableModel<IndexElement> m = (GenericTableModel<IndexElement>) tbIndex.getModel();
 
             if (ie == null) {
                 String name = String.format("%s%02d", te.getName(), m.getData().size() + 1);
+
+                if (indexEntity.findByName(name, te) != null) {
+                    name = te.getName();
+                }
+
                 ie = new IndexElement(name, false, false, true, te);
             }
 
             ie.setFields(new ArrayList<Field>(5));
 
             m.getData().add(ie);
-            em.getEntity(IndexEntity.class).add(ie);
+            indexEntity.add(ie);
 
+            final int start = m.getRowCount() - 1;
             tbIndex.updateUI();
+            tbIndex.setRowSelectionInterval(start, start);
+            tbIndex.scrollRectToVisible(tbIndex.getCellRect(start, 0, true));
         }
     }
 
@@ -2493,12 +2481,53 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private void btnBuildSctructActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuildSctructActionPerformed
 
         StringBuilder sb = new StringBuilder(600);
+        StringBuilder errors = new StringBuilder(100);
+
+        final String line = System.lineSeparator();
+        final String eMsg = "The field #%d need a %s.";
+
+        errors.append("Warnings:").append(line);
+
         for (ElementModel e : selectedElements) {
             if (!(e instanceof TableElement)) {
                 continue;
             }
 
             TableElement te = (TableElement) e;
+
+            if (Util.isEmpty(te.getName())) {
+                errors.append("Table has no name.").append(line);
+            }
+
+            if (Util.isEmpty(te.getDescription())) {
+                errors.append("Table has no description.").append(line);
+            }
+
+            int fieldCounter = 0;
+            for (Field f : te.getFields()) {
+                fieldCounter++;
+
+                if (Util.isEmpty(f.getName())) {
+                    errors.append(String.format(eMsg, fieldCounter, "name")).append(line);
+                }
+
+                if (Util.isEmpty(f.getType())) {
+                    errors.append(String.format(eMsg, fieldCounter, "type")).append(line);
+                }
+
+                if (Util.isEmpty(f.getFormat())) {
+                    errors.append(String.format(eMsg, fieldCounter, "format")).append(line);
+                }
+
+                if (Util.isEmpty(f.getLabel())) {
+                    errors.append(String.format(eMsg, fieldCounter, "label")).append(line);
+                }
+
+                if (Util.isEmpty(f.getColLabel())) {
+                    errors.append(String.format(eMsg, fieldCounter, "column-label")).append(line);
+                }
+            }
+
             Differ.addTable(te, sb);
             Differ.addTableIndex(te, sb);
 
@@ -2506,6 +2535,8 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
 
         tfStruct.setText(sb.toString());
         tfStruct.setCaretPosition(0);
+        tfStructError.setText(errors.toString());
+        tfStructError.setCaretPosition(0);
 
 
     }//GEN-LAST:event_btnBuildSctructActionPerformed
@@ -2523,11 +2554,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     }//GEN-LAST:event_miCloneTableActionPerformed
 
     private void miCopyXmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCopyXmlActionPerformed
-
-        clip.delete(0, clip.length());
-        clip.append(XMLUtil.tablesToString(Arrays.asList(selectedElements)));
-
-        copyToClip();
+        copyToClip(new StringBuilder(XMLUtil.tablesToString(Arrays.asList(selectedElements))));
 
     }//GEN-LAST:event_miCopyXmlActionPerformed
 
@@ -2864,6 +2891,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
@@ -2923,6 +2951,7 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
     private javax.swing.JTextField tfInfoIndexFields;
     private javax.swing.JTextField tfSearchField;
     private javax.swing.JTextArea tfStruct;
+    private javax.swing.JTextArea tfStructError;
     private javax.swing.JTextField tfTableDesc;
     private javax.swing.JTextField tfTableName;
     private javax.swing.JTree treeBases;
@@ -3723,5 +3752,9 @@ public class Window extends javax.swing.JFrame implements EditWindowInterface {
                 diffWindow.loadFormHistory(sel);
             }
         });
+    }
+
+    public void checkNewVersion() {
+        EventQueue.invokeLater(new CheckNewVersionTask(this));
     }
 }

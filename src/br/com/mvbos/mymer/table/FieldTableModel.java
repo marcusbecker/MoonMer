@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mymer.table;
 
+import br.com.mvbos.mm.Util;
 import br.com.mvbos.mymer.annotation.TableFieldAnnotation;
 import br.com.mvbos.mymer.xml.field.Field;
 import java.util.ArrayList;
@@ -33,6 +34,20 @@ public class FieldTableModel extends AbstractTableModel {
 
     public void disableEdition(boolean disable) {
         this.disable = disable;
+    }
+
+    private int getColIndexByName(String name) throws Exception {
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+
+        for (int i = 0; i < colTypes.size(); i++) {
+            if (name.equals(colTypes.get(i).name)) {
+                return i;
+            }
+        }
+
+        throw new Exception("Column not foud.");
     }
 
     private class ColType {
@@ -99,15 +114,33 @@ public class FieldTableModel extends AbstractTableModel {
         try {
             Object old;
 
+            final String v = value.toString().trim();
+
             java.lang.reflect.Field ff = fields[classCol];
             ff.setAccessible(true);
             old = ff.get(f);
-            ff.set(f, value);
+            ff.set(f, v);
 
             fireTableCellUpdated(row, col);
 
             if (dataChangeListener != null) {
                 dataChangeListener.dataChange(new DataChange(row, classCol, f, old, value));
+            }
+
+            try {
+                if (col == getColIndexByName("name")) {
+                    if (Util.isEmpty(f.getLabel())) {
+                        String temp = v.replaceAll("[ -_]", "!");
+
+                        setValueAt(temp, row, getColIndexByName("label"));
+                    }
+
+                    if (Util.isEmpty(f.getColLabel())) {
+                        setValueAt(value, row, getColIndexByName("column label"));
+                    }
+                }
+            } catch (Exception e) {
+                Logger.getLogger(FieldTableModel.class.getName()).log(Level.SEVERE, null, e);
             }
 
         } catch (IllegalArgumentException | IllegalAccessException ex) {

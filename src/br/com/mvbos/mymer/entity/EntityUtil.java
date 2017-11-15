@@ -37,10 +37,10 @@ import java.util.logging.Logger;
 public class EntityUtil {
 
     public static DataBaseStore validadeAndLoadFile(String path) {
-        return validadeAndLoadFile(path, true, true);
+        return validateAndLoadFile(path, true, true);
     }
 
-    public static DataBaseStore validadeAndLoadFile(String path, boolean forceLoad, boolean forceSave) {
+    public static DataBaseStore validateAndLoadFile(String path, boolean forceLoad, boolean forceSave) {
         final DataBaseStore db;
 
         if (path == null) {

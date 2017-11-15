@@ -48,10 +48,18 @@ public class MMProperties {
         return val;
     }
 
+    public static boolean set(String key, String val) {
+        boolean first = prop.contains(key);
+
+        prop.setProperty(key, val);
+        save();
+        return first;
+    }
+
     public static void save() {
         prop.setProperty("camWidth", String.valueOf(Common.camWidth));
         prop.setProperty("camHeight", String.valueOf(Common.camHeight));
-        
+
         prop.setProperty("backgroundColor", String.valueOf(Common.backgroundColor));
 
         try {

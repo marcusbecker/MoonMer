@@ -40,39 +40,46 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         sb.append("ADD FIELD \"").append(f.getName()).append("\" OF \"");
         sb.append(tb.getName()).append("\" AS ").append(f.getType()).append(line);
         sb.append("  DESCRIPTION \"").append(f.getDescription()).append("\"").append(line);
-        sb.append("  FORMAT \"").append(f.getFormat()).append("\"").append(line);
 
-        if (f.getInitial() == null || f.getInitial().isEmpty()) {
-            sb.append("  INITIAL \"\"").append(line);
+        if ("clob".equalsIgnoreCase(f.getType())) {
+            sb.append("  LOB-AREA ").append("\"D-Lob\"").append(line);
+            sb.append("  CLOB-CODEPAGE ").append("\"ISO8859-1\"").append(line);
+            sb.append("  CLOB-COLLATION ").append("\"BASIC\"").append(line);
+
         } else {
-            if (f.getFormat() == null || f.getFormat().startsWith("x")) {
-                sb.append("  INITIAL \"").append(f.getInitial()).append("\"").append(line);
+            sb.append("  FORMAT \"").append(f.getFormat()).append("\"").append(line);
+
+            if (f.getInitial() == null || f.getInitial().isEmpty()) {
+                sb.append("  INITIAL \"\"").append(line);
             } else {
-                sb.append("  INITIAL ").append(f.getInitial()).append(line);
+                if (f.getFormat() == null || f.getFormat().startsWith("x")) {
+                    sb.append("  INITIAL \"").append(f.getInitial()).append("\"").append(line);
+                } else {
+                    sb.append("  INITIAL ").append(f.getInitial()).append(line);
+                }
+            }
+
+            sb.append("  LABEL \"").append(f.getDefaultLabel()).append("\"").append(line);
+            //sb.append("  POSITION ").append(ct).append(line);
+            sb.append("  MAX-WIDTH ").append(f.getSize()).append(line);
+
+            if (f.getDecimals() > 0) {
+                sb.append("  DECIMALS ").append(f.getDecimals()).append(line);
+            }
+
+            sb.append("  COLUMN-LABEL \"").append(f.getDefaultColLabel()).append("\"").append(line);
+            sb.append("  HELP \"").append(f.getDefaultHelp()).append("\"").append(line);
+
+            if (f.getValExp() != null && !f.getValExp().isEmpty()) {
+                sb.append("  VALEXP \"").append(f.getValExp()).append("\"").append(line);
+            }
+
+            if (f.getValMsg() != null && !f.getValMsg().isEmpty()) {
+                sb.append("  VALMSG \"").append(f.getValMsg()).append("\"").append(line);
             }
         }
 
-        sb.append("  LABEL \"").append(f.getDefaultLabel()).append("\"").append(line);
-        //sb.append("  POSITION ").append(ct).append(line);
-        //sb.append("  MAX-WIDTH 4").append(te.getName()).append("\"").append(line);
-
-        if (f.getDecimals() > 0) {
-            sb.append("  DECIMALS ").append(f.getDecimals()).append(line);
-        }
-
-        sb.append("  COLUMN-LABEL \"").append(f.getDefaultColLabel()).append("\"").append(line);
-        sb.append("  HELP \"").append(f.getDefaultHelp()).append("\"").append(line);
-
-        if (f.getValExp() != null && !f.getValExp().isEmpty()) {
-            sb.append("  VALEXP \"").append(f.getValExp()).append("\"").append(line);
-        }
-
-        if (f.getValMsg() != null && !f.getValMsg().isEmpty()) {
-            sb.append("  VALMSG \"").append(f.getValMsg()).append("\"").append(line);
-        }
-
-        sb.append("  ORDER ").append(index * 10).append(line);
-
+        //sb.append("  ORDER ").append(index * 10).append(line);
         sb.append(line);
     }
 
@@ -105,7 +112,12 @@ public class Progress4GLEntityToScript extends EntityToScriptAbstract {
         }
 
         sb.append(line);
+    }
 
+    @Override
+    public void dropIndex(TableElement tb, IndexElement ie, StringBuilder sb) {
+        sb.append(String.format("DROP INDEX \"%s\" ON \"%s\"", ie.getName(), tb.getName()));
+        sb.append(line);
     }
 
     @Override

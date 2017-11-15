@@ -5,6 +5,7 @@
  */
 package br.com.mvbos.mm;
 
+import br.com.mvbos.mymer.Window;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -30,9 +31,9 @@ class LifeCycle {
         }
     }
 
-    protected static void afterLoadMainWindow() {
+    protected static void afterLoadMainWindow(Window w) {
         for (ICycle c : cycles) {
-            c.onAfterLoadMainWindow();
+            c.onAfterLoadMainWindow(w);
             Logger.getLogger(LifeCycle.class.getName()).log(Level.INFO, "{0} finished.", c.getCycleName());
         }
     }

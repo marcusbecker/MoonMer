@@ -18,6 +18,7 @@ public class LoadWindow extends javax.swing.JFrame {
      */
     public LoadWindow() {
         initComponents();
+        lblVersion.setText(String.valueOf(App.VERSION));
     }
 
     public JProgressBar getProgressBar() {
@@ -36,6 +37,7 @@ public class LoadWindow extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         lblIco = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
+        lblVersion = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setUndecorated(true);
@@ -44,17 +46,30 @@ public class LoadWindow extends javax.swing.JFrame {
 
         lblIco.setIcon(new javax.swing.ImageIcon(getClass().getResource("/screen_load.png"))); // NOI18N
 
+        lblVersion.setFont(new java.awt.Font("Tahoma", 0, 10)); // NOI18N
+        lblVersion.setForeground(new java.awt.Color(0, 153, 204));
+        lblVersion.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblVersion.setText("0.1");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lblIco)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(lblIco)
+                .addGap(0, 0, Short.MAX_VALUE))
             .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(lblIco, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblVersion)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -79,6 +94,7 @@ public class LoadWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblIco;
+    private javax.swing.JLabel lblVersion;
     private javax.swing.JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
 }

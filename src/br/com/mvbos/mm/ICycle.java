@@ -5,6 +5,8 @@
  */
 package br.com.mvbos.mm;
 
+import br.com.mvbos.mymer.Window;
+
 /**
  *
  * @author marcuss
@@ -15,7 +17,7 @@ public interface ICycle {
 
     public void onAfterLoadBases();
 
-    public void onAfterLoadMainWindow();
+    public void onAfterLoadMainWindow(Window w);
 
     public String getCycleName();
 

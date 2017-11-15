@@ -19,8 +19,10 @@ import br.com.mvbos.mymer.xml.field.DataBase;
 import br.com.mvbos.mymer.xml.field.Index;
 import br.com.mvbos.mymer.xml.field.Table;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +39,12 @@ public class DiffWindowExport extends javax.swing.JFrame {
      */
     public DiffWindowExport() {
         initComponents();
+
+        final String path = MMProperties.get(DIFFER_EXPORT_DIRECTORY, "");
+        tfInfo.setText(path);
+
+        btnStart.setEnabled(new File(path).isDirectory());
+
     }
 
     /**
@@ -55,6 +63,9 @@ public class DiffWindowExport extends javax.swing.JFrame {
         btn = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
         tfInfo = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tfTip = new javax.swing.JTextArea();
+        btnStart = new javax.swing.JButton();
 
         fileChooser.setCurrentDirectory(null);
         fileChooser.setDialogTitle("Select output directory");
@@ -78,6 +89,21 @@ public class DiffWindowExport extends javax.swing.JFrame {
             }
         });
 
+        tfTip.setColumns(20);
+        tfTip.setRows(5);
+        tfTip.setText("Simple text description.");
+        tfTip.setCaretPosition(0);
+        tfTip.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        jScrollPane1.setViewportView(tfTip);
+
+        btnStart.setText("Start");
+        btnStart.setEnabled(false);
+        btnStart.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStartActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -86,13 +112,19 @@ public class DiffWindowExport extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tfInfo)
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btn, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tfInfo))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(rQuick, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(rFull, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)))
+                        .addGap(0, 269, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnStart, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -101,11 +133,16 @@ public class DiffWindowExport extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rQuick)
-                    .addComponent(rFull)
+                    .addComponent(rFull))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tfInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btn))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tfInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnStart)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -113,44 +150,61 @@ public class DiffWindowExport extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActionPerformed
-
-        startExport();
-
+        selectFile();
     }//GEN-LAST:event_btnActionPerformed
+
+    private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
+        startExport();
+    }//GEN-LAST:event_btnStartActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn;
+    private javax.swing.JButton btnStart;
     private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JRadioButton rFull;
     private javax.swing.JRadioButton rQuick;
     private javax.swing.JTextField tfInfo;
+    private javax.swing.JTextArea tfTip;
     private javax.swing.ButtonGroup typeGroup;
     // End of variables declaration//GEN-END:variables
 
-    private void startExport() {
-        final String path = MMProperties.get("differ_export_directory", "");
+    private void selectFile() {
 
-        if (!path.isEmpty()) {
-            fileChooser.setCurrentDirectory(new File(path, ""));
+        if (!tfInfo.getText().isEmpty()) {
+            fileChooser.setCurrentDirectory(new File(tfInfo.getText()));
         }
 
-        int showSaveDialog = fileChooser.showOpenDialog(this);
+        int select = fileChooser.showOpenDialog(this);
 
-        if (showSaveDialog != JFileChooser.APPROVE_OPTION) {
+        if (select != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
+        tfInfo.setEditable(false);
+        btnStart.setEnabled(true);
+        tfInfo.setText(fileChooser.getSelectedFile().getAbsolutePath());
+
+    }
+
+    private void startExport() {
+        btnStart.setEnabled(false);
         progressBar.setValue(1);
 
         new Thread() {
+            String jira = "[JIRA]";
+            final String defaultName = "%s_%s_%s";
+            final String today = new SimpleDateFormat("ddMMyyyy").format(new Date());
 
             @Override
             public void run() {
                 try {
                     File dir = fileChooser.getSelectedFile();
-                    tfInfo.setText(dir.getAbsolutePath());
+                    if (!dir.isDirectory()) {
+                        return;
+                    }
 
                     final EntityManager em = EntityManager.e();
 
@@ -182,7 +236,7 @@ public class DiffWindowExport extends javax.swing.JFrame {
                                 if (remoteTable == null) {
                                     Differ.addTable(localTable, sb);
                                     Differ.addTableIndex(localTable, sb);
-                                    
+
                                 } else {
                                     List<IndexElement> tempList = Collections.EMPTY_LIST;
 
@@ -210,7 +264,10 @@ public class DiffWindowExport extends javax.swing.JFrame {
                         }
 
                         if (sb.length() > 0 || rFull.isSelected()) {
-                            String outputName = localBase.getName().concat(MMProperties.get("differ_export_extension", ".df"));
+
+                            String outputName = String.format(defaultName, localBase.getName(), jira, today);
+                            outputName = outputName.concat(MMProperties.get(DIFFER_EXPORT_EXTENSION, ".df"));
+
                             FileUtil.write(dir.getAbsolutePath(), outputName, sb);
                             sb.delete(0, sb.length());
                         }
@@ -218,11 +275,19 @@ public class DiffWindowExport extends javax.swing.JFrame {
                         progressBar.setValue(progressBar.getValue() + Math.round(percent));
                     }
 
+                    MMProperties.set(DIFFER_EXPORT_DIRECTORY, dir.getAbsolutePath());
+
                 } catch (Exception e) {
                     Logger.getLogger(DiffWindowExport.class.getName()).log(Level.WARNING, e.getMessage());
+                } finally {
+                    tfInfo.setEditable(true);
+                    btnStart.setEnabled(true);
                 }
             }
 
         }.start();
     }
+
+    private static final String DIFFER_EXPORT_EXTENSION = "differ_export_extension";
+    private static final String DIFFER_EXPORT_DIRECTORY = "differ_export_directory";
 }

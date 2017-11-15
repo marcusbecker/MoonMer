@@ -11,7 +11,7 @@ import javax.swing.JTextField;
  *
  * @author Marcus Becker
  */
-class Util {
+public class Util {
 
     static int getInt(JTextField tf) {
         try {
@@ -21,6 +21,10 @@ class Util {
         }
 
         return -1;
+    }
+
+    public static boolean isEmpty(String name) {
+        return name == null || name.trim().isEmpty();
     }
 
 }
